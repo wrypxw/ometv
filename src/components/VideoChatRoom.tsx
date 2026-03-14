@@ -750,34 +750,23 @@ const VideoChatRoom = () => {
             </p>
 
             <div className="space-y-1.5 max-h-56 md:max-h-64 overflow-y-auto mb-5">
-              {[
-                { name: "Worldwide", emoji: "🌍", desc: "", cost: "FREE" },
-                { name: "Americas", emoji: "🗽", desc: "North & South America", cost: "10" },
-                { name: "Europe", emoji: "🏰", desc: "UK, France, Germany & more", cost: "10" },
-                { name: "Middle East & North Africa", emoji: "🕌", desc: "UAE, Saudi Arabia, Egypt & more", cost: "10" },
-                { name: "South Asia", emoji: "🪷", desc: "India, Pakistan, Bangladesh & more", cost: "10" },
-                { name: "East Asia", emoji: "🏯", desc: "Japan, Korea, China & more", cost: "10" },
-                { name: "Southeast Asia", emoji: "🌴", desc: "Philippines, Thailand, Indonesia & more", cost: "10" },
-                { name: "Africa", emoji: "🌍", desc: "Nigeria, South Africa, Kenya & more", cost: "10" },
-              ].map((region) => (
+              {COUNTRIES.map((country) => (
                 <button
-                  key={region.name}
-                  onClick={() => setTempRegion(region.name)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
+                  key={country}
+                  onClick={() => setTempRegion(country)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left transition-all"
                   style={{
-                    border: tempRegion === region.name ? "1.5px solid #7c3aed" : "1.5px solid transparent",
-                    background: tempRegion === region.name ? "rgba(124,58,237,0.1)" : "rgba(255,255,255,0.02)",
+                    border: tempRegion === country ? "1.5px solid #7c3aed" : "1.5px solid transparent",
+                    background: tempRegion === country ? "rgba(124,58,237,0.1)" : "rgba(255,255,255,0.02)",
                   }}
                 >
-                  <span className="text-xl">{region.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white">{region.name}</p>
-                    {region.desc && <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{region.desc}</p>}
+                    <p className="text-sm font-medium text-white">{country}</p>
                   </div>
-                  {region.cost === "FREE" ? (
+                  {country === "Worldwide" ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
                   ) : (
-                    <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{region.cost} 🪙</span>
+                    <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>10 🪙</span>
                   )}
                 </button>
               ))}
