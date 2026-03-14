@@ -257,7 +257,15 @@ const VideoChatRoom = () => {
           </div>
         </div>
 
-        {/* Connected / searching overlays */}
+        {/* Remote video (stranger) */}
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          className={`absolute inset-0 w-full h-full object-cover z-10 ${status === "connected" ? "" : "hidden"}`}
+        />
+
+        {/* Searching overlay */}
         {status === "searching" && (
           <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.7)" }}>
             <div className="text-center space-y-3">
@@ -266,14 +274,6 @@ const VideoChatRoom = () => {
                 style={{ borderColor: "rgba(124,58,237,0.2)", borderTopColor: "#7c3aed" }}
               />
               <p style={{ color: "rgba(255,255,255,0.5)" }} className="text-sm">Looking for partner...</p>
-            </div>
-          </div>
-        )}
-
-        {status === "connected" && (
-          <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "#0d0d14" }}>
-            <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <Users className="w-10 h-10" style={{ color: "rgba(255,255,255,0.2)" }} />
             </div>
           </div>
         )}
