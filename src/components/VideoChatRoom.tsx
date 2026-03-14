@@ -61,9 +61,21 @@ const VideoChatRoom = () => {
   const [cameraAllowed, setCameraAllowed] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState(() => 8000 + Math.floor(Math.random() * 5000));
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Simulate fluctuating online users
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOnlineUsers((prev) => {
+        const change = Math.floor(Math.random() * 40) - 18;
+        return Math.max(5000, Math.min(18000, prev + change));
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const startLocalCamera = useCallback(async () => {
     try {
