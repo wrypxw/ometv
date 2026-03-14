@@ -356,7 +356,7 @@ const VideoChatRoom = () => {
         </div>
 
         {/* Bottom right: Filters - inside right panel */}
-        <div className="px-6 pb-6 flex justify-end">
+        <div className="px-6 pb-6 flex justify-center">
           <div
             className="flex items-center rounded-2xl overflow-hidden"
             style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
