@@ -539,6 +539,70 @@ const VideoChatRoom = () => {
           </div>
         </div>
       )}
+
+      {/* Gender Preferences Modal */}
+      {showGenderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowGenderModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+          <div
+            className="relative w-full max-w-md mx-4 rounded-2xl p-6"
+            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold text-white mb-1">Gender Preferences</h2>
+            <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <span className="font-bold text-white">15 Coins</span> are used whenever you match with the gender filter on.
+            </p>
+
+            {/* Gender Cards */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {[
+                { id: "Male", emoji: "👨", color: "#38bdf8", borderColor: "#38bdf8", cost: true },
+                { id: "Both", emoji: "👫", color: "#7c3aed", borderColor: "#ec4899", cost: false },
+                { id: "Female", emoji: "👩", color: "#ec4899", borderColor: "#ec4899", cost: true },
+              ].map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => setTempGender(g.id)}
+                  className="relative flex flex-col items-center gap-2 rounded-xl py-5 px-3 transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: tempGender === g.id ? `2px solid ${g.borderColor}` : "2px solid transparent",
+                  }}
+                >
+                  {/* Coin badge */}
+                  {g.cost && (
+                    <span
+                      className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: "#eab308", color: "#000" }}
+                    >
+                      15 🪙
+                    </span>
+                  )}
+                  <span className="text-4xl">{g.emoji}</span>
+                  <span className="text-sm font-medium" style={{ color: g.color }}>{g.id}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Save / Cancel */}
+            <button
+              onClick={() => { setSelectedGender(tempGender); setShowGenderModal(false); }}
+              className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90 mb-3"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowGenderModal(false)}
+              className="w-full py-2 text-sm font-medium transition-colors"
+              style={{ color: "rgba(255,255,255,0.5)" }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
