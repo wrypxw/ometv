@@ -314,7 +314,7 @@ const VideoChatRoom = () => {
                 <Search className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setIsLoggedIn(true)}
+                onClick={() => setShowLoginModal(true)}
                 className="text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
                 style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
               >
