@@ -13,6 +13,8 @@ import {
   Search,
   ChevronUp,
   Facebook,
+  History,
+  User,
 } from "lucide-react";
 
 type ChatStatus = "idle" | "searching" | "connected" | "disconnected";
@@ -48,6 +50,8 @@ const VideoChatRoom = () => {
   const [tempRegion, setTempRegion] = useState("Worldwide");
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [tempGender, setTempGender] = useState("Both");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [cameraAllowed, setCameraAllowed] = useState(true);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -56,8 +60,10 @@ const VideoChatRoom = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      setCameraAllowed(true);
     } catch {
       console.log("Camera access denied");
+      setCameraAllowed(false);
     }
   }, []);
 
@@ -287,16 +293,34 @@ const VideoChatRoom = () => {
         </div>
 
         {/* Top right: Search + Log In */}
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-4">
-          <button style={{ color: "rgba(255,255,255,0.4)" }} className="hover:opacity-80 transition-opacity">
-            <Search className="w-5 h-5" />
-          </button>
-          <button
-            className="text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
-            style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
-          >
-            Log In
-          </button>
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+          {isLoggedIn ? (
+            <>
+              <button className="flex items-center gap-1.5 transition-opacity hover:opacity-80" style={{ color: "rgba(255,255,255,0.7)" }}>
+                <History className="w-5 h-5" />
+                <span className="text-sm font-medium">History</span>
+              </button>
+              <button
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}
+              >
+                <User className="w-5 h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button style={{ color: "rgba(255,255,255,0.4)" }} className="hover:opacity-80 transition-opacity">
+                <Search className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsLoggedIn(true)}
+                className="text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
+                style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
+              >
+                Log In
+              </button>
+            </>
+          )}
         </div>
 
         {/* Camera feed */}
@@ -306,16 +330,36 @@ const VideoChatRoom = () => {
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 w-full h-full object-cover ${!isCamOn ? "hidden" : ""}`}
+            className={`absolute inset-0 w-full h-full object-cover ${(!isCamOn || !cameraAllowed) ? "hidden" : ""}`}
           />
-          {!isCamOn && (
+
+          {/* Camera permission denied */}
+          {!cameraAllowed && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4 px-6">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
+                  style={{ background: "#ef4444" }}
+                >
+                  <VideoOff className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Camera permission denied</h3>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  To enable video, please grant permission to access your camera in your browser settings.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Camera off by user */}
+          {cameraAllowed && !isCamOn && (
             <div className="absolute inset-0 flex items-center justify-center">
               <VideoOff className="w-12 h-12" style={{ color: "rgba(255,255,255,0.15)" }} />
             </div>
           )}
 
           {/* Loading spinner center */}
-          {(status === "idle" || status === "disconnected") && (
+          {cameraAllowed && (status === "idle" || status === "disconnected") && isCamOn && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center"
