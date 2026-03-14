@@ -13,6 +13,8 @@ import {
   Search,
   ChevronUp,
   Facebook,
+  History,
+  User,
 } from "lucide-react";
 
 type ChatStatus = "idle" | "searching" | "connected" | "disconnected";
