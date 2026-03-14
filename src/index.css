@@ -4,55 +4,56 @@
 
 @layer base {
   :root {
-    --background: 216 28% 7%;
+    --background: 228 20% 8%;
     --foreground: 210 20% 95%;
 
-    --card: 216 25% 11%;
+    --card: 228 18% 12%;
     --card-foreground: 210 20% 95%;
 
-    --popover: 216 25% 11%;
+    --popover: 228 18% 14%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 207 90% 54%;
+    --primary: 262 70% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 216 20% 16%;
-    --secondary-foreground: 210 20% 90%;
+    --secondary: 228 15% 16%;
+    --secondary-foreground: 210 20% 80%;
 
-    --muted: 216 18% 14%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 228 15% 14%;
+    --muted-foreground: 215 12% 45%;
 
-    --accent: 207 90% 54%;
+    --accent: 262 70% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 216 20% 18%;
-    --input: 216 20% 18%;
-    --ring: 207 90% 54%;
+    --border: 228 15% 16%;
+    --input: 228 15% 16%;
+    --ring: 262 70% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 216 25% 9%;
+    --sidebar-background: 228 18% 10%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 207 90% 54%;
+    --sidebar-primary: 262 70% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 216 18% 14%;
+    --sidebar-accent: 228 15% 14%;
     --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 216 20% 18%;
-    --sidebar-ring: 207 90% 54%;
+    --sidebar-border: 228 15% 16%;
+    --sidebar-ring: 262 70% 55%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
     margin: 0;
     overflow: hidden;
   }
