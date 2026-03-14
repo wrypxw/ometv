@@ -209,7 +209,7 @@ const VideoChatRoom = () => {
           `,
         }}
       >
-        {/* Shop button - top left */}
+        {/* Top bar: Shop (left) + User (right) */}
         <div className="absolute top-2 left-2 md:top-4 md:left-4 z-20">
           <button
             onClick={() => setShowShop(true)}
@@ -219,6 +219,70 @@ const VideoChatRoom = () => {
             <Heart className="w-3 h-3 md:w-4 md:h-4 fill-current" />
             Shop
           </button>
+        </div>
+
+        {/* User icon - top right of top panel */}
+        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20">
+          {isLoggedIn ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)" }}
+              >
+                <User className="w-4 h-4 md:w-5 md:h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+              </button>
+
+              {showProfileMenu && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowProfileMenu(false)} />
+                  <div
+                    className="absolute top-full right-0 mt-2 w-52 rounded-xl shadow-2xl z-40 py-2"
+                    style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+                  >
+                    <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.1)" }}>
+                        <User className="w-4 h-4" style={{ color: "rgba(255,255,255,0.6)" }} />
+                      </div>
+                      <span className="text-sm font-medium text-white">You</span>
+                      <div className="flex items-center gap-1 ml-auto"><span>🟢</span><span>😜</span></div>
+                    </div>
+                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    ><MessageSquare className="w-4 h-4" /><span>Text Chat</span><ExternalLink className="w-3.5 h-3.5 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} /></button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    ><Share2 className="w-4 h-4" /><span>Socials</span><ChevronRight className="w-4 h-4 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} /></button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    ><FileText className="w-4 h-4" /><span>Rules</span></button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    ><MoreHorizontal className="w-4 h-4" /><span>More</span></button>
+                    <div className="my-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+                    <button
+                      onClick={() => { setIsLoggedIn(false); setShowProfileMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    ><LogOut className="w-4 h-4" /><span>Logout</span></button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)" }}
+            >
+              <User className="w-4 h-4 md:w-5 md:h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+            </button>
+          )}
         </div>
 
         {/* Center content (idle state) */}
@@ -243,20 +307,23 @@ const VideoChatRoom = () => {
               <span className="text-xs md:text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>{onlineUsers.toLocaleString()} users online</span>
             </div>
 
-            {/* Share buttons - hidden on mobile */}
-            <div className="hidden md:flex items-center gap-3 mt-6">
+            {/* Share + Discord buttons - visible on both mobile and desktop */}
+            <div className="flex items-center gap-3 mt-4 md:mt-6">
               <button
-                className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white"
+                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-medium text-white"
                 style={{ background: "#1877F2" }}
               >
-                <Facebook className="w-4 h-4" />
+                <Facebook className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Share
               </button>
               <button
-                className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium"
-                style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}
+                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-medium text-white"
+                style={{ background: "#5865F2" }}
               >
-                𝕏 Share
+                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/>
+                </svg>
+                Discord
               </button>
             </div>
           </div>
@@ -283,192 +350,91 @@ const VideoChatRoom = () => {
           </div>
         )}
 
-        {/* Bottom area: Chat + Buttons */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col">
-          {(status === "connected" || messages.length > 0) && (
-            <div className="max-h-16 md:max-h-28 overflow-y-auto px-3 md:px-4 pb-1 space-y-0.5">
-              {messages.map((msg) => (
-                <div key={msg.id} className="flex items-start gap-1.5">
-                  <span className="text-[10px] md:text-xs font-bold" style={{ color: msg.sender === "me" ? "#a78bfa" : "#fbbf24" }}>
-                    {msg.sender === "me" ? "You:" : "Stranger:"}
-                  </span>
-                  <span className="text-[10px] md:text-xs" style={{ color: "rgba(255,255,255,0.8)" }}>{msg.text}</span>
-                </div>
-              ))}
-              <div ref={chatEndRef} />
-            </div>
-          )}
+        {/* Chat overlay when connected/has messages */}
+        {(status === "connected" || status === "searching" || messages.length > 0) && (
+          <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col">
+            {messages.length > 0 && (
+              <div className="max-h-16 md:max-h-28 overflow-y-auto px-3 md:px-4 pb-1 space-y-0.5">
+                {messages.map((msg) => (
+                  <div key={msg.id} className="flex items-start gap-1.5">
+                    <span className="text-[10px] md:text-xs font-bold" style={{ color: msg.sender === "me" ? "#a78bfa" : "#fbbf24" }}>
+                      {msg.sender === "me" ? "You:" : "Stranger:"}
+                    </span>
+                    <span className="text-[10px] md:text-xs" style={{ color: "rgba(255,255,255,0.8)" }}>{msg.text}</span>
+                  </div>
+                ))}
+                <div ref={chatEndRef} />
+              </div>
+            )}
 
-          {status === "connected" && (
-            <form
-              onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
-              className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 pb-1.5 pt-1"
-            >
-              <input
-                value={inputMsg}
-                onChange={(e) => setInputMsg(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 text-xs md:text-sm focus:outline-none"
-                style={{
-                  background: "rgba(255,255,255,0.07)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "white",
-                }}
-              />
-              <button
-                type="submit"
-                disabled={!inputMsg.trim()}
-                className="p-1.5 md:p-2 rounded-lg disabled:opacity-30"
-                style={{ background: "#7c3aed", color: "white" }}
+            {status === "connected" && (
+              <form
+                onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+                className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 pb-1.5 pt-1"
               >
-                <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              </button>
-            </form>
-          )}
-
-          <div className="px-3 md:px-6 pb-3 md:pb-6 pt-1">
-            {status === "idle" || status === "disconnected" ? (
-              !cameraAllowed ? (
-                <div className="text-center space-y-2">
-                  <p className="text-xs md:text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    📷 Camera access required
-                  </p>
-                  <button
-                    onClick={startLocalCamera}
-                    className="w-full max-w-md mx-auto block py-2.5 md:py-4 rounded-2xl font-semibold text-white text-sm md:text-base transition-opacity hover:opacity-90"
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
-                  >
-                    Enable Camera
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={startSearch}
-                  className="w-full max-w-md mx-auto block py-2.5 md:py-4 rounded-2xl font-semibold text-white text-sm md:text-base transition-opacity hover:opacity-90"
-                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
-                >
-                  👋 Start Video Chat
+                <input
+                  value={inputMsg}
+                  onChange={(e) => setInputMsg(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 text-xs md:text-sm focus:outline-none"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
+                />
+                <button type="submit" disabled={!inputMsg.trim()} className="p-1.5 md:p-2 rounded-lg disabled:opacity-30" style={{ background: "#7c3aed", color: "white" }}>
+                  <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </button>
-              )
-            ) : (
-              <div className="flex items-center gap-2 md:gap-3 justify-center">
+              </form>
+            )}
+
+            {/* Stop/Next buttons - only in top panel on desktop */}
+            <div className="hidden md:block px-6 pb-6 pt-1">
+              <div className="flex items-center gap-3 justify-center">
                 <button
                   onClick={stopChat}
-                  className="px-6 md:px-10 py-2.5 md:py-4 rounded-2xl font-semibold text-white text-xs md:text-sm transition-opacity hover:opacity-90"
+                  className="px-10 py-4 rounded-2xl font-semibold text-white text-sm transition-opacity hover:opacity-90"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
                 >
                   Stop
                 </button>
                 <button
                   onClick={nextPerson}
-                  className="px-6 md:px-10 py-2.5 md:py-4 rounded-2xl font-semibold text-white text-xs md:text-sm flex items-center gap-1 transition-opacity hover:opacity-90"
+                  className="px-10 py-4 rounded-2xl font-semibold text-white text-sm flex items-center gap-1.5 transition-opacity hover:opacity-90"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
                 >
-                  <SkipForward className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  <SkipForward className="w-4 h-4" />
                   Next
                 </button>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* BOTTOM/RIGHT PANEL - Your video */}
       <div className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col" style={{ background: "#1a1a24" }}>
-        {/* Top left: Expand - hidden on mobile */}
-        <div className="hidden md:block absolute top-4 left-4 z-20">
+        {/* Top bar: Expand + History (left), Log In (right on desktop) */}
+        <div className="absolute top-2 left-2 md:top-4 md:left-4 z-20 flex items-center gap-2">
           <button style={{ color: "rgba(255,255,255,0.3)" }} className="hover:opacity-80 transition-opacity">
-            <Maximize2 className="w-5 h-5" />
+            <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
+          </button>
+          <button className="flex items-center gap-1 transition-opacity hover:opacity-80" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <History className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="text-xs md:text-sm font-medium">History</span>
           </button>
         </div>
 
-        {/* Top right: Search + Log In */}
-        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20 flex items-center gap-2 md:gap-3">
-          {isLoggedIn ? (
-            <>
-              <button className="hidden md:flex items-center gap-1.5 transition-opacity hover:opacity-80" style={{ color: "rgba(255,255,255,0.7)" }}>
-                <History className="w-5 h-5" />
-                <span className="text-sm font-medium">History</span>
-              </button>
-              <div className="relative">
-                <button
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}
-                >
-                  <User className="w-4 h-4 md:w-5 md:h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
-                </button>
-
-                {showProfileMenu && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setShowProfileMenu(false)} />
-                    <div
-                      className="absolute top-full right-0 mt-2 w-52 rounded-xl shadow-2xl z-40 py-2"
-                      style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
-                    >
-                      <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.1)" }}>
-                          <User className="w-4 h-4" style={{ color: "rgba(255,255,255,0.6)" }} />
-                        </div>
-                        <span className="text-sm font-medium text-white">You</span>
-                        <div className="flex items-center gap-1 ml-auto">
-                          <span>🟢</span>
-                          <span>😜</span>
-                        </div>
-                      </div>
-                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <MessageSquare className="w-4 h-4" /><span>Text Chat</span>
-                        <ExternalLink className="w-3.5 h-3.5 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} />
-                      </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <Share2 className="w-4 h-4" /><span>Socials</span>
-                        <ChevronRight className="w-4 h-4 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} />
-                      </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <FileText className="w-4 h-4" /><span>Rules</span>
-                      </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <MoreHorizontal className="w-4 h-4" /><span>More</span>
-                      </button>
-                      <div className="my-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
-                      <button
-                        onClick={() => { setIsLoggedIn(false); setShowProfileMenu(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <LogOut className="w-4 h-4" /><span>Logout</span>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <button style={{ color: "rgba(255,255,255,0.4)" }} className="hover:opacity-80 transition-opacity">
-                <Search className="w-4 h-4 md:w-5 md:h-5" />
-              </button>
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className="text-xs md:text-sm font-medium px-3 py-1 md:px-4 md:py-1.5 rounded-lg transition-colors"
-                style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
-              >
-                Log In
-              </button>
-            </>
+        {/* Top right: Search + Log In (desktop only) */}
+        <div className="hidden md:flex absolute top-4 right-4 z-20 items-center gap-3">
+          <button style={{ color: "rgba(255,255,255,0.4)" }} className="hover:opacity-80 transition-opacity">
+            <Search className="w-5 h-5" />
+          </button>
+          {!isLoggedIn && (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
+              style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
+            >
+              Log In
+            </button>
           )}
         </div>
 
@@ -484,13 +450,13 @@ const VideoChatRoom = () => {
 
           {!cameraAllowed && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-3 px-4">
+              <div className="text-center space-y-2 md:space-y-3 px-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto" style={{ background: "#ef4444" }}>
                   <VideoOff className="w-6 h-6 md:w-8 md:h-8 text-white" />
                 </div>
                 <h3 className="text-sm md:text-lg font-bold text-white">Camera permission denied</h3>
-                <p className="text-xs md:text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  Grant camera permission in browser settings.
+                <p className="text-[11px] md:text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  To enable video, please grant permission to access your camera in your browser settings.
                 </p>
               </div>
             </div>
@@ -513,19 +479,20 @@ const VideoChatRoom = () => {
           )}
         </div>
 
-        {/* Bottom: Filters */}
-        <div className="px-3 md:px-6 pb-3 md:pb-6 flex justify-center">
+        {/* Bottom: Filters + Start button */}
+        <div className="px-3 md:px-6 pb-3 md:pb-6 flex flex-col items-center gap-2 md:gap-3">
+          {/* Worldwide + Gender filters */}
           <div
-            className="flex items-center rounded-2xl overflow-hidden"
+            className="flex items-center rounded-2xl overflow-hidden w-full max-w-md"
             style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
           >
             <button
               onClick={() => { setTempRegion(selectedCountry); setShowRegion(true); }}
-              className="flex items-center gap-1.5 md:gap-2 px-3 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm transition-colors"
               style={{ color: "rgba(255,255,255,0.7)" }}
             >
               <Globe className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#22c55e" }} />
-              <span className="max-w-[70px] md:max-w-none truncate">{selectedCountry}</span>
+              <span className="truncate">{selectedCountry}</span>
               <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
             </button>
 
@@ -533,7 +500,7 @@ const VideoChatRoom = () => {
 
             <button
               onClick={() => { setTempGender(selectedGender === "Gender" ? "Both" : selectedGender); setShowGenderModal(true); }}
-              className="flex items-center gap-1.5 md:gap-2 px-3 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm transition-colors"
               style={{ color: "rgba(255,255,255,0.7)" }}
             >
               <Users className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#a78bfa" }} />
@@ -541,6 +508,35 @@ const VideoChatRoom = () => {
               <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
             </button>
           </div>
+
+          {/* Start / Stop+Next buttons - in bottom panel */}
+          {status === "idle" || status === "disconnected" ? (
+            <button
+              onClick={!cameraAllowed ? startLocalCamera : startSearch}
+              className="w-full max-w-md py-3 md:py-4 rounded-2xl font-semibold text-white text-sm md:text-base transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+            >
+              👋 Start Video Chat
+            </button>
+          ) : (
+            <div className="flex md:hidden items-center gap-2 justify-center w-full max-w-md">
+              <button
+                onClick={stopChat}
+                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs transition-opacity hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+              >
+                Stop
+              </button>
+              <button
+                onClick={nextPerson}
+                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs flex items-center justify-center gap-1 transition-opacity hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+              >
+                <SkipForward className="w-3.5 h-3.5" />
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
