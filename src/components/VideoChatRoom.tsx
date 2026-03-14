@@ -43,6 +43,7 @@ const VideoChatRoom = () => {
   const [selectedGender, setSelectedGender] = useState("Gender");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -126,6 +127,7 @@ const VideoChatRoom = () => {
         {/* Shop button - top left */}
         <div className="absolute top-4 left-4 z-20">
           <button
+            onClick={() => setShowShop(true)}
             className="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors"
             style={{ border: "1px solid rgba(234, 179, 8, 0.5)", color: "#eab308" }}
           >
@@ -435,6 +437,76 @@ const VideoChatRoom = () => {
           </div>
         </div>
       </div>
+
+      {/* Shop Modal */}
+      {showShop && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowShop(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+          <div
+            className="relative w-full max-w-xl mx-4 rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">Shop</h2>
+              <div className="flex items-center gap-1.5 text-sm" style={{ color: "#eab308" }}>
+                <Heart className="w-4 h-4 fill-current" />
+                <span className="text-white font-medium">0</span>
+              </div>
+            </div>
+
+            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Higher tiers give you more bonus coins!
+            </p>
+
+            {/* Coin Packages Grid */}
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              {[
+                { coins: "500", bonus: "", price: "$3.99" },
+                { coins: "1.000", bonus: "+120", price: "$7.49" },
+                { coins: "2.500", bonus: "+300", price: "$17.49" },
+                { coins: "5.000", bonus: "+550", price: "$33.49" },
+                { coins: "10.000", bonus: "+1.100", price: "$64.49" },
+                { coins: "25.000", bonus: "+2.600", price: "$156.49" },
+              ].map((pkg, i) => (
+                <button
+                  key={i}
+                  className="rounded-xl p-3 flex flex-col items-center gap-2 transition-opacity hover:opacity-90"
+                  style={{
+                    background: i < 3
+                      ? "linear-gradient(180deg, #7c3aed, #6d28d9)"
+                      : "linear-gradient(180deg, #8b5cf6, #7c3aed)",
+                  }}
+                >
+                  {/* Coin icon */}
+                  <div className="text-3xl py-2">
+                    {i === 0 ? "🪙" : i < 3 ? "💰" : i < 5 ? "💎" : "🎁"}
+                  </div>
+                  <div className="text-sm font-bold text-white">
+                    {pkg.coins} {pkg.bonus && <span style={{ color: "#4ade80" }}>{pkg.bonus}</span>} Coins
+                  </div>
+                  <div
+                    className="w-full py-1.5 rounded-lg text-sm font-semibold text-center"
+                    style={{ background: "rgba(0,0,0,0.25)", color: "#4ade80" }}
+                  >
+                    {pkg.price}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Disclaimers */}
+            <div className="space-y-1 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <p>*Filters (e.g. gender, location, etc.) are based on the user's input. the results may not be accurate.</p>
+              <p>* If you cancel searching before you get a match, your coins will NOT be refunded.</p>
+              <p>* Prices are in USD and may vary depending on your location.</p>
+              <p>* VAT is calculated at checkout.</p>
+              <p>* Make sure to read our <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Refund Policy</span>.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
