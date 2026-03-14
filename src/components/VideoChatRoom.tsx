@@ -607,7 +607,7 @@ const VideoChatRoom = () => {
             }}
           >
             <button
-              onClick={() => { setTempRegion(selectedCountry); setShowRegion(true); }}
+              onClick={() => { setTempRegion(selectedCountry); setShowBrazilStates(false); setShowRegion(true); }}
               className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-3 md:px-5 md:py-3.5 text-xs md:text-sm transition-all hover:bg-white/5"
               style={{ color: "rgba(255,255,255,0.75)" }}
             >
