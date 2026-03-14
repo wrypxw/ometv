@@ -140,6 +140,10 @@ const VideoChatRoom = () => {
   }, []);
 
   const startSearch = useCallback(async () => {
+    if (!cameraAllowed || !localStreamRef.current) {
+      await startLocalCamera();
+      if (!localStreamRef.current) return;
+    }
     setStatus("searching");
     setMessages([]);
 
@@ -155,7 +159,7 @@ const VideoChatRoom = () => {
     await matchmaker.findMatch((roomId, isInitiator) => {
       connectToPartner(roomId, isInitiator);
     });
-  }, [connectToPartner]);
+  }, [connectToPartner, cameraAllowed, startLocalCamera]);
 
   const nextPerson = useCallback(async () => {
     webrtcRef.current?.destroy();
