@@ -46,6 +46,8 @@ const VideoChatRoom = () => {
   const [showShop, setShowShop] = useState(false);
   const [showRegion, setShowRegion] = useState(false);
   const [tempRegion, setTempRegion] = useState("Worldwide");
+  const [showGenderModal, setShowGenderModal] = useState(false);
+  const [tempGender, setTempGender] = useState("Both");
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
