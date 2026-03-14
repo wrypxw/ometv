@@ -470,8 +470,45 @@ const VideoChatRoom = () => {
       </div>
 
       {/* BOTTOM/RIGHT PANEL - Your video */}
-      <div className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col" style={{ background: "#111118" }}>
-        {/* Top bar overlay */}
+      <div className="h-[50dvh] md:h-full md:flex-1 relative overflow-hidden" style={{ background: "#111118" }}>
+        {/* Camera feed - fills entire panel */}
+        <video
+          ref={localVideoRef}
+          autoPlay
+          playsInline
+          muted
+          className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] transition-opacity duration-300 ${(!isCamOn || !cameraAllowed) ? "opacity-0" : "opacity-100"}`}
+        />
+
+        {/* Subtle vignette overlay on camera */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%)" }}
+        />
+
+        {!cameraAllowed && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="text-center space-y-3 px-6">
+              <div
+                className="w-14 h-14 md:w-18 md:h-18 rounded-full flex items-center justify-center mx-auto"
+                style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
+              >
+                <VideoOff className="w-7 h-7 md:w-8 md:h-8 text-white" />
+              </div>
+              <h3 className="text-sm md:text-lg font-bold text-white">Camera permission denied</h3>
+              <p className="text-[11px] md:text-sm leading-relaxed max-w-xs mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
+                To enable video, please grant permission to access your camera in your browser settings.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {cameraAllowed && !isCamOn && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <VideoOff className="w-10 h-10 md:w-12 md:h-12" style={{ color: "rgba(255,255,255,0.12)" }} />
+          </div>
+        )}
+
+        {/* Top bar overlay - floats over video */}
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-2.5 md:px-5 md:py-4"
           style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 100%)" }}
         >
@@ -503,72 +540,35 @@ const VideoChatRoom = () => {
           </div>
         </div>
 
-        {/* Camera feed */}
-        <div className="flex-1 relative overflow-hidden">
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] transition-opacity duration-300 ${(!isCamOn || !cameraAllowed) ? "opacity-0" : "opacity-100"}`}
-          />
-
-          {/* Subtle vignette overlay on camera */}
-          <div className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%)" }}
-          />
-
-          {!cameraAllowed && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-3 px-6">
-                <div
-                  className="w-14 h-14 md:w-18 md:h-18 rounded-full flex items-center justify-center mx-auto"
-                  style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
-                >
-                  <VideoOff className="w-7 h-7 md:w-8 md:h-8 text-white" />
-                </div>
-                <h3 className="text-sm md:text-lg font-bold text-white">Camera permission denied</h3>
-                <p className="text-[11px] md:text-sm leading-relaxed max-w-xs mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  To enable video, please grant permission to access your camera in your browser settings.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {cameraAllowed && !isCamOn && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <VideoOff className="w-10 h-10 md:w-12 md:h-12" style={{ color: "rgba(255,255,255,0.12)" }} />
-            </div>
-          )}
-        </div>
-
-        {/* Bottom controls */}
-        <div className="px-3 md:px-5 pb-3 md:pb-5 pt-2 flex flex-col items-center gap-2.5 md:gap-3">
+        {/* Bottom controls - floats over video with gradient fade */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-5 pt-10 flex flex-col items-center gap-2.5 md:gap-3"
+          style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}
+        >
           {/* Filters bar */}
           <div
             className="flex items-center rounded-2xl overflow-hidden w-full max-w-md"
             style={{
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(0,0,0,0.3)",
+              backdropFilter: "blur(12px)",
             }}
           >
             <button
               onClick={() => { setTempRegion(selectedCountry); setShowRegion(true); }}
               className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-3 md:px-5 md:py-3.5 text-xs md:text-sm transition-all hover:bg-white/5"
-              style={{ color: "rgba(255,255,255,0.65)" }}
+              style={{ color: "rgba(255,255,255,0.75)" }}
             >
               <Globe className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#22c55e" }} />
               <span className="truncate font-medium">{selectedCountry}</span>
               <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5 opacity-40" />
             </button>
 
-            <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.08)" }} />
+            <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.1)" }} />
 
             <button
               onClick={() => { setTempGender(selectedGender === "Gender" ? "Both" : selectedGender); setShowGenderModal(true); }}
               className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-3 md:px-5 md:py-3.5 text-xs md:text-sm transition-all hover:bg-white/5"
-              style={{ color: "rgba(255,255,255,0.65)" }}
+              style={{ color: "rgba(255,255,255,0.75)" }}
             >
               <Users className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#a78bfa" }} />
               <span className="font-medium">{selectedGender}</span>
@@ -594,8 +594,9 @@ const VideoChatRoom = () => {
                 onClick={stopChat}
                 className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{
-                  background: "rgba(255,255,255,0.08)",
+                  background: "rgba(0,0,0,0.3)",
                   border: "1px solid rgba(255,255,255,0.12)",
+                  backdropFilter: "blur(8px)",
                 }}
               >
                 Stop
