@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Matchmaker, WebRTCConnection } from "@/lib/webrtc";
 import {
   Video,
