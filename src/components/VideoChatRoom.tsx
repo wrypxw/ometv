@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Matchmaker, WebRTCConnection } from "@/lib/webrtc";
 import {
   Video,
   VideoOff,
@@ -63,8 +64,12 @@ const VideoChatRoom = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(() => 8000 + Math.floor(Math.random() * 5000));
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const matchmakerRef = useRef<Matchmaker | null>(null);
+  const webrtcRef = useRef<WebRTCConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   // Simulate fluctuating online users
   useEffect(() => {
@@ -81,6 +86,7 @@ const VideoChatRoom = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      localStreamRef.current = stream;
       setCameraAllowed(true);
     } catch {
       console.log("Camera access denied");
@@ -91,9 +97,11 @@ const VideoChatRoom = () => {
   useEffect(() => {
     startLocalCamera();
     return () => {
-      if (localVideoRef.current?.srcObject) {
-        (localVideoRef.current.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((t) => t.stop());
       }
+      matchmakerRef.current?.destroy();
+      webrtcRef.current?.destroy();
     };
   }, [startLocalCamera]);
 
@@ -101,26 +109,68 @@ const VideoChatRoom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const startSearch = useCallback(() => {
-    setStatus("searching");
-    setMessages([]);
-    searchTimerRef.current = setTimeout(() => {
+  const connectToPartner = useCallback(async (roomId: string, isInitiator: boolean) => {
+    const matchmaker = matchmakerRef.current;
+    if (!matchmaker) return;
+
+    const rtc = new WebRTCConnection(roomId, matchmaker.getSessionId());
+    webrtcRef.current = rtc;
+
+    rtc.onRemoteStream = (stream) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = stream;
+      }
       setStatus("connected");
-      setTimeout(() => {
-        const greeting = STRANGER_MESSAGES[Math.floor(Math.random() * STRANGER_MESSAGES.length)];
-        setMessages((prev) => [...prev, { id: crypto.randomUUID(), text: greeting, sender: "stranger" }]);
-      }, 1000 + Math.random() * 2000);
-    }, 1500 + Math.random() * 3000);
+    };
+
+    rtc.onDisconnected = () => {
+      setStatus("disconnected");
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    };
+
+    if (localStreamRef.current) {
+      rtc.addLocalStream(localStreamRef.current);
+    }
+
+    await rtc.startListening();
+
+    if (isInitiator) {
+      await rtc.createOffer();
+    }
   }, []);
 
-  const nextPerson = useCallback(() => {
-    clearTimeout(searchTimerRef.current);
+  const startSearch = useCallback(async () => {
+    setStatus("searching");
     setMessages([]);
-    startSearch();
+
+    // Clean up previous connection
+    webrtcRef.current?.destroy();
+    webrtcRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+
+    matchmakerRef.current?.destroy();
+    const matchmaker = new Matchmaker();
+    matchmakerRef.current = matchmaker;
+
+    await matchmaker.findMatch((roomId, isInitiator) => {
+      connectToPartner(roomId, isInitiator);
+    });
+  }, [connectToPartner]);
+
+  const nextPerson = useCallback(async () => {
+    webrtcRef.current?.destroy();
+    webrtcRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    setMessages([]);
+    await startSearch();
   }, [startSearch]);
 
   const stopChat = useCallback(() => {
-    clearTimeout(searchTimerRef.current);
+    webrtcRef.current?.destroy();
+    webrtcRef.current = null;
+    matchmakerRef.current?.destroy();
+    matchmakerRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
     setStatus("disconnected");
   }, []);
 
@@ -207,7 +257,15 @@ const VideoChatRoom = () => {
           </div>
         </div>
 
-        {/* Connected / searching overlays */}
+        {/* Remote video (stranger) */}
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          className={`absolute inset-0 w-full h-full object-cover z-10 ${status === "connected" ? "" : "hidden"}`}
+        />
+
+        {/* Searching overlay */}
         {status === "searching" && (
           <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.7)" }}>
             <div className="text-center space-y-3">
@@ -216,14 +274,6 @@ const VideoChatRoom = () => {
                 style={{ borderColor: "rgba(124,58,237,0.2)", borderTopColor: "#7c3aed" }}
               />
               <p style={{ color: "rgba(255,255,255,0.5)" }} className="text-sm">Looking for partner...</p>
-            </div>
-          </div>
-        )}
-
-        {status === "connected" && (
-          <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "#0d0d14" }}>
-            <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <Users className="w-10 h-10" style={{ color: "rgba(255,255,255,0.2)" }} />
             </div>
           </div>
         )}
