@@ -293,16 +293,34 @@ const VideoChatRoom = () => {
         </div>
 
         {/* Top right: Search + Log In */}
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-4">
-          <button style={{ color: "rgba(255,255,255,0.4)" }} className="hover:opacity-80 transition-opacity">
-            <Search className="w-5 h-5" />
-          </button>
-          <button
-            className="text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
-            style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
-          >
-            Log In
-          </button>
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+          {isLoggedIn ? (
+            <>
+              <button className="flex items-center gap-1.5 transition-opacity hover:opacity-80" style={{ color: "rgba(255,255,255,0.7)" }}>
+                <History className="w-5 h-5" />
+                <span className="text-sm font-medium">History</span>
+              </button>
+              <button
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}
+              >
+                <User className="w-5 h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button style={{ color: "rgba(255,255,255,0.4)" }} className="hover:opacity-80 transition-opacity">
+                <Search className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsLoggedIn(true)}
+                className="text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
+                style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
+              >
+                Log In
+              </button>
+            </>
+          )}
         </div>
 
         {/* Camera feed */}
