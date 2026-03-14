@@ -109,26 +109,68 @@ const VideoChatRoom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const startSearch = useCallback(() => {
-    setStatus("searching");
-    setMessages([]);
-    searchTimerRef.current = setTimeout(() => {
+  const connectToPartner = useCallback(async (roomId: string, isInitiator: boolean) => {
+    const matchmaker = matchmakerRef.current;
+    if (!matchmaker) return;
+
+    const rtc = new WebRTCConnection(roomId, matchmaker.getSessionId());
+    webrtcRef.current = rtc;
+
+    rtc.onRemoteStream = (stream) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = stream;
+      }
       setStatus("connected");
-      setTimeout(() => {
-        const greeting = STRANGER_MESSAGES[Math.floor(Math.random() * STRANGER_MESSAGES.length)];
-        setMessages((prev) => [...prev, { id: crypto.randomUUID(), text: greeting, sender: "stranger" }]);
-      }, 1000 + Math.random() * 2000);
-    }, 1500 + Math.random() * 3000);
+    };
+
+    rtc.onDisconnected = () => {
+      setStatus("disconnected");
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    };
+
+    if (localStreamRef.current) {
+      rtc.addLocalStream(localStreamRef.current);
+    }
+
+    await rtc.startListening();
+
+    if (isInitiator) {
+      await rtc.createOffer();
+    }
   }, []);
 
-  const nextPerson = useCallback(() => {
-    clearTimeout(searchTimerRef.current);
+  const startSearch = useCallback(async () => {
+    setStatus("searching");
     setMessages([]);
-    startSearch();
+
+    // Clean up previous connection
+    webrtcRef.current?.destroy();
+    webrtcRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+
+    matchmakerRef.current?.destroy();
+    const matchmaker = new Matchmaker();
+    matchmakerRef.current = matchmaker;
+
+    await matchmaker.findMatch((roomId, isInitiator) => {
+      connectToPartner(roomId, isInitiator);
+    });
+  }, [connectToPartner]);
+
+  const nextPerson = useCallback(async () => {
+    webrtcRef.current?.destroy();
+    webrtcRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    setMessages([]);
+    await startSearch();
   }, [startSearch]);
 
   const stopChat = useCallback(() => {
-    clearTimeout(searchTimerRef.current);
+    webrtcRef.current?.destroy();
+    webrtcRef.current = null;
+    matchmakerRef.current?.destroy();
+    matchmakerRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
     setStatus("disconnected");
   }, []);
 
