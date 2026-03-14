@@ -46,6 +46,8 @@ const VideoChatRoom = () => {
   const [showShop, setShowShop] = useState(false);
   const [showRegion, setShowRegion] = useState(false);
   const [tempRegion, setTempRegion] = useState("Worldwide");
+  const [showGenderModal, setShowGenderModal] = useState(false);
+  const [tempGender, setTempGender] = useState("Both");
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -379,10 +381,9 @@ const VideoChatRoom = () => {
 
             <div style={{ width: "1px", height: "24px", background: "rgba(255,255,255,0.1)" }} />
 
-            {/* Gender */}
-            <div className="relative">
+            <div>
               <button
-                onClick={() => { setShowGenderDropdown(!showGenderDropdown); setShowCountryDropdown(false); }}
+                onClick={() => { setTempGender(selectedGender === "Gender" ? "Both" : selectedGender); setShowGenderModal(true); }}
                 className="flex items-center gap-2 px-5 py-3.5 text-sm transition-colors"
                 style={{ color: "rgba(255,255,255,0.7)" }}
               >
@@ -390,28 +391,6 @@ const VideoChatRoom = () => {
                 <span>{selectedGender}</span>
                 <ChevronUp className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
               </button>
-              {showGenderDropdown && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setShowGenderDropdown(false)} />
-                  <div
-                    className="absolute bottom-full mb-1 right-0 rounded-xl shadow-2xl z-40 w-40"
-                    style={{ background: "#1e1e2e", border: "1px solid rgba(255,255,255,0.1)" }}
-                  >
-                    {["Gender", "Male", "Female", "Couple"].map((g) => (
-                      <button
-                        key={g}
-                        onClick={() => { setSelectedGender(g); setShowGenderDropdown(false); }}
-                        className="w-full text-left text-sm px-4 py-2.5 transition-colors"
-                        style={{ color: g === selectedGender ? "#a78bfa" : "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -552,6 +531,70 @@ const VideoChatRoom = () => {
             </button>
             <button
               onClick={() => setShowRegion(false)}
+              className="w-full py-2 text-sm font-medium transition-colors"
+              style={{ color: "rgba(255,255,255,0.5)" }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Gender Preferences Modal */}
+      {showGenderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowGenderModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+          <div
+            className="relative w-full max-w-md mx-4 rounded-2xl p-6"
+            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold text-white mb-1">Gender Preferences</h2>
+            <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <span className="font-bold text-white">15 Coins</span> are used whenever you match with the gender filter on.
+            </p>
+
+            {/* Gender Cards */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {[
+                { id: "Male", emoji: "👨", color: "#38bdf8", borderColor: "#38bdf8", cost: true },
+                { id: "Both", emoji: "👫", color: "#7c3aed", borderColor: "#ec4899", cost: false },
+                { id: "Female", emoji: "👩", color: "#ec4899", borderColor: "#ec4899", cost: true },
+              ].map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => setTempGender(g.id)}
+                  className="relative flex flex-col items-center gap-2 rounded-xl py-5 px-3 transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: tempGender === g.id ? `2px solid ${g.borderColor}` : "2px solid transparent",
+                  }}
+                >
+                  {/* Coin badge */}
+                  {g.cost && (
+                    <span
+                      className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: "#eab308", color: "#000" }}
+                    >
+                      15 🪙
+                    </span>
+                  )}
+                  <span className="text-4xl">{g.emoji}</span>
+                  <span className="text-sm font-medium" style={{ color: g.color }}>{g.id}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Save / Cancel */}
+            <button
+              onClick={() => { setSelectedGender(tempGender); setShowGenderModal(false); }}
+              className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90 mb-3"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowGenderModal(false)}
               className="w-full py-2 text-sm font-medium transition-colors"
               style={{ color: "rgba(255,255,255,0.5)" }}
             >
