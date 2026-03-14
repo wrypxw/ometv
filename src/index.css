@@ -4,49 +4,44 @@
 
 @layer base {
   :root {
-    --background: 220 20% 10%;
+    --background: 216 28% 7%;
     --foreground: 210 20% 95%;
 
-    --card: 220 18% 14%;
+    --card: 216 25% 11%;
     --card-foreground: 210 20% 95%;
 
-    --popover: 220 18% 14%;
+    --popover: 216 25% 11%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 168 80% 45%;
-    --primary-foreground: 220 20% 10%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 20%;
+    --secondary: 216 20% 16%;
     --secondary-foreground: 210 20% 90%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 216 18% 14%;
+    --muted-foreground: 215 15% 50%;
 
-    --accent: 168 70% 40%;
-    --accent-foreground: 220 20% 10%;
+    --accent: 207 90% 54%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 22%;
-    --input: 220 15% 22%;
-    --ring: 168 80% 45%;
+    --border: 216 20% 18%;
+    --input: 216 20% 18%;
+    --ring: 207 90% 54%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 220 18% 12%;
+    --sidebar-background: 216 25% 9%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 168 80% 45%;
-    --sidebar-primary-foreground: 220 20% 10%;
-    --sidebar-accent: 220 15% 18%;
+    --sidebar-primary: 207 90% 54%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 216 18% 14%;
     --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 220 15% 22%;
-    --sidebar-ring: 168 80% 45%;
-
-    --gradient-start: 168 80% 45%;
-    --gradient-end: 200 80% 50%;
-    --danger: 0 72% 55%;
-    --warning: 40 90% 55%;
+    --sidebar-border: 216 20% 18%;
+    --sidebar-ring: 207 90% 54%;
   }
 }
 
@@ -57,27 +52,8 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-}
-
-@layer utilities {
-  .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
-  }
-
-  .text-gradient {
-    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .glow-primary {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1);
-  }
-
-  .video-container {
-    background: linear-gradient(180deg, hsl(var(--card)), hsl(220 20% 8%));
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    overflow: hidden;
   }
 }

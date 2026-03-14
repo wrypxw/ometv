@@ -6,7 +6,7 @@ const Index = () => {
   const [inChat, setInChat] = useState(false);
 
   if (inChat) {
-    return <VideoChatRoom onExit={() => setInChat(false)} />;
+    return <VideoChatRoom />;
   }
 
   return <LandingPage onStart={() => setInChat(true)} />;
