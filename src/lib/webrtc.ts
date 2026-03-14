@@ -12,6 +12,7 @@ export class Matchmaker {
   private sessionId: string;
   private subscription: ReturnType<typeof supabase.channel> | null = null;
   private onMatch: MatchCallback | null = null;
+  private pollInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     this.sessionId = crypto.randomUUID();
@@ -27,7 +28,61 @@ export class Matchmaker {
     // Clean up old entries first
     await supabase.rpc("cleanup_old_queue_entries");
 
-    // Check if there's someone waiting
+    // Insert ourselves as waiting first
+    await supabase.from("match_queue").insert({
+      session_id: this.sessionId,
+      status: "waiting",
+    });
+
+    // Now try to find someone else waiting
+    const matched = await this.tryMatch();
+    if (matched) return;
+
+    // Listen for changes via realtime
+    this.subscription = supabase
+      .channel(`match_queue_${this.sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "match_queue",
+          filter: `session_id=eq.${this.sessionId}`,
+        },
+        (payload) => {
+          const updated = payload.new as any;
+          if (updated.status === "matched" && updated.matched_with) {
+            // The other person matched us - they are the initiator
+            // Use THEIR session_id as room prefix for consistency
+            const roomId = updated.matched_with + "_" + this.sessionId;
+            this.stopPolling();
+            this.onMatch?.(roomId, false);
+          }
+        }
+      )
+      .subscribe();
+
+    // Also poll as fallback in case realtime misses events
+    this.pollInterval = setInterval(async () => {
+      const { data } = await supabase
+        .from("match_queue")
+        .select("*")
+        .eq("session_id", this.sessionId)
+        .single();
+
+      if (data && data.status === "matched" && data.matched_with) {
+        const roomId = data.matched_with + "_" + this.sessionId;
+        this.stopPolling();
+        this.onMatch?.(roomId, false);
+      } else if (data && data.status === "waiting") {
+        // Try to match again
+        await this.tryMatch();
+      }
+    }, 2000);
+  }
+
+  private async tryMatch(): Promise<boolean> {
+    // Look for someone else waiting
     const { data: waiting } = await supabase
       .from("match_queue")
       .select("*")
@@ -38,54 +93,41 @@ export class Matchmaker {
       .single();
 
     if (waiting) {
-      // Match found! Update both entries
-      const roomId = crypto.randomUUID();
+      // Use OUR session_id as room prefix since we are the initiator
+      const roomId = this.sessionId + "_" + waiting.session_id;
 
-      await supabase
+      // Update the other person's entry to matched
+      const { error } = await supabase
         .from("match_queue")
         .update({ status: "matched", matched_with: this.sessionId })
-        .eq("id", waiting.id);
+        .eq("id", waiting.id)
+        .eq("status", "waiting"); // Only if still waiting (avoid race)
 
-      // Insert our entry as matched
-      await supabase.from("match_queue").insert({
-        session_id: this.sessionId,
-        status: "matched",
-        matched_with: waiting.session_id,
-      });
+      if (error) return false;
 
-      // We are the initiator (we create the offer)
-      onMatch(roomId, true);
-    } else {
-      // No one waiting, add ourselves to queue
-      await supabase.from("match_queue").insert({
-        session_id: this.sessionId,
-        status: "waiting",
-      });
+      // Update our entry too
+      await supabase
+        .from("match_queue")
+        .update({ status: "matched", matched_with: waiting.session_id })
+        .eq("session_id", this.sessionId);
 
-      // Listen for someone to match with us
-      this.subscription = supabase
-        .channel("match_queue_changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "match_queue",
-            filter: `session_id=eq.${this.sessionId}`,
-          },
-          (payload) => {
-            const updated = payload.new as any;
-            if (updated.status === "matched" && updated.matched_with) {
-              const roomId = updated.matched_with + "_" + this.sessionId;
-              this.onMatch?.(roomId, false);
-            }
-          }
-        )
-        .subscribe();
+      this.stopPolling();
+      this.onMatch?.(roomId, true);
+      return true;
+    }
+
+    return false;
+  }
+
+  private stopPolling() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
     }
   }
 
   async cancel() {
+    this.stopPolling();
     if (this.subscription) {
       supabase.removeChannel(this.subscription);
       this.subscription = null;
@@ -158,19 +200,19 @@ export class WebRTCConnection {
           const signal = payload.new as any;
           if (signal.sender_id === this.sessionId) return;
 
-          if (signal.type === "offer") {
-            await this.pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
-            const answer = await this.pc.createAnswer();
-            await this.pc.setLocalDescription(answer);
-            await this.sendSignal("answer", answer);
-          } else if (signal.type === "answer") {
-            await this.pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
-          } else if (signal.type === "ice-candidate") {
-            try {
+          try {
+            if (signal.type === "offer") {
+              await this.pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+              const answer = await this.pc.createAnswer();
+              await this.pc.setLocalDescription(answer);
+              await this.sendSignal("answer", answer);
+            } else if (signal.type === "answer") {
+              await this.pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+            } else if (signal.type === "ice-candidate") {
               await this.pc.addIceCandidate(new RTCIceCandidate(signal.payload));
-            } catch (e) {
-              console.log("Error adding ICE candidate:", e);
             }
+          } catch (e) {
+            console.log("Signaling error:", e);
           }
         }
       )
@@ -197,7 +239,6 @@ export class WebRTCConnection {
       supabase.removeChannel(this.signalingChannel);
     }
     this.pc.close();
-    // Clean up signaling data
     supabase
       .from("signaling")
       .delete()
