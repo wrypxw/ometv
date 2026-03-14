@@ -53,6 +53,7 @@ const VideoChatRoom = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [cameraAllowed, setCameraAllowed] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
