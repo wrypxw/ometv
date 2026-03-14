@@ -116,6 +116,7 @@ const VideoChatRoom = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(0);
+  const [showBrazilStates, setShowBrazilStates] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
