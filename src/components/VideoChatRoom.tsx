@@ -330,16 +330,36 @@ const VideoChatRoom = () => {
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 w-full h-full object-cover ${!isCamOn ? "hidden" : ""}`}
+            className={`absolute inset-0 w-full h-full object-cover ${(!isCamOn || !cameraAllowed) ? "hidden" : ""}`}
           />
-          {!isCamOn && (
+
+          {/* Camera permission denied */}
+          {!cameraAllowed && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4 px-6">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
+                  style={{ background: "#ef4444" }}
+                >
+                  <VideoOff className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Camera permission denied</h3>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  To enable video, please grant permission to access your camera in your browser settings.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Camera off by user */}
+          {cameraAllowed && !isCamOn && (
             <div className="absolute inset-0 flex items-center justify-center">
               <VideoOff className="w-12 h-12" style={{ color: "rgba(255,255,255,0.15)" }} />
             </div>
           )}
 
           {/* Loading spinner center */}
-          {(status === "idle" || status === "disconnected") && (
+          {cameraAllowed && (status === "idle" || status === "disconnected") && isCamOn && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center"
