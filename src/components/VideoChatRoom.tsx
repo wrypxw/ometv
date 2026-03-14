@@ -372,37 +372,6 @@ const VideoChatRoom = () => {
             </div>
           )}
 
-          {/* Mic/Cam controls */}
-          <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5">
-            <button
-              onClick={() => {
-                setIsMicOn((v) => !v);
-                if (localVideoRef.current?.srcObject)
-                  (localVideoRef.current.srcObject as MediaStream).getAudioTracks().forEach((t) => (t.enabled = isMicOn));
-              }}
-              className="p-2 rounded-lg transition-colors"
-              style={{
-                background: !isMicOn ? "rgba(239,68,68,0.7)" : "rgba(255,255,255,0.08)",
-                color: "rgba(255,255,255,0.7)",
-              }}
-            >
-              {isMicOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-            </button>
-            <button
-              onClick={() => {
-                setIsCamOn((v) => !v);
-                if (localVideoRef.current?.srcObject)
-                  (localVideoRef.current.srcObject as MediaStream).getVideoTracks().forEach((t) => (t.enabled = !isCamOn));
-              }}
-              className="p-2 rounded-lg transition-colors"
-              style={{
-                background: !isCamOn ? "rgba(239,68,68,0.7)" : "rgba(255,255,255,0.08)",
-                color: "rgba(255,255,255,0.7)",
-              }}
-            >
-              {isCamOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
-            </button>
-          </div>
         </div>
 
         {/* Bottom right: Filters - inside right panel */}
