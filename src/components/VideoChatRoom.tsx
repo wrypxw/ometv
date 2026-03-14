@@ -365,10 +365,9 @@ const VideoChatRoom = () => {
             className="flex items-center rounded-2xl overflow-hidden"
             style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
           >
-            {/* Country */}
-            <div className="relative">
+            <div>
               <button
-                onClick={() => { setShowCountryDropdown(!showCountryDropdown); setShowGenderDropdown(false); }}
+                onClick={() => { setTempRegion(selectedCountry); setShowRegion(true); }}
                 className="flex items-center gap-2 px-5 py-3.5 text-sm transition-colors"
                 style={{ color: "rgba(255,255,255,0.7)" }}
               >
@@ -376,28 +375,6 @@ const VideoChatRoom = () => {
                 <span>{selectedCountry}</span>
                 <ChevronUp className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
               </button>
-              {showCountryDropdown && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setShowCountryDropdown(false)} />
-                  <div
-                    className="absolute bottom-full mb-1 left-0 rounded-xl shadow-2xl z-40 max-h-60 overflow-y-auto w-52"
-                    style={{ background: "#1e1e2e", border: "1px solid rgba(255,255,255,0.1)" }}
-                  >
-                    {COUNTRIES.map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => { setSelectedCountry(c); setShowCountryDropdown(false); }}
-                        className="w-full text-left text-sm px-4 py-2.5 transition-colors"
-                        style={{ color: c === selectedCountry ? "#a78bfa" : "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
 
             <div style={{ width: "1px", height: "24px", background: "rgba(255,255,255,0.1)" }} />
