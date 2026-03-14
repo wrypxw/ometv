@@ -12,9 +12,16 @@ import {
   Maximize2,
   Search,
   ChevronUp,
+  ChevronRight,
   Facebook,
   History,
   User,
+  MessageSquare,
+  Share2,
+  FileText,
+  MoreHorizontal,
+  LogOut,
+  ExternalLink,
 } from "lucide-react";
 
 type ChatStatus = "idle" | "searching" | "connected" | "disconnected";
