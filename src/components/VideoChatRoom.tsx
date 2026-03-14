@@ -555,28 +555,33 @@ const VideoChatRoom = () => {
 
       {/* Shop Modal */}
       {showShop && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowShop(false)}>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowShop(false)}>
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
           <div
-            className="relative w-full max-w-xl mx-4 rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+            className="relative w-full md:max-w-xl md:mx-4 rounded-t-2xl md:rounded-2xl p-4 md:p-6 max-h-[85dvh] overflow-y-auto"
             style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Drag handle on mobile */}
+            <div className="flex md:hidden justify-center mb-3">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
+            </div>
+
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white">Shop</h2>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-lg md:text-xl font-bold text-white">Shop</h2>
               <div className="flex items-center gap-1.5 text-sm" style={{ color: "#eab308" }}>
                 <Heart className="w-4 h-4 fill-current" />
                 <span className="text-white font-medium">0</span>
               </div>
             </div>
 
-            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <p className="text-xs md:text-sm mb-4 md:mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
               Higher tiers give you more bonus coins!
             </p>
 
-            {/* Coin Packages Grid */}
-            <div className="grid grid-cols-3 gap-3 mb-5">
+            {/* Coin Packages Grid - 2 cols mobile, 3 cols desktop */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-4 md:mb-5">
               {[
                 { coins: "500", bonus: "", price: "$3.99" },
                 { coins: "1.000", bonus: "+120", price: "$7.49" },
@@ -587,22 +592,21 @@ const VideoChatRoom = () => {
               ].map((pkg, i) => (
                 <button
                   key={i}
-                  className="rounded-xl p-3 flex flex-col items-center gap-2 transition-opacity hover:opacity-90"
+                  className="rounded-xl p-2.5 md:p-3 flex flex-col items-center gap-1.5 md:gap-2 transition-opacity hover:opacity-90"
                   style={{
                     background: i < 3
                       ? "linear-gradient(180deg, #7c3aed, #6d28d9)"
                       : "linear-gradient(180deg, #8b5cf6, #7c3aed)",
                   }}
                 >
-                  {/* Coin icon */}
-                  <div className="text-3xl py-2">
+                  <div className="text-2xl md:text-3xl py-1 md:py-2">
                     {i === 0 ? "🪙" : i < 3 ? "💰" : i < 5 ? "💎" : "🎁"}
                   </div>
-                  <div className="text-sm font-bold text-white">
+                  <div className="text-xs md:text-sm font-bold text-white leading-tight text-center">
                     {pkg.coins} {pkg.bonus && <span style={{ color: "#4ade80" }}>{pkg.bonus}</span>} Coins
                   </div>
                   <div
-                    className="w-full py-1.5 rounded-lg text-sm font-semibold text-center"
+                    className="w-full py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-semibold text-center"
                     style={{ background: "rgba(0,0,0,0.25)", color: "#4ade80" }}
                   >
                     {pkg.price}
@@ -612,8 +616,8 @@ const VideoChatRoom = () => {
             </div>
 
             {/* Disclaimers */}
-            <div className="space-y-1 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-              <p>*Filters (e.g. gender, location, etc.) are based on the user's input. the results may not be accurate.</p>
+            <div className="space-y-1 text-[10px] md:text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <p>*Filters (e.g. gender, location, etc.) are based on the user's input. The results may not be accurate.</p>
               <p>* If you cancel searching before you get a match, your coins will NOT be refunded.</p>
               <p>* Prices are in USD and may vary depending on your location.</p>
               <p>* VAT is calculated at checkout.</p>
