@@ -309,12 +309,89 @@ const VideoChatRoom = () => {
                 <History className="w-5 h-5" />
                 <span className="text-sm font-medium">History</span>
               </button>
-              <button
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}
-              >
-                <User className="w-5 h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}
+                >
+                  <User className="w-5 h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+                </button>
+
+                {/* Profile Dropdown */}
+                {showProfileMenu && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setShowProfileMenu(false)} />
+                    <div
+                      className="absolute top-full right-0 mt-2 w-52 rounded-xl shadow-2xl z-40 py-2"
+                      style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+                    >
+                      {/* You */}
+                      <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.1)" }}>
+                          <User className="w-4 h-4" style={{ color: "rgba(255,255,255,0.6)" }} />
+                        </div>
+                        <span className="text-sm font-medium text-white">You</span>
+                        <div className="flex items-center gap-1 ml-auto">
+                          <span>🟢</span>
+                          <span>😜</span>
+                        </div>
+                      </div>
+
+                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left"
+                        style={{ color: "rgba(255,255,255,0.7)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span>Text Chat</span>
+                        <ExternalLink className="w-3.5 h-3.5 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} />
+                      </button>
+
+                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left"
+                        style={{ color: "rgba(255,255,255,0.7)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <Share2 className="w-4 h-4" />
+                        <span>Socials</span>
+                        <ChevronRight className="w-4 h-4 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} />
+                      </button>
+
+                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left"
+                        style={{ color: "rgba(255,255,255,0.7)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Rules</span>
+                      </button>
+
+                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left"
+                        style={{ color: "rgba(255,255,255,0.7)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                        <span>More</span>
+                      </button>
+
+                      <div className="my-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+
+                      <button
+                        onClick={() => { setIsLoggedIn(false); setShowProfileMenu(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left"
+                        style={{ color: "rgba(255,255,255,0.7)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           ) : (
             <>
