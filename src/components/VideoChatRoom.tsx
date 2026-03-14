@@ -96,9 +96,11 @@ const VideoChatRoom = () => {
   useEffect(() => {
     startLocalCamera();
     return () => {
-      if (localVideoRef.current?.srcObject) {
-        (localVideoRef.current.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((t) => t.stop());
       }
+      matchmakerRef.current?.destroy();
+      webrtcRef.current?.destroy();
     };
   }, [startLocalCamera]);
 
