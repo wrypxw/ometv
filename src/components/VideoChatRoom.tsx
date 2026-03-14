@@ -44,6 +44,8 @@ const VideoChatRoom = () => {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showShop, setShowShop] = useState(false);
+  const [showRegion, setShowRegion] = useState(false);
+  const [tempRegion, setTempRegion] = useState("Worldwide");
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -363,10 +365,9 @@ const VideoChatRoom = () => {
             className="flex items-center rounded-2xl overflow-hidden"
             style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
           >
-            {/* Country */}
-            <div className="relative">
+            <div>
               <button
-                onClick={() => { setShowCountryDropdown(!showCountryDropdown); setShowGenderDropdown(false); }}
+                onClick={() => { setTempRegion(selectedCountry); setShowRegion(true); }}
                 className="flex items-center gap-2 px-5 py-3.5 text-sm transition-colors"
                 style={{ color: "rgba(255,255,255,0.7)" }}
               >
@@ -374,28 +375,6 @@ const VideoChatRoom = () => {
                 <span>{selectedCountry}</span>
                 <ChevronUp className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
               </button>
-              {showCountryDropdown && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setShowCountryDropdown(false)} />
-                  <div
-                    className="absolute bottom-full mb-1 left-0 rounded-xl shadow-2xl z-40 max-h-60 overflow-y-auto w-52"
-                    style={{ background: "#1e1e2e", border: "1px solid rgba(255,255,255,0.1)" }}
-                  >
-                    {COUNTRIES.map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => { setSelectedCountry(c); setShowCountryDropdown(false); }}
-                        className="w-full text-left text-sm px-4 py-2.5 transition-colors"
-                        style={{ color: c === selectedCountry ? "#a78bfa" : "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
 
             <div style={{ width: "1px", height: "24px", background: "rgba(255,255,255,0.1)" }} />
@@ -504,6 +483,80 @@ const VideoChatRoom = () => {
               <p>* VAT is calculated at checkout.</p>
               <p>* Make sure to read our <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Refund Policy</span>.</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Region Preferences Modal */}
+      {showRegion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowRegion(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+          <div
+            className="relative w-full max-w-md mx-4 rounded-2xl p-6"
+            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold text-white mb-1">Region Preferences</h2>
+            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Choose a region to match with. Some regions require coins for each match.
+            </p>
+
+            {/* Region List */}
+            <div className="space-y-1 max-h-64 overflow-y-auto mb-5">
+              {[
+                { name: "Worldwide", emoji: "🌍", desc: "", cost: "FREE" },
+                { name: "Americas", emoji: "🗽", desc: "North & South America", cost: "10" },
+                { name: "Europe", emoji: "🏰", desc: "UK, France, Germany & more", cost: "10" },
+                { name: "Middle East & North Africa", emoji: "🕌", desc: "UAE, Saudi Arabia, Egypt & more", cost: "10" },
+                { name: "South Asia", emoji: "🪷", desc: "India, Pakistan, Bangladesh & more", cost: "10" },
+                { name: "East Asia", emoji: "🏯", desc: "Japan, Korea, China & more", cost: "10" },
+                { name: "Southeast Asia", emoji: "🌴", desc: "Philippines, Thailand, Indonesia & more", cost: "10" },
+                { name: "Africa", emoji: "🌍", desc: "Nigeria, South Africa, Kenya & more", cost: "10" },
+              ].map((region) => (
+                <button
+                  key={region.name}
+                  onClick={() => setTempRegion(region.name)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors"
+                  style={{
+                    border: tempRegion === region.name ? "1.5px solid #7c3aed" : "1.5px solid transparent",
+                    background: tempRegion === region.name ? "rgba(124,58,237,0.08)" : "transparent",
+                  }}
+                >
+                  <span className="text-xl">{region.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white">{region.name}</p>
+                    {region.desc && (
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{region.desc}</p>
+                    )}
+                  </div>
+                  {region.cost === "FREE" ? (
+                    <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: "#eab308", color: "#000" }}>
+                      FREE
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      {region.cost} 🪙
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Save / Cancel */}
+            <button
+              onClick={() => { setSelectedCountry(tempRegion); setShowRegion(false); }}
+              className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90 mb-3"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowRegion(false)}
+              className="w-full py-2 text-sm font-medium transition-colors"
+              style={{ color: "rgba(255,255,255,0.5)" }}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
