@@ -14,13 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      match_queue: {
+        Row: {
+          created_at: string
+          id: string
+          matched_with: string | null
+          session_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          matched_with?: string | null
+          session_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          matched_with?: string | null
+          session_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      signaling: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          room_id: string
+          sender_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload: Json
+          room_id: string
+          sender_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          room_id?: string
+          sender_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_queue_entries: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
