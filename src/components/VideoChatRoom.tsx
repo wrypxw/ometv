@@ -381,10 +381,9 @@ const VideoChatRoom = () => {
 
             <div style={{ width: "1px", height: "24px", background: "rgba(255,255,255,0.1)" }} />
 
-            {/* Gender */}
-            <div className="relative">
+            <div>
               <button
-                onClick={() => { setShowGenderDropdown(!showGenderDropdown); setShowCountryDropdown(false); }}
+                onClick={() => { setTempGender(selectedGender === "Gender" ? "Both" : selectedGender); setShowGenderModal(true); }}
                 className="flex items-center gap-2 px-5 py-3.5 text-sm transition-colors"
                 style={{ color: "rgba(255,255,255,0.7)" }}
               >
@@ -392,28 +391,6 @@ const VideoChatRoom = () => {
                 <span>{selectedGender}</span>
                 <ChevronUp className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
               </button>
-              {showGenderDropdown && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setShowGenderDropdown(false)} />
-                  <div
-                    className="absolute bottom-full mb-1 right-0 rounded-xl shadow-2xl z-40 w-40"
-                    style={{ background: "#1e1e2e", border: "1px solid rgba(255,255,255,0.1)" }}
-                  >
-                    {["Gender", "Male", "Female", "Couple"].map((g) => (
-                      <button
-                        key={g}
-                        onClick={() => { setSelectedGender(g); setShowGenderDropdown(false); }}
-                        className="w-full text-left text-sm px-4 py-2.5 transition-colors"
-                        style={{ color: g === selectedGender ? "#a78bfa" : "rgba(255,255,255,0.7)" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
