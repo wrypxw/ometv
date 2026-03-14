@@ -127,6 +127,7 @@ const VideoChatRoom = () => {
         {/* Shop button - top left */}
         <div className="absolute top-4 left-4 z-20">
           <button
+            onClick={() => setShowShop(true)}
             className="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors"
             style={{ border: "1px solid rgba(234, 179, 8, 0.5)", color: "#eab308" }}
           >
