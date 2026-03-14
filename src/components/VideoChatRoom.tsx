@@ -208,81 +208,90 @@ const VideoChatRoom = () => {
   }, [inputMsg, status]);
 
   return (
-    <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#0a0a0f" }}>
+    <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
       <div
         className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col overflow-hidden"
         style={{
           background: `
-            linear-gradient(160deg, rgba(100, 30, 180, 0.6) 0%, transparent 40%),
-            linear-gradient(200deg, rgba(130, 40, 220, 0.5) 0%, transparent 35%),
-            linear-gradient(340deg, rgba(120, 20, 200, 0.55) 0%, transparent 45%),
-            linear-gradient(20deg, rgba(90, 20, 180, 0.4) 0%, transparent 30%),
-            #0b0b14
+            radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.35) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.25) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(88, 28, 175, 0.15) 0%, transparent 60%),
+            #0a0a14
           `,
         }}
       >
-        {/* Top bar: Shop (left) + User (right) */}
-        <div className="absolute top-2 left-2 md:top-4 md:left-4 z-20">
+        {/* Top bar glass overlay */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-2.5 md:px-5 md:py-4"
+          style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)" }}
+        >
           <button
             onClick={() => setShowShop(true)}
-            className="flex items-center gap-1 md:gap-1.5 rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium transition-colors"
-            style={{ border: "1px solid rgba(234, 179, 8, 0.5)", color: "#eab308" }}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+            style={{
+              background: "rgba(234, 179, 8, 0.12)",
+              border: "1px solid rgba(234, 179, 8, 0.35)",
+              color: "#fbbf24",
+              backdropFilter: "blur(8px)",
+            }}
           >
-            <Heart className="w-3 h-3 md:w-4 md:h-4 fill-current" />
+            <Heart className="w-3.5 h-3.5 md:w-4 md:h-4 fill-current" />
             Shop
           </button>
-        </div>
 
-        {/* User icon - top right of top panel */}
-        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20">
+          {/* User icon */}
           {isLoggedIn ? (
             <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)" }}
+                className="w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  backdropFilter: "blur(8px)",
+                }}
               >
-                <User className="w-4 h-4 md:w-5 md:h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+                <User className="w-4 h-4 md:w-5 md:h-5" style={{ color: "rgba(255,255,255,0.7)" }} />
               </button>
 
               {showProfileMenu && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setShowProfileMenu(false)} />
                   <div
-                    className="absolute top-full right-0 mt-2 w-52 rounded-xl shadow-2xl z-40 py-2"
-                    style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+                    className="absolute top-full right-0 mt-2 w-56 rounded-2xl shadow-2xl z-40 py-2 overflow-hidden"
+                    style={{
+                      background: "rgba(20, 20, 35, 0.95)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      backdropFilter: "blur(20px)",
+                    }}
                   >
-                    <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.1)" }}>
-                        <User className="w-4 h-4" style={{ color: "rgba(255,255,255,0.6)" }} />
+                    <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
+                        <User className="w-4 h-4 text-white" />
                       </div>
-                      <span className="text-sm font-medium text-white">You</span>
-                      <div className="flex items-center gap-1 ml-auto"><span>🟢</span><span>😜</span></div>
+                      <div>
+                        <span className="text-sm font-semibold text-white block">You</span>
+                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Online</span>
+                      </div>
                     </div>
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    ><MessageSquare className="w-4 h-4" /><span>Text Chat</span><ExternalLink className="w-3.5 h-3.5 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} /></button>
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    ><Share2 className="w-4 h-4" /><span>Socials</span><ChevronRight className="w-4 h-4 ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} /></button>
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    ><FileText className="w-4 h-4" /><span>Rules</span></button>
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    ><MoreHorizontal className="w-4 h-4" /><span>More</span></button>
-                    <div className="my-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+                    {[
+                      { icon: <MessageSquare className="w-4 h-4" />, label: "Text Chat", extra: <ExternalLink className="w-3.5 h-3.5 ml-auto opacity-30" /> },
+                      { icon: <Share2 className="w-4 h-4" />, label: "Socials", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" /> },
+                      { icon: <FileText className="w-4 h-4" />, label: "Rules" },
+                      { icon: <MoreHorizontal className="w-4 h-4" />, label: "More" },
+                    ].map((item) => (
+                      <button key={item.label} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-white/5" style={{ color: "rgba(255,255,255,0.65)" }}>
+                        {item.icon}<span>{item.label}</span>{item.extra}
+                      </button>
+                    ))}
+                    <div className="my-1.5 mx-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
                     <button
                       onClick={() => { setIsLoggedIn(false); setShowProfileMenu(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left" style={{ color: "rgba(255,255,255,0.7)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    ><LogOut className="w-4 h-4" /><span>Logout</span></button>
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-red-500/10"
+                      style={{ color: "#f87171" }}
+                    >
+                      <LogOut className="w-4 h-4" /><span>Logout</span>
+                    </button>
                   </div>
                 </>
               )}
@@ -290,8 +299,12 @@ const VideoChatRoom = () => {
           ) : (
             <button
               onClick={() => setShowLoginModal(true)}
-              className="w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)" }}
+              className="w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                backdropFilter: "blur(8px)",
+              }}
             >
               <User className="w-4 h-4 md:w-5 md:h-5" style={{ color: "rgba(255,255,255,0.6)" }} />
             </button>
@@ -300,37 +313,40 @@ const VideoChatRoom = () => {
 
         {/* Center content (idle state) */}
         {status !== "connected" && status !== "searching" && (
-          <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-6">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
             <div
-              className="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-3 md:mb-5"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse-glow"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
             >
-              <svg className="w-7 h-5 md:w-9 md:h-7" viewBox="0 0 36 28" fill="none">
+              <svg className="w-9 h-7 md:w-11 md:h-8" viewBox="0 0 36 28" fill="none">
                 <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
                 <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
                 <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
               </svg>
             </div>
 
-            <h1 className="text-xl md:text-3xl font-bold tracking-tight" style={{ color: "rgba(255,255,255,0.45)" }}>
-              ChatRandom<span style={{ color: "rgba(255,255,255,0.25)" }}>.gg</span>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
+              <span className="text-gradient">ChatRandom</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>.gg</span>
             </h1>
-            <div className="flex items-center gap-2 mt-1 md:mt-2">
-              <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full" style={{ background: "#22c55e" }} />
-              <span className="text-xs md:text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>{onlineUsers.toLocaleString()} users online</span>
+            <div className="flex items-center gap-2 mt-2 md:mt-3">
+              <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse" style={{ background: "#22c55e" }} />
+              <span className="text-xs md:text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                {onlineUsers.toLocaleString()} users online
+              </span>
             </div>
 
-            {/* Share + Discord buttons - visible on both mobile and desktop */}
-            <div className="flex items-center gap-3 mt-4 md:mt-6">
+            {/* Social buttons */}
+            <div className="flex items-center gap-2.5 mt-5 md:mt-8">
               <button
-                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-medium text-white"
+                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
                 style={{ background: "#1877F2" }}
               >
                 <Facebook className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Share
               </button>
               <button
-                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-medium text-white"
+                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
                 style={{ background: "#5865F2" }}
               >
                 <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -347,33 +363,52 @@ const VideoChatRoom = () => {
           ref={remoteVideoRef}
           autoPlay
           playsInline
-          className={`absolute inset-0 w-full h-full object-cover z-10 ${status === "connected" ? "" : "hidden"}`}
+          className={`absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 ${status === "connected" ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         />
+
+        {/* Connected overlay gradient */}
+        {status === "connected" && (
+          <div className="absolute inset-0 z-10 pointer-events-none"
+            style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 15%, transparent 75%, rgba(0,0,0,0.5) 100%)" }}
+          />
+        )}
 
         {/* Searching overlay */}
         {status === "searching" && (
-          <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "rgba(10,10,15,0.7)" }}>
-            <div className="text-center space-y-2 md:space-y-3">
-              <div
-                className="w-10 h-10 md:w-12 md:h-12 rounded-full border-[3px] animate-spin mx-auto"
-                style={{ borderColor: "rgba(124,58,237,0.2)", borderTopColor: "#7c3aed" }}
-              />
-              <p style={{ color: "rgba(255,255,255,0.5)" }} className="text-xs md:text-sm">Looking for partner...</p>
+          <div className="absolute inset-0 flex items-center justify-center z-10"
+            style={{ background: "rgba(8,8,14,0.75)", backdropFilter: "blur(4px)" }}
+          >
+            <div className="text-center space-y-3 md:space-y-4">
+              <div className="relative mx-auto w-14 h-14 md:w-16 md:h-16">
+                <div
+                  className="absolute inset-0 rounded-full border-[3px] animate-spin"
+                  style={{ borderColor: "rgba(124,58,237,0.15)", borderTopColor: "#a855f7" }}
+                />
+                <div className="absolute inset-2 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(124,58,237,0.1)" }}
+                >
+                  <Search className="w-5 h-5 md:w-6 md:h-6" style={{ color: "rgba(168,85,247,0.6)" }} />
+                </div>
+              </div>
+              <div>
+                <p className="text-sm md:text-base font-semibold text-white">Looking for partner...</p>
+                <p className="text-[10px] md:text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>This may take a moment</p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Chat overlay when connected/has messages */}
+        {/* Chat overlay */}
         {(status === "connected" || status === "searching" || messages.length > 0) && (
           <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col">
             {messages.length > 0 && (
-              <div className="max-h-16 md:max-h-28 overflow-y-auto px-3 md:px-4 pb-1 space-y-0.5">
+              <div className="max-h-20 md:max-h-32 overflow-y-auto px-3 md:px-5 pb-1.5 space-y-1">
                 {messages.map((msg) => (
-                  <div key={msg.id} className="flex items-start gap-1.5">
-                    <span className="text-[10px] md:text-xs font-bold" style={{ color: msg.sender === "me" ? "#a78bfa" : "#fbbf24" }}>
-                      {msg.sender === "me" ? "You:" : "Stranger:"}
+                  <div key={msg.id} className="flex items-start gap-2">
+                    <span className="text-[11px] md:text-xs font-bold shrink-0" style={{ color: msg.sender === "me" ? "#c4b5fd" : "#fbbf24" }}>
+                      {msg.sender === "me" ? "You" : "Stranger"}
                     </span>
-                    <span className="text-[10px] md:text-xs" style={{ color: "rgba(255,255,255,0.8)" }}>{msg.text}</span>
+                    <span className="text-[11px] md:text-xs" style={{ color: "rgba(255,255,255,0.85)" }}>{msg.text}</span>
                   </div>
                 ))}
                 <div ref={chatEndRef} />
@@ -383,34 +418,46 @@ const VideoChatRoom = () => {
             {status === "connected" && (
               <form
                 onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
-                className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 pb-1.5 pt-1"
+                className="flex items-center gap-2 px-3 md:px-5 pb-2 pt-1"
               >
                 <input
                   value={inputMsg}
                   onChange={(e) => setInputMsg(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 rounded-lg px-2.5 py-1.5 md:px-3 md:py-2 text-xs md:text-sm focus:outline-none"
-                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
+                  className="flex-1 rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-xs md:text-sm focus:outline-none focus:ring-1 transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "white",
+                    backdropFilter: "blur(8px)",
+                  }}
                 />
-                <button type="submit" disabled={!inputMsg.trim()} className="p-1.5 md:p-2 rounded-lg disabled:opacity-30" style={{ background: "#7c3aed", color: "white" }}>
+                <button type="submit" disabled={!inputMsg.trim()}
+                  className="p-2 md:p-2.5 rounded-xl disabled:opacity-30 transition-all hover:scale-105 active:scale-95"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", color: "white" }}
+                >
                   <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </button>
               </form>
             )}
 
-            {/* Stop/Next buttons - only in top panel on desktop */}
-            <div className="hidden md:block px-6 pb-6 pt-1">
+            {/* Desktop Stop/Next */}
+            <div className="hidden md:block px-5 pb-5 pt-1">
               <div className="flex items-center gap-3 justify-center">
                 <button
                   onClick={stopChat}
-                  className="px-10 py-4 rounded-2xl font-semibold text-white text-sm transition-opacity hover:opacity-90"
-                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm transition-all hover:scale-105 active:scale-95"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    backdropFilter: "blur(8px)",
+                  }}
                 >
                   Stop
                 </button>
                 <button
                   onClick={nextPerson}
-                  className="px-10 py-4 rounded-2xl font-semibold text-white text-sm flex items-center gap-1.5 transition-opacity hover:opacity-90"
+                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
                 >
                   <SkipForward className="w-4 h-4" />
@@ -423,52 +470,65 @@ const VideoChatRoom = () => {
       </div>
 
       {/* BOTTOM/RIGHT PANEL - Your video */}
-      <div className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col" style={{ background: "#1a1a24" }}>
-        {/* Top bar: Expand + History (left), Log In (right on desktop) */}
-        <div className="absolute top-2 left-2 md:top-4 md:left-4 z-20 flex items-center gap-2">
-          <button style={{ color: "rgba(255,255,255,0.3)" }} className="hover:opacity-80 transition-opacity">
-            <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
-          </button>
-          <button className="flex items-center gap-1 transition-opacity hover:opacity-80" style={{ color: "rgba(255,255,255,0.5)" }}>
-            <History className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="text-xs md:text-sm font-medium">History</span>
-          </button>
-        </div>
-
-        {/* Top right: Search + Log In (desktop only) */}
-        <div className="hidden md:flex absolute top-4 right-4 z-20 items-center gap-3">
-          <button style={{ color: "rgba(255,255,255,0.4)" }} className="hover:opacity-80 transition-opacity">
-            <Search className="w-5 h-5" />
-          </button>
-          {!isLoggedIn && (
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
-              style={{ color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
-            >
-              Log In
+      <div className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col" style={{ background: "#111118" }}>
+        {/* Top bar overlay */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-2.5 md:px-5 md:py-4"
+          style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 100%)" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <button className="transition-all hover:scale-110" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
             </button>
-          )}
+            <button className="flex items-center gap-1.5 transition-all hover:opacity-80" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <History className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-xs md:text-sm font-medium">History</span>
+            </button>
+          </div>
+
+          {/* Desktop Log In */}
+          <div className="hidden md:flex items-center gap-3">
+            {!isLoggedIn && (
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="text-sm font-medium px-4 py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
+                style={{
+                  color: "rgba(255,255,255,0.7)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.04)",
+                }}
+              >
+                Log In
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Camera feed */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative overflow-hidden">
           <video
             ref={localVideoRef}
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] ${(!isCamOn || !cameraAllowed) ? "hidden" : ""}`}
+            className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] transition-opacity duration-300 ${(!isCamOn || !cameraAllowed) ? "opacity-0" : "opacity-100"}`}
+          />
+
+          {/* Subtle vignette overlay on camera */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.3) 100%)" }}
           />
 
           {!cameraAllowed && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-2 md:space-y-3 px-4">
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto" style={{ background: "#ef4444" }}>
-                  <VideoOff className="w-6 h-6 md:w-8 md:h-8 text-white" />
+              <div className="text-center space-y-3 px-6">
+                <div
+                  className="w-14 h-14 md:w-18 md:h-18 rounded-full flex items-center justify-center mx-auto"
+                  style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
+                >
+                  <VideoOff className="w-7 h-7 md:w-8 md:h-8 text-white" />
                 </div>
                 <h3 className="text-sm md:text-lg font-bold text-white">Camera permission denied</h3>
-                <p className="text-[11px] md:text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                <p className="text-[11px] md:text-sm leading-relaxed max-w-xs mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
                   To enable video, please grant permission to access your camera in your browser settings.
                 </p>
               </div>
@@ -477,73 +537,76 @@ const VideoChatRoom = () => {
 
           {cameraAllowed && !isCamOn && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <VideoOff className="w-10 h-10 md:w-12 md:h-12" style={{ color: "rgba(255,255,255,0.15)" }} />
-            </div>
-          )}
-
-          {cameraAllowed && (status === "idle" || status === "disconnected") && isCamOn && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.08)" }}>
-                <svg className="animate-spin w-5 h-5 md:w-6 md:h-6" style={{ color: "rgba(255,255,255,0.25)" }} viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </div>
+              <VideoOff className="w-10 h-10 md:w-12 md:h-12" style={{ color: "rgba(255,255,255,0.12)" }} />
             </div>
           )}
         </div>
 
-        {/* Bottom: Filters + Start button */}
-        <div className="px-3 md:px-6 pb-3 md:pb-6 flex flex-col items-center gap-2 md:gap-3">
-          {/* Worldwide + Gender filters */}
+        {/* Bottom controls */}
+        <div className="px-3 md:px-5 pb-3 md:pb-5 pt-2 flex flex-col items-center gap-2.5 md:gap-3">
+          {/* Filters bar */}
           <div
             className="flex items-center rounded-2xl overflow-hidden w-full max-w-md"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            style={{
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.03)",
+              backdropFilter: "blur(8px)",
+            }}
           >
             <button
               onClick={() => { setTempRegion(selectedCountry); setShowRegion(true); }}
-              className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm transition-colors"
-              style={{ color: "rgba(255,255,255,0.7)" }}
+              className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-3 md:px-5 md:py-3.5 text-xs md:text-sm transition-all hover:bg-white/5"
+              style={{ color: "rgba(255,255,255,0.65)" }}
             >
               <Globe className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#22c55e" }} />
-              <span className="truncate">{selectedCountry}</span>
-              <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
+              <span className="truncate font-medium">{selectedCountry}</span>
+              <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5 opacity-40" />
             </button>
 
-            <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.1)" }} />
+            <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.08)" }} />
 
             <button
               onClick={() => { setTempGender(selectedGender === "Gender" ? "Both" : selectedGender); setShowGenderModal(true); }}
-              className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-2.5 md:px-5 md:py-3.5 text-xs md:text-sm transition-colors"
-              style={{ color: "rgba(255,255,255,0.7)" }}
+              className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-3 md:px-5 md:py-3.5 text-xs md:text-sm transition-all hover:bg-white/5"
+              style={{ color: "rgba(255,255,255,0.65)" }}
             >
               <Users className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#a78bfa" }} />
-              <span>{selectedGender}</span>
-              <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5" style={{ color: "rgba(255,255,255,0.35)" }} />
+              <span className="font-medium">{selectedGender}</span>
+              <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5 opacity-40" />
             </button>
           </div>
 
-          {/* Start / Stop+Next buttons - in bottom panel */}
+          {/* Start / Stop+Next */}
           {status === "idle" || status === "disconnected" ? (
             <button
               onClick={!cameraAllowed ? startLocalCamera : startSearch}
-              className="w-full max-w-md py-3 md:py-4 rounded-2xl font-semibold text-white text-sm md:text-base transition-opacity hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+              className="w-full max-w-md py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
+              }}
             >
               👋 Start Video Chat
             </button>
           ) : (
-            <div className="flex md:hidden items-center gap-2 justify-center w-full max-w-md">
+            <div className="flex md:hidden items-center gap-2 w-full max-w-md">
               <button
                 onClick={stopChat}
-                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs transition-opacity hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                }}
               >
                 Stop
               </button>
               <button
                 onClick={nextPerson}
-                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs flex items-center justify-center gap-1 transition-opacity hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  boxShadow: "0 4px 16px -4px rgba(124, 58, 237, 0.4)",
+                }}
               >
                 <SkipForward className="w-3.5 h-3.5" />
                 Next
@@ -629,20 +692,22 @@ const VideoChatRoom = () => {
 
       {/* Region Preferences Modal */}
       {showRegion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowRegion(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowRegion(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} />
           <div
-            className="relative w-full max-w-md mx-4 rounded-2xl p-6"
-            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            className="relative w-full md:max-w-md md:mx-4 rounded-t-3xl md:rounded-2xl p-5 md:p-6 max-h-[80dvh] overflow-y-auto"
+            style={{ background: "rgba(20, 20, 35, 0.98)", border: "1px solid rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold text-white mb-1">Region Preferences</h2>
-            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Choose a region to match with. Some regions require coins for each match.
+            <div className="flex md:hidden justify-center mb-4">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
+            </div>
+            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Region Preferences</h2>
+            <p className="text-xs md:text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Choose a region to match with. Some regions require coins.
             </p>
 
-            {/* Region List */}
-            <div className="space-y-1 max-h-64 overflow-y-auto mb-5">
+            <div className="space-y-1.5 max-h-56 md:max-h-64 overflow-y-auto mb-5">
               {[
                 { name: "Worldwide", emoji: "🌍", desc: "", cost: "FREE" },
                 { name: "Americas", emoji: "🗽", desc: "North & South America", cost: "10" },
@@ -656,45 +721,34 @@ const VideoChatRoom = () => {
                 <button
                   key={region.name}
                   onClick={() => setTempRegion(region.name)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
                   style={{
                     border: tempRegion === region.name ? "1.5px solid #7c3aed" : "1.5px solid transparent",
-                    background: tempRegion === region.name ? "rgba(124,58,237,0.08)" : "transparent",
+                    background: tempRegion === region.name ? "rgba(124,58,237,0.1)" : "rgba(255,255,255,0.02)",
                   }}
                 >
                   <span className="text-xl">{region.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white">{region.name}</p>
-                    {region.desc && (
-                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{region.desc}</p>
-                    )}
+                    {region.desc && <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{region.desc}</p>}
                   </div>
                   {region.cost === "FREE" ? (
-                    <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: "#eab308", color: "#000" }}>
-                      FREE
-                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
                   ) : (
-                    <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
-                      {region.cost} 🪙
-                    </span>
+                    <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{region.cost} 🪙</span>
                   )}
                 </button>
               ))}
             </div>
 
-            {/* Save / Cancel */}
             <button
               onClick={() => { setSelectedCountry(tempRegion); setShowRegion(false); }}
-              className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90 mb-3"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+              className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:scale-[1.02] active:scale-[0.98] mb-2"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 4px 16px -4px rgba(124,58,237,0.4)" }}
             >
               Save
             </button>
-            <button
-              onClick={() => setShowRegion(false)}
-              className="w-full py-2 text-sm font-medium transition-colors"
-              style={{ color: "rgba(255,255,255,0.5)" }}
-            >
+            <button onClick={() => setShowRegion(false)} className="w-full py-2 text-sm font-medium transition-colors" style={{ color: "rgba(255,255,255,0.4)" }}>
               Cancel
             </button>
           </div>
@@ -703,62 +757,54 @@ const VideoChatRoom = () => {
 
       {/* Gender Preferences Modal */}
       {showGenderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowGenderModal(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowGenderModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} />
           <div
-            className="relative w-full max-w-md mx-4 rounded-2xl p-6"
-            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            className="relative w-full md:max-w-md md:mx-4 rounded-t-3xl md:rounded-2xl p-5 md:p-6"
+            style={{ background: "rgba(20, 20, 35, 0.98)", border: "1px solid rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold text-white mb-1">Gender Preferences</h2>
-            <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <div className="flex md:hidden justify-center mb-4">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
+            </div>
+            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Gender Preferences</h2>
+            <p className="text-xs md:text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
               <span className="font-bold text-white">15 Coins</span> are used whenever you match with the gender filter on.
             </p>
 
-            {/* Gender Cards */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="grid grid-cols-3 gap-2.5 md:gap-3 mb-5">
               {[
                 { id: "Male", emoji: "👨", color: "#38bdf8", borderColor: "#38bdf8", cost: true },
-                { id: "Both", emoji: "👫", color: "#7c3aed", borderColor: "#ec4899", cost: false },
+                { id: "Both", emoji: "👫", color: "#a855f7", borderColor: "#a855f7", cost: false },
                 { id: "Female", emoji: "👩", color: "#ec4899", borderColor: "#ec4899", cost: true },
               ].map((g) => (
                 <button
                   key={g.id}
                   onClick={() => setTempGender(g.id)}
-                  className="relative flex flex-col items-center gap-2 rounded-xl py-5 px-3 transition-all"
+                  className="relative flex flex-col items-center gap-2.5 rounded-2xl py-5 px-3 transition-all hover:scale-105 active:scale-95"
                   style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: tempGender === g.id ? `2px solid ${g.borderColor}` : "2px solid transparent",
+                    background: tempGender === g.id ? `${g.borderColor}15` : "rgba(255,255,255,0.03)",
+                    border: tempGender === g.id ? `2px solid ${g.borderColor}` : "2px solid rgba(255,255,255,0.06)",
                   }}
                 >
-                  {/* Coin badge */}
                   {g.cost && (
-                    <span
-                      className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: "#eab308", color: "#000" }}
-                    >
-                      15 🪙
-                    </span>
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                      style={{ background: "#eab308", color: "#000" }}>15 🪙</span>
                   )}
-                  <span className="text-4xl">{g.emoji}</span>
-                  <span className="text-sm font-medium" style={{ color: g.color }}>{g.id}</span>
+                  <span className="text-3xl md:text-4xl">{g.emoji}</span>
+                  <span className="text-xs md:text-sm font-semibold" style={{ color: g.color }}>{g.id}</span>
                 </button>
               ))}
             </div>
 
-            {/* Save / Cancel */}
             <button
               onClick={() => { setSelectedGender(tempGender); setShowGenderModal(false); }}
-              className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90 mb-3"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+              className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:scale-[1.02] active:scale-[0.98] mb-2"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 4px 16px -4px rgba(124,58,237,0.4)" }}
             >
               Save
             </button>
-            <button
-              onClick={() => setShowGenderModal(false)}
-              className="w-full py-2 text-sm font-medium transition-colors"
-              style={{ color: "rgba(255,255,255,0.5)" }}
-            >
+            <button onClick={() => setShowGenderModal(false)} className="w-full py-2 text-sm font-medium transition-colors" style={{ color: "rgba(255,255,255,0.4)" }}>
               Cancel
             </button>
           </div>
@@ -767,35 +813,40 @@ const VideoChatRoom = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowLoginModal(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowLoginModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} />
           <div
-            className="relative w-full max-w-sm mx-4 rounded-2xl p-8 text-center"
-            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-2xl p-6 md:p-8 text-center"
+            style={{ background: "rgba(20, 20, 35, 0.98)", border: "1px solid rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Logo */}
+            <div className="flex md:hidden justify-center mb-4">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
+            </div>
+
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)" }}
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
             >
-              <svg width="30" height="22" viewBox="0 0 36 28" fill="none">
+              <svg width="32" height="24" viewBox="0 0 36 28" fill="none">
                 <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
                 <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
                 <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
               </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-white mb-1">ChatRandom<span style={{ color: "rgba(255,255,255,0.35)" }}>.gg</span></h2>
-            <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Sign in to ChatRandom and start chatting!
+            <h2 className="text-xl font-extrabold">
+              <span className="text-gradient">ChatRandom</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>.gg</span>
+            </h2>
+            <p className="text-xs md:text-sm mt-1.5 mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Sign in to start chatting!
             </p>
 
-            {/* Login Options */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <button
                 onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
-                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-colors"
+                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "white", color: "#1a1a2e" }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24">
@@ -809,7 +860,7 @@ const VideoChatRoom = () => {
 
               <button
                 onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
-                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium text-white transition-colors"
+                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "#1877F2" }}
               >
                 <Facebook className="w-5 h-5" />
@@ -818,7 +869,7 @@ const VideoChatRoom = () => {
 
               <button
                 onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
-                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-colors"
+                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "white", color: "#1a1a2e" }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#000">
@@ -828,7 +879,7 @@ const VideoChatRoom = () => {
               </button>
             </div>
 
-            <p className="text-xs mt-5" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <p className="text-[10px] md:text-xs mt-5 leading-relaxed" style={{ color: "rgba(255,255,255,0.25)" }}>
               I confirm that I am at least 18 years old and I agree to the{" "}
               <span className="underline cursor-pointer">Terms of Service</span> and{" "}
               <span className="underline cursor-pointer">Privacy Policy</span>.
