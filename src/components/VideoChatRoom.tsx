@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Matchmaker, WebRTCConnection } from "@/lib/webrtc";
 import {
   Video,
@@ -62,7 +63,7 @@ const VideoChatRoom = () => {
   const [cameraAllowed, setCameraAllowed] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState(() => 8000 + Math.floor(Math.random() * 5000));
+  const [onlineUsers, setOnlineUsers] = useState(0);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -71,15 +72,27 @@ const VideoChatRoom = () => {
   const webrtcRef = useRef<WebRTCConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  // Simulate fluctuating online users
+  // Real online users via Supabase Realtime Presence
   useEffect(() => {
-    const interval = setInterval(() => {
-      setOnlineUsers((prev) => {
-        const change = Math.floor(Math.random() * 40) - 18;
-        return Math.max(5000, Math.min(18000, prev + change));
+    const channel = supabase.channel('online-users', {
+      config: { presence: { key: crypto.randomUUID() } },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const count = Object.keys(state).length;
+        setOnlineUsers(count);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
       });
-    }, 3000);
-    return () => clearInterval(interval);
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const startLocalCamera = useCallback(async () => {
