@@ -140,6 +140,10 @@ const VideoChatRoom = () => {
   }, []);
 
   const startSearch = useCallback(async () => {
+    if (!cameraAllowed || !localStreamRef.current) {
+      await startLocalCamera();
+      if (!localStreamRef.current) return;
+    }
     setStatus("searching");
     setMessages([]);
 
@@ -155,7 +159,7 @@ const VideoChatRoom = () => {
     await matchmaker.findMatch((roomId, isInitiator) => {
       connectToPartner(roomId, isInitiator);
     });
-  }, [connectToPartner]);
+  }, [connectToPartner, cameraAllowed, startLocalCamera]);
 
   const nextPerson = useCallback(async () => {
     webrtcRef.current?.destroy();
@@ -278,10 +282,11 @@ const VideoChatRoom = () => {
           </div>
         )}
 
-        {/* Chat overlay */}
-        {(status === "connected" || messages.length > 0) && (
-          <div className="absolute bottom-0 left-0 right-0 z-20">
-            <div className="max-h-32 overflow-y-auto px-4 pb-1 space-y-1">
+        {/* Bottom area: Chat + Buttons */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col">
+          {/* Chat messages */}
+          {(status === "connected" || messages.length > 0) && (
+            <div className="max-h-28 overflow-y-auto px-4 pb-1 space-y-1">
               {messages.map((msg) => (
                 <div key={msg.id} className="flex items-start gap-2">
                   <span className="text-xs font-bold" style={{ color: msg.sender === "me" ? "#a78bfa" : "#fbbf24" }}>
@@ -292,16 +297,19 @@ const VideoChatRoom = () => {
               ))}
               <div ref={chatEndRef} />
             </div>
+          )}
+
+          {/* Chat input */}
+          {status === "connected" && (
             <form
               onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
-              className="flex items-center gap-2 px-4 pb-4 pt-1"
+              className="flex items-center gap-2 px-4 pb-2 pt-1"
             >
               <input
                 value={inputMsg}
                 onChange={(e) => setInputMsg(e.target.value)}
                 placeholder="Type a message..."
-                disabled={status !== "connected"}
-                className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none disabled:opacity-30"
+                className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
                 style={{
                   background: "rgba(255,255,255,0.07)",
                   border: "1px solid rgba(255,255,255,0.1)",
@@ -310,47 +318,60 @@ const VideoChatRoom = () => {
               />
               <button
                 type="submit"
-                disabled={status !== "connected" || !inputMsg.trim()}
+                disabled={!inputMsg.trim()}
                 className="p-2 rounded-lg disabled:opacity-30"
                 style={{ background: "#7c3aed", color: "white" }}
               >
                 <Send className="w-4 h-4" />
               </button>
             </form>
-          </div>
-        )}
-
-        {/* Bottom: Start button - inside left panel */}
-        <div className="px-6 pb-6 z-20 relative">
-          {status === "idle" || status === "disconnected" ? (
-            <button
-              onClick={startSearch}
-              className="w-full max-w-md mx-auto block py-4 rounded-2xl font-semibold text-white text-base transition-opacity hover:opacity-90"
-              style={{
-                background: "linear-gradient(135deg, #7c3aed, #9333ea)",
-              }}
-            >
-              👋 Start Video Chat
-            </button>
-          ) : (
-            <div className="flex items-center gap-3 justify-center">
-              <button
-                onClick={stopChat}
-                className="px-10 py-4 rounded-2xl font-semibold text-white text-sm transition-opacity hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
-              >
-                Stop
-              </button>
-              <button
-                onClick={nextPerson}
-                className="px-10 py-4 rounded-2xl font-semibold text-white text-sm flex items-center gap-1.5 transition-opacity hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
-              >
-                <SkipForward className="w-4 h-4" />
-                Next
-              </button>
-            </div>
           )}
+
+          {/* Action buttons */}
+          <div className="px-6 pb-6 pt-2">
+            {status === "idle" || status === "disconnected" ? (
+              !cameraAllowed ? (
+                <div className="text-center space-y-3">
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    📷 Camera access is required to start a video chat
+                  </p>
+                  <button
+                    onClick={startLocalCamera}
+                    className="w-full max-w-md mx-auto block py-4 rounded-2xl font-semibold text-white text-base transition-opacity hover:opacity-90"
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                  >
+                    Enable Camera
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={startSearch}
+                  className="w-full max-w-md mx-auto block py-4 rounded-2xl font-semibold text-white text-base transition-opacity hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                >
+                  👋 Start Video Chat
+                </button>
+              )
+            ) : (
+              <div className="flex items-center gap-3 justify-center">
+                <button
+                  onClick={stopChat}
+                  className="px-10 py-4 rounded-2xl font-semibold text-white text-sm transition-opacity hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                >
+                  Stop
+                </button>
+                <button
+                  onClick={nextPerson}
+                  className="px-10 py-4 rounded-2xl font-semibold text-white text-sm flex items-center gap-1.5 transition-opacity hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                >
+                  <SkipForward className="w-4 h-4" />
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
