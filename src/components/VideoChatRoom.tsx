@@ -86,6 +86,7 @@ const VideoChatRoom = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      localStreamRef.current = stream;
       setCameraAllowed(true);
     } catch {
       console.log("Camera access denied");
