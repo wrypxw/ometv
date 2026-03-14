@@ -64,8 +64,12 @@ const VideoChatRoom = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(() => 8000 + Math.floor(Math.random() * 5000));
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const matchmakerRef = useRef<Matchmaker | null>(null);
+  const webrtcRef = useRef<WebRTCConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   // Simulate fluctuating online users
   useEffect(() => {
