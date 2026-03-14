@@ -114,7 +114,13 @@ const VideoChatRoom = () => {
       <div
         className="flex-1 relative flex flex-col overflow-hidden"
         style={{
-          background: "radial-gradient(ellipse at 30% 50%, rgba(120, 40, 200, 0.35) 0%, rgba(80, 20, 160, 0.15) 40%, #0d0d14 70%)",
+          background: `
+            linear-gradient(160deg, rgba(100, 30, 180, 0.6) 0%, transparent 40%),
+            linear-gradient(200deg, rgba(130, 40, 220, 0.5) 0%, transparent 35%),
+            linear-gradient(340deg, rgba(120, 20, 200, 0.55) 0%, transparent 45%),
+            linear-gradient(20deg, rgba(90, 20, 180, 0.4) 0%, transparent 30%),
+            #0b0b14
+          `,
         }}
       >
         {/* Shop button - top left */}
