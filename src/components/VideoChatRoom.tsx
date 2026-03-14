@@ -458,7 +458,7 @@ const VideoChatRoom = () => {
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 w-full h-full object-cover ${(!isCamOn || !cameraAllowed) ? "hidden" : ""}`}
+            className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] ${(!isCamOn || !cameraAllowed) ? "hidden" : ""}`}
           />
 
           {!cameraAllowed && (
