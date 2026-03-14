@@ -1,6 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Video,
   VideoOff,
@@ -9,10 +7,10 @@ import {
   SkipForward,
   X,
   Send,
-  MessageCircle,
-  Users,
-  Globe,
   Flag,
+  Maximize,
+  Settings,
+  ChevronDown,
 } from "lucide-react";
 
 type ChatStatus = "idle" | "searching" | "connected" | "disconnected";
@@ -24,25 +22,27 @@ interface Message {
   time: string;
 }
 
-interface VideoChatRoomProps {
-  onExit: () => void;
-}
-
-const STRANGER_MESSAGES = [
-  "Hey! Where are you from?",
-  "Hi there! 😊",
-  "Hello! Nice to meet you!",
-  "Hey, how's your day going?",
-  "Hi! What do you do for fun?",
+const COUNTRIES = [
+  "All countries", "Albania", "Argentina", "Brazil", "Canada", "Chile",
+  "Colombia", "France", "Germany", "India", "Indonesia", "Italy", "Japan",
+  "Mexico", "Netherlands", "Philippines", "Poland", "Portugal", "Romania",
+  "Russia", "Spain", "Turkey", "Ukraine", "United Kingdom", "United States",
 ];
 
-const VideoChatRoom = ({ onExit }: VideoChatRoomProps) => {
+const STRANGER_MESSAGES = [
+  "Hey! Where are you from?", "Hi there! 😊", "Hello!", "Hey, how's it going?",
+  "Hi! What's up?", "Hola!", "Oi, tudo bem?",
+];
+
+const VideoChatRoom = () => {
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [isCamOn, setIsCamOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMsg, setInputMsg] = useState("");
-  const [country, setCountry] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("All countries");
+  const [selectedGender, setSelectedGender] = useState<string>("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -52,15 +52,10 @@ const VideoChatRoom = ({ onExit }: VideoChatRoomProps) => {
 
   const startLocalCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
     } catch {
-      console.log("Camera access denied or unavailable");
+      console.log("Camera access denied");
     }
   }, []);
 
@@ -68,8 +63,7 @@ const VideoChatRoom = ({ onExit }: VideoChatRoomProps) => {
     startLocalCamera();
     return () => {
       if (localVideoRef.current?.srcObject) {
-        const stream = localVideoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((t) => t.stop());
+        (localVideoRef.current.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
       }
     };
   }, [startLocalCamera]);
@@ -81,15 +75,11 @@ const VideoChatRoom = ({ onExit }: VideoChatRoomProps) => {
   const startSearch = useCallback(() => {
     setStatus("searching");
     setMessages([]);
-    const countries = ["Brazil", "USA", "Germany", "Japan", "France", "India", "UK", "Canada"];
     const delay = 1500 + Math.random() * 3000;
     searchTimerRef.current = setTimeout(() => {
-      setCountry(countries[Math.floor(Math.random() * countries.length)]);
       setStatus("connected");
-      // Simulate stranger greeting
       setTimeout(() => {
-        const greeting =
-          STRANGER_MESSAGES[Math.floor(Math.random() * STRANGER_MESSAGES.length)];
+        const greeting = STRANGER_MESSAGES[Math.floor(Math.random() * STRANGER_MESSAGES.length)];
         setMessages((prev) => [
           ...prev,
           { id: crypto.randomUUID(), text: greeting, sender: "stranger", time: getTimeStr() },
@@ -117,13 +107,10 @@ const VideoChatRoom = ({ onExit }: VideoChatRoomProps) => {
       { id: crypto.randomUUID(), text, sender: "me", time: getTimeStr() },
     ]);
     setInputMsg("");
-
-    // Simulate stranger reply
     if (Math.random() > 0.3) {
       const replies = [
-        "That's cool!", "Haha nice!", "Really? Tell me more!",
-        "Awesome 😄", "Interesting!", "Oh wow!", "Same here!",
-        "No way! 😂", "That's amazing!", "I agree!",
+        "That's cool!", "Haha nice!", "Really?", "Awesome 😄",
+        "Interesting!", "Oh wow!", "Same here!", "No way! 😂",
       ];
       setTimeout(() => {
         setMessages((prev) => [
@@ -142,244 +129,232 @@ const VideoChatRoom = ({ onExit }: VideoChatRoomProps) => {
   const toggleCam = () => {
     setIsCamOn((v) => !v);
     if (localVideoRef.current?.srcObject) {
-      const stream = localVideoRef.current.srcObject as MediaStream;
-      stream.getVideoTracks().forEach((t) => (t.enabled = !isCamOn));
+      (localVideoRef.current.srcObject as MediaStream).getVideoTracks().forEach((t) => (t.enabled = !isCamOn));
     }
   };
 
   const toggleMic = () => {
     setIsMicOn((v) => !v);
     if (localVideoRef.current?.srcObject) {
-      const stream = localVideoRef.current.srcObject as MediaStream;
-      stream.getAudioTracks().forEach((t) => (t.enabled = !isMicOn));
+      (localVideoRef.current.srcObject as MediaStream).getAudioTracks().forEach((t) => (t.enabled = !isMicOn));
     }
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Top Bar */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-card/80 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-            <Video className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-gradient">ChatRandom</span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Users className="w-4 h-4" />
-            <span>12,847</span>
-          </div>
-          <Button variant="ghost" size="sm" onClick={onExit} className="text-muted-foreground hover:text-destructive">
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Video Area */}
-        <div className="flex-1 flex flex-col lg:flex-row gap-1 p-2 min-h-0">
-          {/* Remote Video */}
-          <div className="flex-1 relative rounded-2xl overflow-hidden video-container border border-border/30">
-            {status === "connected" ? (
-              <>
-                <div className="absolute inset-0 flex items-center justify-center bg-card">
-                  <div className="text-center space-y-3">
-                    <div className="w-24 h-24 rounded-full bg-secondary mx-auto flex items-center justify-center">
-                      <Users className="w-12 h-12 text-muted-foreground" />
-                    </div>
-                    <p className="text-muted-foreground text-sm">Camera simulation</p>
-                  </div>
-                </div>
-                <div className="absolute top-4 left-4 flex items-center gap-2">
-                  <span className="bg-card/80 backdrop-blur-sm text-xs px-3 py-1.5 rounded-full border border-border/50 flex items-center gap-1.5">
-                    <Globe className="w-3 h-3 text-primary" />
-                    {country}
-                  </span>
-                </div>
-                <div className="absolute bottom-4 right-4">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive bg-card/60 backdrop-blur-sm rounded-full">
-                    <Flag className="w-4 h-4" />
-                  </Button>
-                </div>
-              </>
-            ) : status === "searching" ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin mx-auto" />
-                  <p className="text-muted-foreground">Looking for someone...</p>
-                </div>
+    <div className="h-screen w-screen flex flex-col bg-background overflow-hidden">
+      {/* Video Area */}
+      <div className="flex-1 flex flex-col md:flex-row relative min-h-0">
+        {/* Stranger Video */}
+        <div className="flex-1 relative bg-[hsl(216,28%,5%)] border-r border-border/30">
+          {status === "connected" ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-28 h-28 rounded-full bg-secondary flex items-center justify-center">
+                <img
+                  src="https://ome.tv/images/roulette/avatar.svg"
+                  alt="avatar"
+                  className="w-16 h-16 opacity-40"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
               </div>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center space-y-4">
-                  <div className="w-20 h-20 rounded-full bg-secondary mx-auto flex items-center justify-center">
-                    <Video className="w-10 h-10 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-foreground font-medium">
-                      {status === "disconnected" ? "Chat ended" : "Ready to chat?"}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {status === "disconnected"
-                        ? 'Click "Next" to find someone new'
-                        : 'Click "Start" to begin'}
-                    </p>
-                  </div>
-                </div>
+            </div>
+          ) : status === "searching" ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="w-14 h-14 rounded-full border-[3px] border-muted-foreground/20 border-t-primary animate-spin mx-auto" />
+                <p className="text-muted-foreground text-sm">Looking for partner...</p>
               </div>
-            )}
+            </div>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground text-sm">
+                  {status === "disconnected"
+                    ? "Your partner has disconnected"
+                    : "Press \"Start\" to begin"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Top-left: Logo */}
+          <div className="absolute top-3 left-3 z-10">
+            <div className="flex items-center gap-1.5">
+              <Video className="w-5 h-5 text-primary" />
+              <span className="text-primary font-bold text-sm">ChatRandom</span>
+            </div>
           </div>
 
-          {/* Local Video */}
-          <div className="w-full lg:w-64 h-48 lg:h-auto relative rounded-2xl overflow-hidden video-container border border-border/30">
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className={`absolute inset-0 w-full h-full object-cover ${!isCamOn ? "opacity-0" : ""}`}
-            />
-            {!isCamOn && (
-              <div className="absolute inset-0 flex items-center justify-center bg-card">
-                <VideoOff className="w-10 h-10 text-muted-foreground" />
-              </div>
-            )}
-            <span className="absolute top-3 left-3 text-xs bg-card/70 backdrop-blur-sm px-2 py-1 rounded-full text-muted-foreground">
-              You
+          {/* Top-right controls */}
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              12,847 Online
             </span>
-          </div>
-        </div>
-
-        {/* Chat Sidebar */}
-        <div className="w-full lg:w-80 flex flex-col border-t lg:border-t-0 lg:border-l border-border/50 bg-card/30">
-          {/* Chat Header */}
-          <div className="px-4 py-3 border-b border-border/50 flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Chat</span>
-            {status === "connected" && (
-              <span className="ml-auto flex items-center gap-1 text-xs text-primary">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                Connected
-              </span>
-            )}
+            <button className="text-muted-foreground hover:text-foreground p-1.5 rounded hover:bg-secondary/80 transition-colors" title="Report">
+              <Flag className="w-4 h-4" />
+            </button>
+            <button className="text-muted-foreground hover:text-foreground p-1.5 rounded hover:bg-secondary/80 transition-colors" title="Fullscreen">
+              <Maximize className="w-4 h-4" />
+            </button>
+            <button className="text-muted-foreground hover:text-foreground p-1.5 rounded hover:bg-secondary/80 transition-colors" title="Settings">
+              <Settings className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[120px] max-h-[300px] lg:max-h-none">
-            {messages.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-8">
-                {status === "connected"
-                  ? "Say hello! 👋"
-                  : "Messages will appear here"}
-              </p>
-            )}
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
-                    msg.sender === "me"
-                      ? "gradient-primary text-primary-foreground rounded-br-md"
-                      : "bg-secondary text-secondary-foreground rounded-bl-md"
-                  }`}
-                >
-                  <p>{msg.text}</p>
-                  <p
-                    className={`text-[10px] mt-1 ${
-                      msg.sender === "me" ? "text-primary-foreground/60" : "text-muted-foreground"
-                    }`}
-                  >
-                    {msg.time}
-                  </p>
+          {/* Chat overlay on stranger video */}
+          <div className="absolute bottom-0 left-0 right-0 z-10">
+            {/* Messages overlay */}
+            <div className="max-h-40 overflow-y-auto px-3 pb-1 space-y-1 scrollbar-none">
+              {messages.map((msg) => (
+                <div key={msg.id} className="flex items-start gap-2">
+                  <span className={`text-xs font-semibold ${msg.sender === "me" ? "text-primary" : "text-orange-400"}`}>
+                    {msg.sender === "me" ? "You:" : "Stranger:"}
+                  </span>
+                  <span className="text-xs text-foreground/90">{msg.text}</span>
                 </div>
-              </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <div className="p-3 border-t border-border/50">
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+            {/* Chat input */}
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                sendMessage();
-              }}
-              className="flex gap-2"
+              onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+              className="flex items-center gap-2 px-3 pb-3 pt-1"
             >
-              <Input
+              <input
                 value={inputMsg}
                 onChange={(e) => setInputMsg(e.target.value)}
-                placeholder={
-                  status === "connected" ? "Type a message..." : "Connect to chat"
-                }
+                placeholder={status === "connected" ? "Type a message..." : "Connect to chat..."}
                 disabled={status !== "connected"}
-                className="bg-secondary/50 border-border/50 rounded-xl text-sm"
+                className="flex-1 bg-[hsl(216,25%,11%)]/80 backdrop-blur-sm border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 disabled:opacity-40"
               />
-              <Button
+              <button
                 type="submit"
-                size="icon"
                 disabled={status !== "connected" || !inputMsg.trim()}
-                className="gradient-primary text-primary-foreground rounded-xl shrink-0"
+                className="bg-primary text-primary-foreground p-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-30"
               >
                 <Send className="w-4 h-4" />
-              </Button>
+              </button>
             </form>
           </div>
         </div>
+
+        {/* Your Video */}
+        <div className="flex-1 relative bg-[hsl(216,28%,5%)]">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`absolute inset-0 w-full h-full object-cover ${!isCamOn ? "hidden" : ""}`}
+          />
+          {!isCamOn && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <VideoOff className="w-10 h-10 text-muted-foreground mx-auto" />
+                <p className="text-xs text-muted-foreground">Camera is off</p>
+              </div>
+            </div>
+          )}
+
+          {/* Cam/Mic toggles */}
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+            <button
+              onClick={toggleMic}
+              className={`p-2 rounded-lg transition-colors ${!isMicOn ? "bg-destructive/80 text-destructive-foreground" : "bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary/80"}`}
+            >
+              {isMicOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={toggleCam}
+              className={`p-2 rounded-lg transition-colors ${!isCamOn ? "bg-destructive/80 text-destructive-foreground" : "bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary/80"}`}
+            >
+              {isCamOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+            </button>
+          </div>
+
+          <span className="absolute top-3 left-3 text-xs text-muted-foreground bg-secondary/60 backdrop-blur-sm px-2 py-1 rounded">
+            You
+          </span>
+        </div>
       </div>
 
-      {/* Bottom Controls */}
-      <div className="px-4 py-4 border-t border-border/50 bg-card/80 backdrop-blur-sm">
-        <div className="flex items-center justify-center gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleMic}
-            className={`rounded-full w-12 h-12 ${!isMicOn ? "bg-destructive/20 border-destructive/50 text-destructive" : "border-border/50"}`}
-          >
-            {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleCam}
-            className={`rounded-full w-12 h-12 ${!isCamOn ? "bg-destructive/20 border-destructive/50 text-destructive" : "border-border/50"}`}
-          >
-            {isCamOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-          </Button>
-
+      {/* Bottom Controls Bar */}
+      <div className="bg-card border-t border-border/50 px-4 py-3">
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          {/* Start / Stop */}
           {status === "idle" || status === "disconnected" ? (
-            <Button
+            <button
               onClick={startSearch}
-              className="gradient-primary text-primary-foreground font-semibold px-8 h-12 rounded-full text-base glow-primary"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-2.5 rounded-lg text-sm transition-colors"
             >
               Start
-            </Button>
+            </button>
           ) : (
             <>
-              <Button
+              <button
                 onClick={stopChat}
-                variant="outline"
-                className="border-destructive/50 text-destructive hover:bg-destructive/20 px-6 h-12 rounded-full font-semibold"
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold px-8 py-2.5 rounded-lg text-sm transition-colors"
               >
-                <X className="w-4 h-4 mr-1" />
                 Stop
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={nextPerson}
-                className="gradient-primary text-primary-foreground font-semibold px-6 h-12 rounded-full glow-primary"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-2.5 rounded-lg text-sm transition-colors flex items-center gap-1.5"
               >
-                <SkipForward className="w-4 h-4 mr-1" />
+                <SkipForward className="w-4 h-4" />
                 Next
-              </Button>
+              </button>
             </>
           )}
+
+          {/* Divider */}
+          <div className="w-px h-8 bg-border/50 mx-2 hidden sm:block" />
+
+          {/* Country filter */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+              className="bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <span className="max-w-[120px] truncate">{selectedCountry}</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+            {showCountryDropdown && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setShowCountryDropdown(false)} />
+                <div className="absolute bottom-full mb-1 left-0 bg-card border border-border rounded-lg shadow-xl z-30 max-h-60 overflow-y-auto w-52">
+                  {COUNTRIES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => { setSelectedCountry(c); setShowCountryDropdown(false); }}
+                      className={`w-full text-left text-sm px-3 py-2 hover:bg-secondary/80 transition-colors ${
+                        c === selectedCountry ? "text-primary bg-secondary/50" : "text-foreground"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Gender filter */}
+          <div className="flex items-center gap-1">
+            {["Male", "Female", "Couple"].map((g) => (
+              <button
+                key={g}
+                onClick={() => setSelectedGender(selectedGender === g ? "" : g)}
+                className={`text-xs px-3 py-2 rounded-lg transition-colors ${
+                  selectedGender === g
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
