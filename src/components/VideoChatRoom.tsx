@@ -186,7 +186,7 @@ const VideoChatRoom = () => {
           </h1>
           <div className="flex items-center gap-2 mt-2">
             <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#22c55e" }} />
-            <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>10,264 users online</span>
+            <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>{onlineUsers.toLocaleString()} users online</span>
           </div>
 
           {/* Share buttons */}
