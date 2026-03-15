@@ -569,10 +569,6 @@ const VideoChatRoom = () => {
             <button className="transition-all hover:scale-110" style={{ color: "rgba(255,255,255,0.3)" }}>
               <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
             </button>
-            <button className="flex items-center gap-1.5 transition-all hover:opacity-80" style={{ color: "rgba(255,255,255,0.45)" }}>
-              <History className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="text-xs md:text-sm font-medium">History</span>
-            </button>
           </div>
 
           {/* Desktop Log In */}
