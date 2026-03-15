@@ -176,9 +176,16 @@ const AdminPanel = () => {
     setTxLoading(false);
   }, []);
 
+  const fetchRegions = useCallback(async () => {
+    setRegionsLoading(true);
+    const { data } = await supabase.from("region_coin_prices").select("*").order("region_type").order("region_name");
+    if (data) setRegions(data as RegionCoinPrice[]);
+    setRegionsLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
