@@ -1041,7 +1041,7 @@ const VideoChatRoom = () => {
             <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.1)" }} />
 
             <button
-              onClick={() => { setTempGender(selectedGender === "Gender" ? "Both" : selectedGender); setShowGenderModal(true); }}
+              onClick={() => { setTempGender(selectedGender === "Gênero" ? "Both" : selectedGender); setShowGenderModal(true); }}
               className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-3 md:px-5 md:py-3.5 text-xs md:text-sm transition-all hover:bg-white/5"
               style={{ color: "rgba(255,255,255,0.75)" }}
             >
