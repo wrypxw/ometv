@@ -65,6 +65,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_packages: {
+        Row: {
+          active: boolean
+          bonus: number
+          coins: number
+          created_at: string
+          currency: string
+          id: string
+          price_cents: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bonus?: number
+          coins?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bonus?: number
+          coins?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       signaling: {
         Row: {
           created_at: string
