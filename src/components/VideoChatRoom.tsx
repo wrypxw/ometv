@@ -416,10 +416,15 @@ const VideoChatRoom = () => {
     const matchmaker = new Matchmaker();
     matchmakerRef.current = matchmaker;
 
-    await matchmaker.findMatch((roomId, isInitiator) => {
-      connectToPartner(roomId, isInitiator);
-    });
-  }, [connectToPartner, cameraAllowed, startLocalCamera]);
+    try {
+      await matchmaker.findMatch((roomId, isInitiator) => {
+        connectToPartner(roomId, isInitiator);
+      });
+    } catch (err) {
+      console.error("Matchmaking error:", err);
+      setStatus("disconnected");
+    }
+  }, [connectToPartner, startLocalCamera]);
 
   const startSearch = useCallback(async () => {
     const cost = getFilterCost();
