@@ -138,6 +138,8 @@ const VideoChatRoom = () => {
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
+  const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
+
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -146,7 +148,31 @@ const VideoChatRoom = () => {
   const webrtcRef = useRef<WebRTCConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  // Real online users via Supabase Realtime Presence
+  const handleBuyPackage = async (pkgId: string) => {
+    if (!currentUser) {
+      setShowLoginModal(true);
+      return;
+    }
+    setBuyingPkg(pkgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: { package_id: pkgId },
+      });
+      if (error) throw error;
+      if (data?.init_point) {
+        window.open(data.init_point, "_blank");
+      } else if (data?.sandbox_init_point) {
+        window.open(data.sandbox_init_point, "_blank");
+      }
+    } catch (err: any) {
+      console.error("Purchase error:", err);
+      alert("Erro ao iniciar pagamento. Tente novamente.");
+    } finally {
+      setBuyingPkg(null);
+    }
+  };
+
+
   useEffect(() => {
     const channel = supabase.channel('online-users', {
       config: { presence: { key: crypto.randomUUID() } },
@@ -972,7 +998,9 @@ const VideoChatRoom = () => {
               {shopPackages.map((pkg, i) => (
                 <button
                   key={pkg.id}
-                  className="rounded-xl p-2.5 md:p-3 flex flex-col items-center gap-1.5 md:gap-2 transition-opacity hover:opacity-90"
+                  onClick={() => handleBuyPackage(pkg.id)}
+                  disabled={buyingPkg === pkg.id}
+                  className="rounded-xl p-2.5 md:p-3 flex flex-col items-center gap-1.5 md:gap-2 transition-opacity hover:opacity-90 disabled:opacity-50"
                   style={{
                     background: i < 3
                       ? "linear-gradient(180deg, #7c3aed, #6d28d9)"
