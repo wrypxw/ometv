@@ -223,7 +223,39 @@ const AdminPanel = () => {
     fetchPackages();
   };
 
-  const filteredUsers = users.filter(u =>
+  // Coupons
+  const saveCoupon = async () => {
+    try {
+      const payload: any = {
+        code: couponForm.code.toUpperCase().trim(),
+        discount_percent: couponForm.discount_percent,
+        max_uses: couponForm.max_uses ? parseInt(couponForm.max_uses) : null,
+        expires_at: couponForm.expires_at || null,
+      };
+      if (editingCoupon?.id) {
+        await supabase.from("coupons").update(payload).eq("id", editingCoupon.id);
+      } else {
+        await supabase.from("coupons").insert(payload);
+      }
+      toast({ title: "Cupom salvo!" });
+      setEditingCoupon(null);
+      fetchCoupons();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleCouponActive = async (c: Coupon) => {
+    await supabase.from("coupons").update({ active: !c.active }).eq("id", c.id);
+    fetchCoupons();
+  };
+
+  const deleteCoupon = async (id: string) => {
+    await supabase.from("coupons").delete().eq("id", id);
+    fetchCoupons();
+  };
+
+
     u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
