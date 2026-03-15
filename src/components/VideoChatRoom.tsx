@@ -11,7 +11,7 @@ import {
   Globe,
   Users,
   Heart,
-  Maximize2,
+  
   Search,
   ChevronUp,
   ChevronRight,
@@ -566,9 +566,6 @@ const VideoChatRoom = () => {
           style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 100%)" }}
         >
           <div className="flex items-center gap-2.5">
-            <button className="transition-all hover:scale-110" style={{ color: "rgba(255,255,255,0.3)" }}>
-              <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
           </div>
 
           {/* Desktop Log In */}
