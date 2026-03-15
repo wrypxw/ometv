@@ -522,8 +522,8 @@ const VideoChatRoom = () => {
         )}
       </div>
 
-      {/* BOTTOM/RIGHT PANEL - Your video */}
-      <div className="h-[50dvh] md:h-full md:flex-1 relative overflow-hidden" style={{ background: "#111118" }}>
+      {/* BOTTOM/RIGHT PANEL - Your video (PiP overlay when connected/searching, full otherwise) */}
+      <div className={`${status === "connected" || status === "searching" ? "absolute bottom-20 right-3 md:bottom-6 md:right-6 w-32 h-44 md:w-48 md:h-64 rounded-2xl shadow-2xl z-30" : "h-[50dvh] md:h-full md:flex-1"} relative overflow-hidden`} style={{ background: "#111118", ...(status === "connected" || status === "searching" ? { border: "2px solid rgba(255,255,255,0.15)" } : {}) }}>
         {/* Camera feed - fills entire panel */}
         <video
           ref={localVideoRef}
