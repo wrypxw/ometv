@@ -110,6 +110,9 @@ const AdminPanel = () => {
   const [couponsLoading, setCouponsLoading] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [couponForm, setCouponForm] = useState({ code: "", discount_percent: 10, max_uses: "", expires_at: "" });
+  const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
+  const [txLoading, setTxLoading] = useState(false);
+  const [mpTokenVisible, setMpTokenVisible] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
