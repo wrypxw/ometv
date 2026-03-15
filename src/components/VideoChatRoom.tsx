@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Matchmaker, WebRTCConnection } from "@/lib/webrtc";
 import {
   Video,
@@ -15,7 +16,7 @@ import {
   Search,
   ChevronUp,
   ChevronRight,
-  Facebook,
+  
   User,
   MessageSquare,
   Share2,
@@ -111,9 +112,15 @@ const VideoChatRoom = () => {
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [tempGender, setTempGender] = useState("Both");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [cameraAllowed, setCameraAllowed] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [showBrazilStates, setShowBrazilStates] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -146,6 +153,64 @@ const VideoChatRoom = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+  // Auth state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+      setCurrentUser(session?.user ?? null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session?.user);
+      setCurrentUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleEmailAuth = async () => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      if (authMode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        setAuthError("Check your email to confirm your account!");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        setShowLoginModal(false);
+      }
+    } catch (err: any) {
+      setAuthError(err.message || "Authentication failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) setAuthError(error.message || "Google sign in failed");
+  };
+
+  const handleAppleAuth = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) setAuthError(error.message || "Apple sign in failed");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setShowProfileMenu(false);
+  };
 
   const startLocalCamera = useCallback(async () => {
     try {
@@ -322,7 +387,7 @@ const VideoChatRoom = () => {
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-white block">You</span>
+                        <span className="text-sm font-semibold text-white block">{currentUser?.email?.split("@")[0] || "You"}</span>
                         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Online</span>
                       </div>
                     </div>
@@ -338,7 +403,7 @@ const VideoChatRoom = () => {
                     ))}
                     <div className="my-1.5 mx-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
                     <button
-                      onClick={() => { setIsLoggedIn(false); setShowProfileMenu(false); }}
+                      onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-red-500/10"
                       style={{ color: "#f87171" }}
                     >
@@ -394,7 +459,7 @@ const VideoChatRoom = () => {
                 className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
                 style={{ background: "#1877F2" }}
               >
-                <Facebook className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 Share
               </button>
               <button
@@ -894,7 +959,7 @@ const VideoChatRoom = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowLoginModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => { setShowLoginModal(false); setAuthError(""); }}>
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} />
           <div
             className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-2xl p-6 md:p-8 text-center"
@@ -920,13 +985,60 @@ const VideoChatRoom = () => {
               <span className="text-gradient">ChatRandom</span>
               <span style={{ color: "rgba(255,255,255,0.2)" }}>.gg</span>
             </h2>
-            <p className="text-xs md:text-sm mt-1.5 mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Sign in to start chatting!
+            <p className="text-xs md:text-sm mt-1.5 mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+              {authMode === "login" ? "Sign in to start chatting!" : "Create your account"}
             </p>
+
+            {/* Email / Password form */}
+            <div className="space-y-2.5 mb-4">
+              <input
+                type="email"
+                placeholder="Email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                className="w-full py-3 px-4 rounded-xl text-sm text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-purple-500/50"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleEmailAuth()}
+                className="w-full py-3 px-4 rounded-xl text-sm text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-purple-500/50"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              />
+              {authError && (
+                <p className="text-xs" style={{ color: authError.includes("Check your email") ? "#22c55e" : "#f87171" }}>
+                  {authError}
+                </p>
+              )}
+              <button
+                onClick={handleEmailAuth}
+                disabled={authLoading || !authEmail || !authPassword}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                {authLoading ? "..." : authMode === "login" ? "Sign In" : "Create Account"}
+              </button>
+              <button
+                onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
+                className="text-xs"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >
+                {authMode === "login" ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+              <span className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.25)" }}>or</span>
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+            </div>
 
             <div className="space-y-2.5">
               <button
-                onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
+                onClick={handleGoogleAuth}
                 className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "white", color: "#1a1a2e" }}
               >
@@ -940,16 +1052,7 @@ const VideoChatRoom = () => {
               </button>
 
               <button
-                onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
-                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: "#1877F2" }}
-              >
-                <Facebook className="w-5 h-5" />
-                Continue with Facebook
-              </button>
-
-              <button
-                onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
+                onClick={handleAppleAuth}
                 className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "white", color: "#1a1a2e" }}
               >
