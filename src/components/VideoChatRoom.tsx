@@ -1023,16 +1023,18 @@ const VideoChatRoom = () => {
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
 
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
-            >
-              <svg width="32" height="24" viewBox="0 0 36 28" fill="none">
-                <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
-                <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
-                <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-              </svg>
-            </div>
+            {siteSettings.logo_url ? (
+              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-cover mx-auto mb-5 animate-pulse-glow" />
+            ) : (
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
+                <svg width="32" height="24" viewBox="0 0 36 28" fill="none">
+                  <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
+                  <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
+                  <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                </svg>
+              </div>
+            )}
 
             <h2 className="text-xl font-extrabold">
               <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
