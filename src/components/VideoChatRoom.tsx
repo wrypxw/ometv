@@ -751,7 +751,7 @@ const VideoChatRoom = () => {
             <div className="flex items-center gap-2 mt-2 md:mt-3">
               <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse" style={{ background: "#22c55e" }} />
               <span className="text-xs md:text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-                {onlineUsers.toLocaleString()} users online
+                {onlineUsers.toLocaleString()} usuários online
               </span>
             </div>
 
