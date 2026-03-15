@@ -1711,7 +1711,7 @@ const VideoChatRoom = () => {
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
               >
-                {authLoading ? "..." : authMode === "login" ? "Sign In" : "Create Account"}
+                {authLoading ? "..." : authMode === "login" ? "Entrar" : "Criar Conta"}
               </button>
               <button
                 onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
