@@ -458,7 +458,12 @@ const VideoChatRoom = () => {
 
   const startSearch = useCallback(async () => {
     const cost = getFilterCost();
-    if (cost > 0 && isLoggedIn) {
+    if (cost > 0) {
+      // Paid filters require login
+      if (!isLoggedIn) {
+        setShowLoginModal(true);
+        return;
+      }
       setShowCoinConfirm({
         cost,
         label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gender" ? " + " : ""}${selectedGender !== "Gender" ? selectedGender : ""}`.trim() || "filtros",
