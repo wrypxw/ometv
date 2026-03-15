@@ -989,7 +989,7 @@ const VideoChatRoom = () => {
                     className="w-full py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-semibold text-center"
                     style={{ background: "rgba(0,0,0,0.25)", color: "#4ade80" }}
                   >
-                    ${(pkg.price_cents / 100).toFixed(2)}
+                    R${(pkg.price_cents / 100).toFixed(2).replace('.', ',')}
                   </div>
                 </button>
               ))}
