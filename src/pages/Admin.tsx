@@ -83,12 +83,24 @@ const NAV_ITEMS = [
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons", icon: Tag },
+  { id: "promos" as const, label: "Códigos Promo", icon: Gift },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
   { id: "genders" as const, label: "Gênero", icon: UserCheck },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders";
+type TabId = "users" | "settings" | "shop" | "coupons" | "promos" | "payments" | "regions" | "genders";
+
+interface PromoCode {
+  id: string;
+  code: string;
+  coins_reward: number;
+  max_uses: number | null;
+  used_count: number;
+  active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}
 
 interface PaymentTransaction {
   id: string;
