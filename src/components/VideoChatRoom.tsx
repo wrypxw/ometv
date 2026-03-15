@@ -177,6 +177,9 @@ const VideoChatRoom = () => {
         setSiteSettings(map);
       }
     });
+    supabase.from("shop_packages").select("*").eq("active", true).order("sort_order").then(({ data }) => {
+      if (data) setShopPackages(data);
+    });
   }, []);
 
   const handleEmailAuth = async () => {
