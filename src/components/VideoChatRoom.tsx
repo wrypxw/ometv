@@ -1597,9 +1597,9 @@ const VideoChatRoom = () => {
             <div className="flex md:hidden justify-center mb-4">
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
-            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Gender Preferences</h2>
+            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Preferências de Gênero</h2>
             <p className="text-xs md:text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Coins are used when you match with a gender filter on.
+              Coins são usadas quando você busca com filtro de gênero ativado.
             </p>
 
             <div className="grid grid-cols-3 gap-2.5 md:gap-3 mb-5">
