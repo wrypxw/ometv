@@ -63,7 +63,10 @@ const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
+  { id: "coupons" as const, label: "Cupons", icon: Tag },
 ];
+
+type TabId = "users" | "settings" | "shop" | "coupons";
 
 type TabId = "users" | "settings" | "shop";
 
