@@ -1693,7 +1693,7 @@ const VideoChatRoom = () => {
               />
               <input
                 type="password"
-                placeholder="Password"
+                placeholder="Senha"
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleEmailAuth()}
