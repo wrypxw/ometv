@@ -418,10 +418,8 @@ const VideoChatRoom = () => {
                       </div>
                     </div>
                     {[
-                      { icon: <MessageSquare className="w-4 h-4" />, label: "Text Chat", extra: <ExternalLink className="w-3.5 h-3.5 ml-auto opacity-30" /> },
                       { icon: <Share2 className="w-4 h-4" />, label: "Socials", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" /> },
-                      { icon: <FileText className="w-4 h-4" />, label: "Rules" },
-                      { icon: <MoreHorizontal className="w-4 h-4" />, label: "More" },
+                      { icon: <Heart className="w-4 h-4" />, label: "Amizades" },
                     ].map((item) => (
                       <button key={item.label} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-white/5" style={{ color: "rgba(255,255,255,0.65)" }}>
                         {item.icon}<span>{item.label}</span>{item.extra}
