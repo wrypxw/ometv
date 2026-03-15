@@ -147,6 +147,9 @@ const VideoChatRoom = () => {
   const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
   const [userCoins, setUserCoins] = useState(0);
   const [showCoinConfirm, setShowCoinConfirm] = useState<{ cost: number; label: string; onConfirm: () => void } | null>(null);
+  const [pendingCoinCost, _setPendingCoinCost] = useState(0);
+  const pendingCoinCostRef = useRef(0);
+  const setPendingCoinCost = useCallback((v: number) => { _setPendingCoinCost(v); pendingCoinCostRef.current = v; }, []);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -356,6 +359,7 @@ const VideoChatRoom = () => {
         remoteVideoRef.current.srcObject = stream;
       }
       setStatus("connected");
+      setPendingCoinCost(0); // Connected successfully, coins consumed
     };
 
     rtc.onDisconnected = () => {
@@ -399,6 +403,15 @@ const VideoChatRoom = () => {
     return true;
   }, [currentUser]);
 
+  const refundCoins = useCallback(async (amount: number) => {
+    if (!currentUser || amount <= 0) return;
+    const { data } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
+    if (!data) return;
+    await supabase.from("profiles").update({ coins: data.coins + amount, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+    setUserCoins(data.coins + amount);
+    setPendingCoinCost(0);
+  }, [currentUser]);
+
   const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
     if (!localStreamRef.current) {
@@ -406,6 +419,9 @@ const VideoChatRoom = () => {
     }
     setStatus("searching");
     setMessages([]);
+
+    // Clear any previous timeout
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
 
     // Clean up previous connection
     webrtcRef.current?.destroy();
@@ -416,20 +432,33 @@ const VideoChatRoom = () => {
     const matchmaker = new Matchmaker();
     matchmakerRef.current = matchmaker;
 
+    // 60s timeout — if no match, stop and refund
+    searchTimerRef.current = setTimeout(async () => {
+      if (matchmakerRef.current === matchmaker) {
+        matchmaker.destroy();
+        matchmakerRef.current = null;
+        setStatus("disconnected");
+        if (pendingCoinCostRef.current > 0) {
+          await refundCoins(pendingCoinCostRef.current);
+        }
+      }
+    }, 60000);
+
     try {
       await matchmaker.findMatch((roomId, isInitiator) => {
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
         connectToPartner(roomId, isInitiator);
       });
     } catch (err) {
       console.error("Matchmaking error:", err);
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       setStatus("disconnected");
     }
-  }, [connectToPartner, startLocalCamera]);
+  }, [connectToPartner, startLocalCamera, refundCoins]);
 
   const startSearch = useCallback(async () => {
     const cost = getFilterCost();
     if (cost > 0 && isLoggedIn) {
-      // Show confirmation
       setShowCoinConfirm({
         cost,
         label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gender" ? " + " : ""}${selectedGender !== "Gender" ? selectedGender : ""}`.trim() || "filtros",
@@ -448,15 +477,19 @@ const VideoChatRoom = () => {
             });
             return;
           }
+          setPendingCoinCost(cost);
           await doStartSearch();
         },
       });
       return;
     }
+    setPendingCoinCost(0);
     await doStartSearch();
   }, [getFilterCost, isLoggedIn, selectedCountry, selectedGender, deductCoins, doStartSearch]);
 
   const nextPerson = useCallback(async () => {
+    // No refund on next — coins already consumed for this session
+    setPendingCoinCost(0);
     webrtcRef.current?.destroy();
     webrtcRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
@@ -464,14 +497,21 @@ const VideoChatRoom = () => {
     await startSearch();
   }, [startSearch]);
 
-  const stopChat = useCallback(() => {
+  const stopChat = useCallback(async () => {
+    const wasSearching = status === "searching";
+    const costToRefund = pendingCoinCost;
     webrtcRef.current?.destroy();
     webrtcRef.current = null;
     matchmakerRef.current?.destroy();
     matchmakerRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
     setStatus("disconnected");
-  }, []);
+    // Refund coins if user was still searching (never connected)
+    if (wasSearching && costToRefund > 0) {
+      await refundCoins(costToRefund);
+    }
+    setPendingCoinCost(0);
+  }, [status, pendingCoinCost, refundCoins]);
 
   const sendMessage = useCallback(() => {
     const text = inputMsg.trim();
