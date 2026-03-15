@@ -90,6 +90,10 @@ const AdminPanel = () => {
   const [editingPkg, setEditingPkg] = useState<ShopPackage | null>(null);
   const [pkgForm, setPkgForm] = useState({ coins: 0, bonus: 0, price_cents: 0, sort_order: 0 });
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [couponsLoading, setCouponsLoading] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [couponForm, setCouponForm] = useState({ code: "", discount_percent: 10, max_uses: "", expires_at: "" });
   const navigate = useNavigate();
   const { toast } = useToast();
 
