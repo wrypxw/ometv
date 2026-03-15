@@ -962,6 +962,51 @@ const AdminPanel = () => {
           </div>
         </Modal>
       )}
+
+      {/* =================== REGION EDIT MODAL =================== */}
+      {editingRegion && (
+        <Modal onClose={() => setEditingRegion(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingRegion.id ? "Editar Região" : "Nova Região"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Tipo</label>
+              <div className="flex gap-2">
+                {["country", "state"].map(t => (
+                  <button key={t} onClick={() => setRegionForm(p => ({ ...p, region_type: t }))}
+                    className="flex-1 py-2 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      background: regionForm.region_type === t ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${regionForm.region_type === t ? "rgba(124,58,237,0.4)" : "rgba(255,255,255,0.08)"}`,
+                      color: regionForm.region_type === t ? "#a78bfa" : "rgba(255,255,255,0.5)",
+                    }}>
+                    {t === "country" ? "🌍 País" : "📍 Estado"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código (ex: BR, US, SP, RJ)</label>
+              <AdminInput value={regionForm.region_code} onChange={v => setRegionForm(p => ({ ...p, region_code: v.toUpperCase() }))} placeholder="BR" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Nome</label>
+              <AdminInput value={regionForm.region_name} onChange={v => setRegionForm(p => ({ ...p, region_name: v }))} placeholder="Brasil" />
+            </div>
+            {regionForm.region_type === "state" && (
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código do País (pai)</label>
+                <AdminInput value={regionForm.parent_code} onChange={v => setRegionForm(p => ({ ...p, parent_code: v.toUpperCase() }))} placeholder="BR" />
+              </div>
+            )}
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Custo em Coins</label>
+              <AdminInput value={String(regionForm.coin_cost)} onChange={v => setRegionForm(p => ({ ...p, coin_cost: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="10" />
+              <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Quantas coins o usuário gasta para acessar esta região.</p>
+            </div>
+            <PrimaryBtn onClick={saveRegion} disabled={!regionForm.region_code.trim() || !regionForm.region_name.trim()} text="💾 Salvar Região" />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
