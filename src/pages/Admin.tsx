@@ -68,7 +68,7 @@ const NAV_ITEMS = [
 
 type TabId = "users" | "settings" | "shop" | "coupons";
 
-type TabId = "users" | "settings" | "shop";
+
 
 const AdminPanel = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
