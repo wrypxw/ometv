@@ -49,11 +49,18 @@
   * {
     @apply border-border;
   }
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  input, textarea, select {
+    font-size: 16px !important;
   }
 }
 

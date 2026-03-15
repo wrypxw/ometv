@@ -103,7 +103,7 @@ const VideoChatRoom = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMsg, setInputMsg] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("Worldwide");
-  const [selectedGender, setSelectedGender] = useState("Gender");
+  const [selectedGender, setSelectedGender] = useState("Gênero");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showShop, setShowShop] = useState(false);
@@ -285,7 +285,7 @@ const VideoChatRoom = () => {
           options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        setAuthError("Check your email to confirm your account!");
+        setAuthError("Verifique seu e-mail para confirmar sua conta!");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: authEmail,
@@ -381,13 +381,13 @@ const VideoChatRoom = () => {
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
     let cost = 0;
-    // Region cost
-    if (selectedCountry !== "Worldwide") {
-      const regionName = selectedCountry.startsWith("Brazil - ") ? selectedCountry.replace("Brazil - ", "") : selectedCountry;
-      cost += regionPrices[regionName] !== undefined ? regionPrices[regionName] : 10;
+    // Region cost - only BR states are paid, countries are FREE
+    if (selectedCountry.startsWith("Brazil - ")) {
+      const stateName = selectedCountry.replace("Brazil - ", "");
+      cost += regionPrices[stateName] !== undefined ? regionPrices[stateName] : 10;
     }
     // Gender cost
-    if (selectedGender !== "Gender") {
+    if (selectedGender !== "Gênero") {
       cost += genderPrices[selectedGender] !== undefined ? genderPrices[selectedGender] : (selectedGender === "Both" ? 0 : 15);
     }
     return cost;
@@ -466,7 +466,7 @@ const VideoChatRoom = () => {
       }
       setShowCoinConfirm({
         cost,
-        label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gender" ? " + " : ""}${selectedGender !== "Gender" ? selectedGender : ""}`.trim() || "filtros",
+        label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gênero" ? " + " : ""}${selectedGender !== "Gênero" ? ({ "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender) : ""}`.trim() || "filtros",
         onConfirm: async () => {
           setShowCoinConfirm(null);
           const ok = await deductCoins(cost);
@@ -751,7 +751,7 @@ const VideoChatRoom = () => {
             <div className="flex items-center gap-2 mt-2 md:mt-3">
               <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse" style={{ background: "#22c55e" }} />
               <span className="text-xs md:text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
-                {onlineUsers.toLocaleString()} users online
+                {onlineUsers.toLocaleString()} usuários online
               </span>
             </div>
 
@@ -869,8 +869,8 @@ const VideoChatRoom = () => {
                 </div>
               </div>
               <div>
-                <p className="text-sm md:text-base font-semibold text-white">Looking for partner...</p>
-                <p className="text-[10px] md:text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>This may take a moment</p>
+                <p className="text-sm md:text-base font-semibold text-white">Procurando parceiro...</p>
+                <p className="text-[10px] md:text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Isso pode levar um momento</p>
               </div>
             </div>
           </div>
@@ -884,7 +884,7 @@ const VideoChatRoom = () => {
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex items-start gap-2">
                     <span className="text-[11px] md:text-xs font-bold shrink-0" style={{ color: msg.sender === "me" ? "#c4b5fd" : "#fbbf24" }}>
-                      {msg.sender === "me" ? "You" : "Stranger"}
+                      {msg.sender === "me" ? "Você" : "Estranho"}
                     </span>
                     <span className="text-[11px] md:text-xs" style={{ color: "rgba(255,255,255,0.85)" }}>{msg.text}</span>
                   </div>
@@ -901,7 +901,7 @@ const VideoChatRoom = () => {
                 <input
                   value={inputMsg}
                   onChange={(e) => setInputMsg(e.target.value)}
-                  placeholder="Type a message..."
+                  placeholder="Digite uma mensagem..."
                   className="flex-1 rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-xs md:text-sm focus:outline-none focus:ring-1 transition-all"
                   style={{
                     background: "rgba(255,255,255,0.06)",
@@ -931,7 +931,7 @@ const VideoChatRoom = () => {
                     backdropFilter: "blur(8px)",
                   }}
                 >
-                  Stop
+                   Parar
                 </button>
                 <button
                   onClick={nextPerson}
@@ -939,7 +939,7 @@ const VideoChatRoom = () => {
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
                 >
                   <SkipForward className="w-4 h-4" />
-                  Next
+                   Próximo
                 </button>
               </div>
             </div>
@@ -975,7 +975,7 @@ const VideoChatRoom = () => {
                 <User className="w-12 h-12 md:w-16 md:h-16" style={{ color: "rgba(255,255,255,0.15)" }} />
               </div>
               <p className="text-[10px] md:text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-                Câmera desativada — somente chat
+                Câmera desativada — apenas chat
               </p>
             </div>
           </div>
@@ -1007,7 +1007,7 @@ const VideoChatRoom = () => {
                   background: "rgba(255,255,255,0.04)",
                 }}
               >
-                Log In
+                Entrar
               </button>
             )}
           </div>
@@ -1041,12 +1041,12 @@ const VideoChatRoom = () => {
             <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.1)" }} />
 
             <button
-              onClick={() => { setTempGender(selectedGender === "Gender" ? "Both" : selectedGender); setShowGenderModal(true); }}
+              onClick={() => { setTempGender(selectedGender === "Gênero" ? "Both" : selectedGender); setShowGenderModal(true); }}
               className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 py-3 md:px-5 md:py-3.5 text-xs md:text-sm transition-all hover:bg-white/5"
               style={{ color: "rgba(255,255,255,0.75)" }}
             >
               <Users className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#a78bfa" }} />
-              <span className="font-medium">{selectedGender}</span>
+              <span className="font-medium">{{ "Gênero": "Gênero", "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender}</span>
               <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5 opacity-40" />
             </button>
           </div>
@@ -1062,7 +1062,7 @@ const VideoChatRoom = () => {
                   boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
                 }}
               >
-                {cameraAllowed ? "👋 Start Video Chat" : "💬 Start Chat"}
+                {cameraAllowed ? "👋 Iniciar Vídeo Chat" : "💬 Iniciar Chat"}
                 {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
               </button>
               {isLoggedIn && (
@@ -1082,7 +1082,7 @@ const VideoChatRoom = () => {
                   backdropFilter: "blur(8px)",
                 }}
               >
-                Stop
+                 Parar
               </button>
               <button
                 onClick={nextPerson}
@@ -1093,7 +1093,7 @@ const VideoChatRoom = () => {
                 }}
               >
                 <SkipForward className="w-3.5 h-3.5" />
-                Next
+                 Próximo
               </button>
             </div>
           )}
@@ -1125,7 +1125,7 @@ const VideoChatRoom = () => {
             </div>
 
             <p className="text-xs md:text-sm mb-4 md:mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
-              {siteSettings.shop_description || "Higher tiers give you more bonus coins!"}
+              {siteSettings.shop_description || "Pacotes maiores dão mais coins bônus!"}
             </p>
 
             {/* Coin Packages Grid - dynamic from DB */}
@@ -1169,11 +1169,11 @@ const VideoChatRoom = () => {
 
             {/* Disclaimers */}
             <div className="space-y-1 text-[10px] md:text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-              <p>*Filters (e.g. gender, location, etc.) are based on the user's input. The results may not be accurate.</p>
-              <p>* If you cancel searching before you get a match, your coins will NOT be refunded.</p>
+              <p>*Filtros (gênero, localização, etc.) são baseados na escolha do usuário. Os resultados podem não ser precisos.</p>
+              <p>* Se você cancelar a busca antes de encontrar um match, suas coins serão reembolsadas.</p>
               <p>* Preços em BRL (Reais). O valor pode variar conforme sua localização.</p>
-              <p>* VAT is calculated at checkout.</p>
-              <p>* Make sure to read our <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Refund Policy</span>.</p>
+              <p>* O IVA é calculado no checkout.</p>
+              <p>* Certifique-se de ler nossos <span className="underline cursor-pointer">Termos de Serviço</span> e <span className="underline cursor-pointer">Política de Reembolso</span>.</p>
             </div>
           </div>
         </div>
@@ -1499,9 +1499,9 @@ const VideoChatRoom = () => {
             <div className="flex md:hidden justify-center mb-4">
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
-            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Region Preferences</h2>
+            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Preferências de Região</h2>
             <p className="text-xs md:text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Choose a region to match with. Some regions require coins.
+              Escolha uma região para buscar. Apenas estados do BR requerem coins.
             </p>
 
             <div className="space-y-1 max-h-56 md:max-h-64 overflow-y-auto mb-5">
@@ -1532,7 +1532,7 @@ const VideoChatRoom = () => {
                       {(regionPrices[state] !== undefined ? regionPrices[state] : 10) > 0 ? (
                         <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{regionPrices[state] !== undefined ? regionPrices[state] : 10} 🪙</span>
                       ) : (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>GRÁTIS</span>
                       )}
                     </button>
                   ))}
@@ -1558,17 +1558,13 @@ const VideoChatRoom = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-white">{country}</p>
                       {country === "Brazil" && (
-                        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>Toque para escolher estado</p>
+                        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>Toque para escolher o estado</p>
                       )}
                     </div>
-                    {country === "Worldwide" ? (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
-                    ) : country === "Brazil" ? (
+                    {country === "Brazil" ? (
                       <ChevronRight className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />
-                    ) : (regionPrices[country] !== undefined ? regionPrices[country] : 10) > 0 ? (
-                      <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{regionPrices[country] !== undefined ? regionPrices[country] : 10} 🪙</span>
                     ) : (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>GRÁTIS</span>
                     )}
                   </button>
                 ))
@@ -1580,10 +1576,10 @@ const VideoChatRoom = () => {
               className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:scale-[1.02] active:scale-[0.98] mb-2"
               style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 4px 16px -4px rgba(124,58,237,0.4)" }}
             >
-              Save
+              Salvar
             </button>
             <button onClick={() => setShowRegion(false)} className="w-full py-2 text-sm font-medium transition-colors" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Cancel
+              Cancelar
             </button>
           </div>
         </div>
@@ -1601,16 +1597,16 @@ const VideoChatRoom = () => {
             <div className="flex md:hidden justify-center mb-4">
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
-            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Gender Preferences</h2>
+            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Preferências de Gênero</h2>
             <p className="text-xs md:text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Coins are used when you match with a gender filter on.
+              Coins são usadas quando você busca com filtro de gênero ativado.
             </p>
 
             <div className="grid grid-cols-3 gap-2.5 md:gap-3 mb-5">
               {[
-                { id: "Male", emoji: "👨", color: "#38bdf8", borderColor: "#38bdf8" },
-                { id: "Both", emoji: "👫", color: "#a855f7", borderColor: "#a855f7" },
-                { id: "Female", emoji: "👩", color: "#ec4899", borderColor: "#ec4899" },
+                { id: "Male", emoji: "👨", label: "Homem", color: "#38bdf8", borderColor: "#38bdf8" },
+                { id: "Both", emoji: "👫", label: "Ambos", color: "#a855f7", borderColor: "#a855f7" },
+                { id: "Female", emoji: "👩", label: "Mulher", color: "#ec4899", borderColor: "#ec4899" },
               ].map((g) => {
                 const cost = genderPrices[g.id] !== undefined ? genderPrices[g.id] : (g.id === "Both" ? 0 : 15);
                 return (
@@ -1629,10 +1625,10 @@ const VideoChatRoom = () => {
                   )}
                   {cost === 0 && (
                     <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                      style={{ background: "rgba(34,197,94,0.9)", color: "#fff" }}>FREE</span>
+                      style={{ background: "rgba(34,197,94,0.9)", color: "#fff" }}>GRÁTIS</span>
                   )}
                   <span className="text-3xl md:text-4xl">{g.emoji}</span>
-                  <span className="text-xs md:text-sm font-semibold" style={{ color: g.color }}>{g.id}</span>
+                  <span className="text-xs md:text-sm font-semibold" style={{ color: g.color }}>{g.label}</span>
                 </button>
               )})}
             </div>
@@ -1642,10 +1638,10 @@ const VideoChatRoom = () => {
               className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:scale-[1.02] active:scale-[0.98] mb-2"
               style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 4px 16px -4px rgba(124,58,237,0.4)" }}
             >
-              Save
+              Salvar
             </button>
             <button onClick={() => setShowGenderModal(false)} className="w-full py-2 text-sm font-medium transition-colors" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Cancel
+              Cancelar
             </button>
           </div>
         </div>
@@ -1682,14 +1678,14 @@ const VideoChatRoom = () => {
               <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
             </h2>
             <p className="text-xs md:text-sm mt-1.5 mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              {authMode === "login" ? "Sign in to start chatting!" : "Create your account"}
+              {authMode === "login" ? "Entre para começar a conversar!" : "Crie sua conta"}
             </p>
 
             {/* Email / Password form */}
             <div className="space-y-2.5 mb-4">
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="E-mail"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
                 className="w-full py-3 px-4 rounded-xl text-sm text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-purple-500/50"
@@ -1697,7 +1693,7 @@ const VideoChatRoom = () => {
               />
               <input
                 type="password"
-                placeholder="Password"
+                placeholder="Senha"
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleEmailAuth()}
@@ -1705,7 +1701,7 @@ const VideoChatRoom = () => {
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
               />
               {authError && (
-                <p className="text-xs" style={{ color: authError.includes("Check your email") ? "#22c55e" : "#f87171" }}>
+                <p className="text-xs" style={{ color: authError.includes("Check your email") || authError.includes("Verifique") ? "#22c55e" : "#f87171" }}>
                   {authError}
                 </p>
               )}
@@ -1715,20 +1711,20 @@ const VideoChatRoom = () => {
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
               >
-                {authLoading ? "..." : authMode === "login" ? "Sign In" : "Create Account"}
+                {authLoading ? "..." : authMode === "login" ? "Entrar" : "Criar Conta"}
               </button>
               <button
                 onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
                 className="text-xs"
                 style={{ color: "rgba(255,255,255,0.4)" }}
               >
-                {authMode === "login" ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                {authMode === "login" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar"}
               </button>
             </div>
 
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.25)" }}>or</span>
+              <span className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.25)" }}>ou</span>
               <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
             </div>
 
@@ -1744,7 +1740,7 @@ const VideoChatRoom = () => {
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
-                Continue with Google
+                Continuar com Google
               </button>
 
               <button
@@ -1755,14 +1751,14 @@ const VideoChatRoom = () => {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#000">
                   <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-2.12 4.53-3.74 4.25z"/>
                 </svg>
-                Continue with Apple
+                Continuar com Apple
               </button>
             </div>
 
             <p className="text-[10px] md:text-xs mt-5 leading-relaxed" style={{ color: "rgba(255,255,255,0.25)" }}>
-              I confirm that I am at least 18 years old and I agree to the{" "}
-              <span className="underline cursor-pointer">Terms of Service</span> and{" "}
-              <span className="underline cursor-pointer">Privacy Policy</span>.
+              Confirmo que tenho pelo menos 18 anos e concordo com os{" "}
+              <span className="underline cursor-pointer">Termos de Serviço</span> e{" "}
+              <span className="underline cursor-pointer">Política de Privacidade</span>.
             </p>
           </div>
         </div>
