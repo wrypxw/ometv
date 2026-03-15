@@ -16,7 +16,6 @@ import {
   ChevronUp,
   ChevronRight,
   Facebook,
-  History,
   User,
   MessageSquare,
   Share2,
@@ -264,7 +263,7 @@ const VideoChatRoom = () => {
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
       <div
-        className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col overflow-hidden"
+        className={`${status === "connected" || status === "searching" ? "h-[100dvh] md:h-full w-full" : "h-[50dvh] md:h-full md:flex-1"} relative flex flex-col overflow-hidden`}
         style={{
           background: `
             radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.35) 0%, transparent 50%),
@@ -522,8 +521,8 @@ const VideoChatRoom = () => {
         )}
       </div>
 
-      {/* BOTTOM/RIGHT PANEL - Your video */}
-      <div className="h-[50dvh] md:h-full md:flex-1 relative overflow-hidden" style={{ background: "#111118" }}>
+      {/* BOTTOM/RIGHT PANEL - Your video (PiP overlay when connected/searching, full otherwise) */}
+      <div className={`${status === "connected" || status === "searching" ? "absolute bottom-20 right-3 md:bottom-6 md:right-6 w-32 h-44 md:w-48 md:h-64 rounded-2xl shadow-2xl z-30" : "h-[50dvh] md:h-full md:flex-1"} relative overflow-hidden`} style={{ background: "#111118", ...(status === "connected" || status === "searching" ? { border: "2px solid rgba(255,255,255,0.15)" } : {}) }}>
         {/* Camera feed - fills entire panel */}
         <video
           ref={localVideoRef}
@@ -561,17 +560,14 @@ const VideoChatRoom = () => {
           </div>
         )}
 
-        {/* Top bar overlay - floats over video */}
+        {/* Top bar overlay - only show when not in PiP */}
+        {status !== "connected" && status !== "searching" && (
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-2.5 md:px-5 md:py-4"
           style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 100%)" }}
         >
           <div className="flex items-center gap-2.5">
             <button className="transition-all hover:scale-110" style={{ color: "rgba(255,255,255,0.3)" }}>
               <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
-            <button className="flex items-center gap-1.5 transition-all hover:opacity-80" style={{ color: "rgba(255,255,255,0.45)" }}>
-              <History className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="text-xs md:text-sm font-medium">History</span>
             </button>
           </div>
 
@@ -592,8 +588,10 @@ const VideoChatRoom = () => {
             )}
           </div>
         </div>
+        )}
 
         {/* Bottom controls - floats over video with gradient fade */}
+        {status !== "connected" && status !== "searching" && (
         <div className="absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-5 pt-10 flex flex-col items-center gap-2.5 md:gap-3"
           style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}
         >
@@ -668,6 +666,7 @@ const VideoChatRoom = () => {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Shop Modal */}
