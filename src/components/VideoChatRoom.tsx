@@ -178,7 +178,7 @@ const VideoChatRoom = () => {
     });
   }, []);
 
-
+  const handleEmailAuth = async () => {
     setAuthLoading(true);
     setAuthError("");
     try {
