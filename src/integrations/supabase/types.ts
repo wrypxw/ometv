@@ -92,6 +92,65 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          amount_cents: number
+          bonus_amount: number
+          coins_amount: number
+          coupon_code: string | null
+          created_at: string
+          currency: string
+          discount_percent: number | null
+          id: string
+          mp_payment_id: string | null
+          mp_preference_id: string | null
+          package_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          bonus_amount?: number
+          coins_amount?: number
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          discount_percent?: number | null
+          id?: string
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          package_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          bonus_amount?: number
+          coins_amount?: number
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          discount_percent?: number | null
+          id?: string
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          package_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "shop_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           coins: number
