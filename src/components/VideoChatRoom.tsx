@@ -1125,7 +1125,7 @@ const VideoChatRoom = () => {
             </div>
 
             <p className="text-xs md:text-sm mb-4 md:mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
-              {siteSettings.shop_description || "Higher tiers give you more bonus coins!"}
+              {siteSettings.shop_description || "Pacotes maiores dão mais coins bônus!"}
             </p>
 
             {/* Coin Packages Grid - dynamic from DB */}
