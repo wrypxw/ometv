@@ -1016,10 +1016,10 @@ const AdminPanel = () => {
                                 {tx.status.toUpperCase()}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 mt-0.5">
+                            <div className="flex flex-wrap items-center gap-2 mt-0.5">
                               <span className="text-xs" style={{ color: "#eab308" }}>🪙 {tx.coins_amount}{tx.bonus_amount > 0 ? ` +${tx.bonus_amount}` : ""}</span>
                               <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>R$ {(tx.amount_cents / 100).toFixed(2)}</span>
-                              {tx.coupon_code && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>🏷️ {tx.coupon_code} (-{tx.discount_percent}%)</span>}
+                              {tx.coupon_code && <span className="text-[10px] px-1.5 py-0.5 rounded-full truncate max-w-[120px]" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>🏷️ {tx.coupon_code} (-{tx.discount_percent}%)</span>}
                             </div>
                           </div>
                         </div>
