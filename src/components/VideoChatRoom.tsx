@@ -999,7 +999,13 @@ const VideoChatRoom = () => {
               }}
             >
               👋 Start Video Chat
+              {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
             </button>
+            {isLoggedIn && (
+              <p className="text-center text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                Seu saldo: <span style={{ color: "#fbbf24" }}>{userCoins} 🪙</span>
+              </p>
+            )}
           ) : (
             <div className="flex md:hidden items-center gap-2 w-full max-w-md">
               <button
