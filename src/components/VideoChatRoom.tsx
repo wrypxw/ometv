@@ -1419,11 +1419,13 @@ const VideoChatRoom = () => {
       )}
 
       {/* Profile Modal */}
-      {showProfileModal && (
+      {showProfileModal && profileTarget && (() => {
+        const isOwnProfile = currentUser && profileTarget?.id === currentUser?.id;
+        return (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowProfileModal(false)}>
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
           <div
-            className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-3xl overflow-hidden max-h-[85dvh]"
+            className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-3xl overflow-hidden max-h-[85dvh] overflow-y-auto"
             style={{ background: "linear-gradient(180deg, #1a1040, #0f0a2e)", border: "1px solid rgba(139,92,246,0.15)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1449,33 +1451,131 @@ const VideoChatRoom = () => {
               <h3 className="text-xl font-bold text-white">
                 {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Stranger"}
               </h3>
-              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
-                Usuário do {siteSettings.site_name || "ChatRandom"}
-              </p>
+              {profileTarget?.age && (
+                <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  {profileTarget.age} anos
+                </p>
+              )}
+              {profileTarget?.bio && (
+                <p className="text-xs mt-2 leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  {profileTarget.bio}
+                </p>
+              )}
+              {profileTarget?.instagram && (
+                <a
+                  href={profileTarget.instagram.startsWith("http") ? profileTarget.instagram : `https://instagram.com/${profileTarget.instagram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-2 text-xs font-medium transition-opacity hover:opacity-80"
+                  style={{ color: "#e879f9" }}
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  @{profileTarget.instagram.replace("@", "").replace("https://instagram.com/", "").replace("https://www.instagram.com/", "")}
+                </a>
+              )}
+              {!profileTarget?.age && !profileTarget?.bio && !profileTarget?.instagram && (
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Usuário do {siteSettings.site_name || "ChatRandom"}
+                </p>
+              )}
             </div>
 
+            {/* Edit own profile */}
+            {isOwnProfile && (
+              <div className="px-6 pt-3 pb-2 space-y-2">
+                <div className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Editar Perfil</div>
+                <input
+                  type="text"
+                  placeholder="Nome de exibição"
+                  defaultValue={profileTarget?.display_name || ""}
+                  onBlur={async (e) => {
+                    const v = e.target.value.trim().slice(0, 50);
+                    if (v && v !== profileTarget?.display_name) {
+                      await supabase.from("profiles").update({ display_name: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+                      setProfileTarget((p: any) => ({ ...p, display_name: v }));
+                    }
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                />
+                <input
+                  type="number"
+                  placeholder="Idade"
+                  min={18}
+                  max={99}
+                  defaultValue={profileTarget?.age || ""}
+                  onBlur={async (e) => {
+                    const v = Math.min(99, Math.max(18, parseInt(e.target.value) || 0));
+                    if (v >= 18) {
+                      await supabase.from("profiles").update({ age: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+                      setProfileTarget((p: any) => ({ ...p, age: v }));
+                    }
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                />
+                <input
+                  type="text"
+                  placeholder="@ do Instagram"
+                  defaultValue={profileTarget?.instagram || ""}
+                  onBlur={async (e) => {
+                    const v = e.target.value.trim().slice(0, 100);
+                    await supabase.from("profiles").update({ instagram: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+                    setProfileTarget((p: any) => ({ ...p, instagram: v }));
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                />
+                <textarea
+                  placeholder="Bio (máx. 200 caracteres)"
+                  maxLength={200}
+                  defaultValue={profileTarget?.bio || ""}
+                  onBlur={async (e) => {
+                    const v = e.target.value.trim().slice(0, 200);
+                    await supabase.from("profiles").update({ bio: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+                    setProfileTarget((p: any) => ({ ...p, bio: v }));
+                  }}
+                  rows={2}
+                  className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50 resize-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                />
+              </div>
+            )}
+
+            {/* Coins display */}
+            {isOwnProfile && (
+              <div className="px-6 pt-2 pb-2">
+                <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl" style={{ background: "rgba(250,204,21,0.08)", border: "1px solid rgba(250,204,21,0.15)" }}>
+                  <span className="text-lg">🪙</span>
+                  <span className="text-sm font-bold" style={{ color: "#fbbf24" }}>{profileTarget?.coins ?? 0} Coins</span>
+                </div>
+              </div>
+            )}
+
             {/* Action buttons */}
-            <div className="px-6 pb-6 pt-4 space-y-2.5">
-              {/* Follow / Unfollow */}
-              <button
-                onClick={() => profileTarget?.id && handleFollow(profileTarget.id)}
-                disabled={followLoading}
-                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                style={{
-                  background: isFollowing
-                    ? "rgba(255,255,255,0.06)"
-                    : "linear-gradient(135deg, #7c3aed, #a855f7)",
-                  border: isFollowing ? "1px solid rgba(255,255,255,0.12)" : "none",
-                  color: "white",
-                  boxShadow: isFollowing ? "none" : "0 6px 24px rgba(124,58,237,0.35)",
-                }}
-              >
-                {isFollowing ? (
-                  <><UserMinus className="w-4 h-4" /> Deixar de Seguir</>
-                ) : (
-                  <><UserPlus className="w-4 h-4" /> Seguir</>
-                )}
-              </button>
+            <div className="px-6 pb-6 pt-3 space-y-2.5">
+              {/* Follow / Unfollow - only for other users */}
+              {!isOwnProfile && (
+                <button
+                  onClick={() => profileTarget?.id && handleFollow(profileTarget.id)}
+                  disabled={followLoading}
+                  className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                  style={{
+                    background: isFollowing
+                      ? "rgba(255,255,255,0.06)"
+                      : "linear-gradient(135deg, #7c3aed, #a855f7)",
+                    border: isFollowing ? "1px solid rgba(255,255,255,0.12)" : "none",
+                    color: "white",
+                    boxShadow: isFollowing ? "none" : "0 6px 24px rgba(124,58,237,0.35)",
+                  }}
+                >
+                  {isFollowing ? (
+                    <><UserMinus className="w-4 h-4" /> Deixar de Seguir</>
+                  ) : (
+                    <><UserPlus className="w-4 h-4" /> Seguir</>
+                  )}
+                </button>
+              )}
 
               {/* Share */}
               <button
@@ -1490,21 +1590,24 @@ const VideoChatRoom = () => {
                 <Share2 className="w-4 h-4" /> Compartilhar
               </button>
 
-              {/* Private Chat */}
-              <button
-                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "rgba(59,130,246,0.1)",
-                  border: "1px solid rgba(59,130,246,0.25)",
-                  color: "#60a5fa",
-                }}
-              >
-                <MessageSquare className="w-4 h-4" /> Chat Privado
-              </button>
+              {/* Private Chat - only for other users */}
+              {!isOwnProfile && (
+                <button
+                  className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: "rgba(59,130,246,0.1)",
+                    border: "1px solid rgba(59,130,246,0.25)",
+                    color: "#60a5fa",
+                  }}
+                >
+                  <MessageSquare className="w-4 h-4" /> Chat Privado
+                </button>
+              )}
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Friends List Modal */}
       {showFriendsModal && (
