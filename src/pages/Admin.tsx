@@ -571,8 +571,8 @@ const AdminPanel = () => {
     <div className="min-h-screen flex" style={{ background: "#0a0a0f" }}>
       {/* Sidebar */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen flex flex-col transition-all duration-300 ${sidebarOpen ? "w-56" : "w-0 md:w-16"}`}
-        style={{ background: "rgba(15,15,25,0.98)", borderRight: "1px solid rgba(255,255,255,0.06)" }}
+        className={`fixed md:sticky top-0 left-0 z-40 h-screen flex flex-col transition-all duration-300 overflow-hidden ${sidebarOpen ? "w-56" : "w-0 md:w-16"}`}
+        style={{ background: "rgba(15,15,25,0.98)", borderRight: sidebarOpen || window.innerWidth >= 768 ? "1px solid rgba(255,255,255,0.06)" : "none" }}
       >
         <div className={`flex items-center gap-2.5 p-4 ${sidebarOpen ? "" : "md:justify-center md:px-2"}`}>
           {sidebarOpen && (
