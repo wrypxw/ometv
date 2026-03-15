@@ -619,7 +619,7 @@ const AdminPanel = () => {
       )}
 
       {/* Main content */}
-      <main className={`flex-1 min-h-screen transition-all duration-300 ${sidebarOpen ? "md:ml-0" : "md:ml-0"}`}>
+      <main className="flex-1 min-h-screen min-w-0 overflow-x-hidden">
         {/* Top bar */}
         <div className="sticky top-0 z-20 px-4 py-3 md:px-6 md:py-4 flex items-center gap-3"
           style={{ background: "rgba(10,10,15,0.95)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
