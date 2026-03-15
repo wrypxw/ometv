@@ -103,7 +103,7 @@ const VideoChatRoom = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMsg, setInputMsg] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("Worldwide");
-  const [selectedGender, setSelectedGender] = useState("Gender");
+  const [selectedGender, setSelectedGender] = useState("Gênero");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showShop, setShowShop] = useState(false);
