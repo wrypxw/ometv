@@ -355,6 +355,56 @@ const VideoChatRoom = () => {
     }
   }, [inputMsg, status]);
 
+  // Follow/unfollow logic
+  const checkIfFollowing = useCallback(async (targetUserId: string) => {
+    if (!currentUser) return false;
+    const { data } = await supabase
+      .from("follows")
+      .select("id")
+      .eq("follower_id", currentUser.id)
+      .eq("following_id", targetUserId)
+      .maybeSingle();
+    return !!data;
+  }, [currentUser]);
+
+  const handleFollow = useCallback(async (targetUserId: string) => {
+    if (!currentUser) { setShowLoginModal(true); return; }
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", targetUserId);
+        setIsFollowing(false);
+        setStrangerFollowed(false);
+      } else {
+        await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: targetUserId });
+        setIsFollowing(true);
+        setStrangerFollowed(true);
+      }
+    } catch (err) {
+      console.error("Follow error:", err);
+    } finally {
+      setFollowLoading(false);
+    }
+  }, [currentUser, isFollowing]);
+
+  const openProfileModal = useCallback(async (targetUser: any) => {
+    setProfileTarget(targetUser);
+    if (currentUser && targetUser?.id) {
+      const following = await checkIfFollowing(targetUser.id);
+      setIsFollowing(following);
+    }
+    setShowProfileModal(true);
+  }, [currentUser, checkIfFollowing]);
+
+  const handleShareProfile = useCallback(() => {
+    const url = window.location.origin;
+    if (navigator.share) {
+      navigator.share({ title: "ChatRandom", text: "Venha conversar comigo!", url });
+    } else {
+      navigator.clipboard.writeText(url);
+    }
+  }, []);
+
   return (
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
