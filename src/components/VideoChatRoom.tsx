@@ -1046,7 +1046,7 @@ const VideoChatRoom = () => {
               style={{ color: "rgba(255,255,255,0.75)" }}
             >
               <Users className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: "#a78bfa" }} />
-              <span className="font-medium">{{ "Gender": "Gênero", "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender}</span>
+              <span className="font-medium">{{ "Gênero": "Gênero", "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender}</span>
               <ChevronUp className="w-3 h-3 md:w-3.5 md:h-3.5 opacity-40" />
             </button>
           </div>
