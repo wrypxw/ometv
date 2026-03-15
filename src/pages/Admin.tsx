@@ -571,8 +571,8 @@ const AdminPanel = () => {
     <div className="min-h-screen flex" style={{ background: "#0a0a0f" }}>
       {/* Sidebar */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen flex flex-col transition-all duration-300 ${sidebarOpen ? "w-56" : "w-0 md:w-16"}`}
-        style={{ background: "rgba(15,15,25,0.98)", borderRight: "1px solid rgba(255,255,255,0.06)" }}
+        className={`fixed md:sticky top-0 left-0 z-40 h-screen flex flex-col transition-all duration-300 overflow-hidden ${sidebarOpen ? "w-56" : "w-0 md:w-16"}`}
+        style={{ background: "rgba(15,15,25,0.98)", borderRight: sidebarOpen || window.innerWidth >= 768 ? "1px solid rgba(255,255,255,0.06)" : "none" }}
       >
         <div className={`flex items-center gap-2.5 p-4 ${sidebarOpen ? "" : "md:justify-center md:px-2"}`}>
           {sidebarOpen && (
@@ -619,7 +619,7 @@ const AdminPanel = () => {
       )}
 
       {/* Main content */}
-      <main className={`flex-1 min-h-screen transition-all duration-300 ${sidebarOpen ? "md:ml-0" : "md:ml-0"}`}>
+      <main className="flex-1 min-h-screen min-w-0 overflow-x-hidden">
         {/* Top bar */}
         <div className="sticky top-0 z-20 px-4 py-3 md:px-6 md:py-4 flex items-center gap-3"
           style={{ background: "rgba(10,10,15,0.95)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -642,7 +642,7 @@ const AdminPanel = () => {
           )}
         </div>
 
-        <div className="p-4 md:p-6 max-w-5xl">
+        <div className="p-3 md:p-6 max-w-5xl overflow-x-hidden">
           {/* =================== USERS TAB =================== */}
           {activeTab === "users" && (
             <>
@@ -1016,10 +1016,10 @@ const AdminPanel = () => {
                                 {tx.status.toUpperCase()}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 mt-0.5">
+                            <div className="flex flex-wrap items-center gap-2 mt-0.5">
                               <span className="text-xs" style={{ color: "#eab308" }}>🪙 {tx.coins_amount}{tx.bonus_amount > 0 ? ` +${tx.bonus_amount}` : ""}</span>
                               <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>R$ {(tx.amount_cents / 100).toFixed(2)}</span>
-                              {tx.coupon_code && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>🏷️ {tx.coupon_code} (-{tx.discount_percent}%)</span>}
+                              {tx.coupon_code && <span className="text-[10px] px-1.5 py-0.5 rounded-full truncate max-w-[120px]" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>🏷️ {tx.coupon_code} (-{tx.discount_percent}%)</span>}
                             </div>
                           </div>
                         </div>
