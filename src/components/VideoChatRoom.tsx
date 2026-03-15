@@ -596,6 +596,42 @@ const VideoChatRoom = () => {
           />
         )}
 
+        {/* Follow button during call */}
+        {status === "connected" && isLoggedIn && (
+          <div className="absolute top-16 md:top-20 left-3 md:left-5 z-20">
+            <button
+              onClick={() => {
+                if (strangerFollowed) return;
+                // In a real scenario, you'd have the stranger's user ID from matchmaking
+                // For now, show the profile modal
+                setStrangerFollowed(!strangerFollowed);
+              }}
+              disabled={followLoading}
+              className="flex items-center gap-2 rounded-full px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+              style={{
+                background: strangerFollowed
+                  ? "rgba(34,197,94,0.2)"
+                  : "linear-gradient(135deg, #7c3aed, #a855f7)",
+                border: strangerFollowed ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(139,92,246,0.3)",
+                backdropFilter: "blur(12px)",
+                boxShadow: strangerFollowed ? "none" : "0 4px 20px rgba(124,58,237,0.3)",
+              }}
+            >
+              {strangerFollowed ? (
+                <>
+                  <Heart className="w-3.5 h-3.5 md:w-4 md:h-4 fill-current" style={{ color: "#22c55e" }} />
+                  <span style={{ color: "#22c55e" }}>Seguindo</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  Seguir
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Searching overlay */}
         {status === "searching" && (
           <div className="absolute inset-0 flex items-center justify-center z-10"
