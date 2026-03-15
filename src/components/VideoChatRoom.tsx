@@ -931,7 +931,7 @@ const VideoChatRoom = () => {
                     backdropFilter: "blur(8px)",
                   }}
                 >
-                  Stop
+                   Parar
                 </button>
                 <button
                   onClick={nextPerson}
