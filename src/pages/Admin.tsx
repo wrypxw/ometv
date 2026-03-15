@@ -340,7 +340,6 @@ const AdminPanel = () => {
     fetchRegions();
   };
 
-  const [populatingRegions, setPopulatingRegions] = useState(false);
 
   const populateAllRegions = async () => {
     setPopulatingRegions(true);
