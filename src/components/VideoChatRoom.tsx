@@ -990,22 +990,24 @@ const VideoChatRoom = () => {
 
           {/* Start / Stop+Next */}
           {status === "idle" || status === "disconnected" ? (
-            <button
-              onClick={!cameraAllowed ? startLocalCamera : startSearch}
-              className="w-full max-w-md py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-              style={{
-                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
-              }}
-            >
-              👋 Start Video Chat
-              {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
-            </button>
-            {isLoggedIn && (
-              <p className="text-center text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                Seu saldo: <span style={{ color: "#fbbf24" }}>{userCoins} 🪙</span>
-              </p>
-            )}
+            <>
+              <button
+                onClick={!cameraAllowed ? startLocalCamera : startSearch}
+                className="w-full max-w-md py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+                style={{
+                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
+                }}
+              >
+                👋 Start Video Chat
+                {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
+              </button>
+              {isLoggedIn && (
+                <p className="text-center text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  Seu saldo: <span style={{ color: "#fbbf24" }}>{userCoins} 🪙</span>
+                </p>
+              )}
+            </>
           ) : (
             <div className="flex md:hidden items-center gap-2 w-full max-w-md">
               <button
