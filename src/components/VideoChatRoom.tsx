@@ -400,6 +400,15 @@ const VideoChatRoom = () => {
     return true;
   }, [currentUser]);
 
+  const refundCoins = useCallback(async (amount: number) => {
+    if (!currentUser || amount <= 0) return;
+    const { data } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
+    if (!data) return;
+    await supabase.from("profiles").update({ coins: data.coins + amount, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+    setUserCoins(data.coins + amount);
+    setPendingCoinCost(0);
+  }, [currentUser]);
+
   const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
     if (!localStreamRef.current) {
