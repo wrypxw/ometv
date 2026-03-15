@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Users, Search, ArrowLeft, Coins, Mail, Lock, Trash2, Plus, Minus, X,
   Shield, Settings, Upload, ShoppingBag, Edit2, GripVertical, ToggleLeft, ToggleRight,
-  ChevronLeft, Menu, Tag, Copy, Calendar,
+  ChevronLeft, Menu, Tag, Copy, Calendar, CreditCard, Eye, EyeOff, CheckCircle, Clock, XCircle, AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -64,9 +64,25 @@ const NAV_ITEMS = [
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons", icon: Tag },
+  { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments";
+
+interface PaymentTransaction {
+  id: string;
+  user_id: string;
+  amount_cents: number;
+  currency: string;
+  coins_amount: number;
+  bonus_amount: number;
+  coupon_code: string | null;
+  discount_percent: number;
+  mp_preference_id: string | null;
+  mp_payment_id: string | null;
+  status: string;
+  created_at: string;
+}
 
 
 
@@ -94,6 +110,9 @@ const AdminPanel = () => {
   const [couponsLoading, setCouponsLoading] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [couponForm, setCouponForm] = useState({ code: "", discount_percent: 10, max_uses: "", expires_at: "" });
+  const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
+  const [txLoading, setTxLoading] = useState(false);
+  const [mpTokenVisible, setMpTokenVisible] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -133,9 +152,16 @@ const AdminPanel = () => {
     setCouponsLoading(false);
   }, []);
 
+  const fetchTransactions = useCallback(async () => {
+    setTxLoading(true);
+    const { data } = await supabase.from("payment_transactions").select("*").order("created_at", { ascending: false }).limit(100);
+    if (data) setTransactions(data as PaymentTransaction[]);
+    setTxLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
@@ -332,6 +358,7 @@ const AdminPanel = () => {
             {activeTab === "settings" && "Configurações"}
             {activeTab === "shop" && "Shop / Planos"}
             {activeTab === "coupons" && "Cupons de Desconto"}
+            {activeTab === "payments" && "Pagamentos"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
@@ -410,6 +437,32 @@ const AdminPanel = () => {
                   <SettingsSection title="🖼️ Imagens" keys={["logo_url", "favicon_url"]} getValue={getSettingValue} onChange={updateSettingLocal} onUpload={handleImageUpload} uploadingKey={uploadingKey} />
                   <SettingsSection title="🌐 Redes Sociais" keys={["facebook_url", "discord_url", "twitter_url", "instagram_url", "tiktok_url"]} getValue={getSettingValue} onChange={updateSettingLocal} />
                   <SettingsSection title="🛒 Shop" keys={["shop_enabled", "shop_title", "shop_description"]} getValue={getSettingValue} onChange={updateSettingLocal} />
+
+                  {/* Mercado Pago Config */}
+                  <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <h3 className="text-sm font-semibold text-white mb-3">💳 Mercado Pago</h3>
+                    <div>
+                      <label className="text-[11px] font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.4)" }}>Access Token</label>
+                      <div className="flex gap-2">
+                        <input
+                          type={mpTokenVisible ? "text" : "password"}
+                          value={getSettingValue("mp_access_token")}
+                          onChange={e => updateSettingLocal("mp_access_token", e.target.value)}
+                          placeholder="APP_USR-..."
+                          className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+                          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "white" }}
+                        />
+                        <button onClick={() => setMpTokenVisible(!mpTokenVisible)}
+                          className="px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                          style={{ border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
+                          {mpTokenVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
+                        Encontre em: mercadopago.com.br → Seu negócio → Configurações → Credenciais
+                      </p>
+                    </div>
+                  </div>
 
                   {Object.keys(settingsDirty).length > 0 && (
                     <button onClick={saveSettings} disabled={savingSettings}
@@ -552,6 +605,72 @@ const AdminPanel = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* =================== PAYMENTS TAB =================== */}
+          {activeTab === "payments" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Histórico de transações via Mercado Pago.</p>
+                <button onClick={fetchTransactions}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.3)" }}>
+                  🔄 Atualizar
+                </button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {[
+                  { label: "Total", value: transactions.length, color: "#a78bfa" },
+                  { label: "Aprovados", value: transactions.filter(t => t.status === "approved").length, color: "#22c55e" },
+                  { label: "Pendentes", value: transactions.filter(t => t.status === "pending").length, color: "#eab308" },
+                  { label: "Receita (R$)", value: (transactions.filter(t => t.status === "approved").reduce((s, t) => s + t.amount_cents, 0) / 100).toFixed(2), color: "#22c55e" },
+                ].map(stat => (
+                  <div key={stat.label} className="rounded-xl p-3 text-center"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div className="text-lg font-bold" style={{ color: stat.color }}>{stat.value}</div>
+                    <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {txLoading ? <Spinner /> : transactions.length === 0 ? (
+                <EmptyState icon={CreditCard} text="Nenhuma transação ainda" />
+              ) : (
+                <div className="space-y-2">
+                  {transactions.map(tx => {
+                    const StatusIcon = tx.status === "approved" ? CheckCircle : tx.status === "pending" ? Clock : tx.status === "rejected" ? XCircle : AlertCircle;
+                    const statusColor = tx.status === "approved" ? "#22c55e" : tx.status === "pending" ? "#eab308" : "#ef4444";
+                    const userName = users.find(u => u.id === tx.user_id)?.display_name || users.find(u => u.id === tx.user_id)?.email || tx.user_id.slice(0, 8);
+                    return (
+                      <div key={tx.id} className="rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+                        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <StatusIcon className="w-5 h-5 shrink-0" style={{ color: statusColor }} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium text-white">{userName}</span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${statusColor}15`, color: statusColor }}>
+                                {tx.status.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 mt-0.5">
+                              <span className="text-xs" style={{ color: "#eab308" }}>🪙 {tx.coins_amount}{tx.bonus_amount > 0 ? ` +${tx.bonus_amount}` : ""}</span>
+                              <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>R$ {(tx.amount_cents / 100).toFixed(2)}</span>
+                              {tx.coupon_code && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>🏷️ {tx.coupon_code} (-{tx.discount_percent}%)</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>
+                          {new Date(tx.created_at).toLocaleString("pt-BR")}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </>
