@@ -126,9 +126,16 @@ const AdminPanel = () => {
     setPackagesLoading(false);
   }, []);
 
+  const fetchCoupons = useCallback(async () => {
+    setCouponsLoading(true);
+    const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
+    if (data) setCoupons(data as Coupon[]);
+    setCouponsLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
