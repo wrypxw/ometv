@@ -167,7 +167,18 @@ const VideoChatRoom = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleEmailAuth = async () => {
+  // Load site settings
+  useEffect(() => {
+    supabase.from("site_settings").select("key, value").then(({ data }) => {
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach((s: any) => { map[s.key] = s.value; });
+        setSiteSettings(map);
+      }
+    });
+  }, []);
+
+
     setAuthLoading(true);
     setAuthError("");
     try {
