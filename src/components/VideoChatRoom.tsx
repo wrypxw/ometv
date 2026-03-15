@@ -473,10 +473,10 @@ const VideoChatRoom = () => {
                       </div>
                     </div>
                     {[
-                      { icon: <Share2 className="w-4 h-4" />, label: "Socials", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" /> },
-                      { icon: <Heart className="w-4 h-4" />, label: "Amizades" },
+                      { icon: <Share2 className="w-4 h-4" />, label: "Socials", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" />, action: () => {} },
+                      { icon: <Heart className="w-4 h-4" />, label: "Amizades", action: () => { setShowProfileMenu(false); openProfileModal(currentUser); } },
                     ].map((item) => (
-                      <button key={item.label} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-white/5" style={{ color: "rgba(255,255,255,0.65)" }}>
+                      <button key={item.label} onClick={item.action} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-white/5" style={{ color: "rgba(255,255,255,0.65)" }}>
                         {item.icon}<span>{item.label}</span>{item.extra}
                       </button>
                     ))}
