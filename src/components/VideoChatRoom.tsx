@@ -1625,7 +1625,7 @@ const VideoChatRoom = () => {
                   )}
                   {cost === 0 && (
                     <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                      style={{ background: "rgba(34,197,94,0.9)", color: "#fff" }}>FREE</span>
+                      style={{ background: "rgba(34,197,94,0.9)", color: "#fff" }}>GRÁTIS</span>
                   )}
                   <span className="text-3xl md:text-4xl">{g.emoji}</span>
                   <span className="text-xs md:text-sm font-semibold" style={{ color: g.color }}>{g.label}</span>
