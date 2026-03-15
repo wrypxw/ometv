@@ -82,14 +82,13 @@ const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
-  { id: "coupons" as const, label: "Cupons", icon: Tag },
-  { id: "promos" as const, label: "Códigos Promo", icon: Gift },
+  { id: "coupons" as const, label: "Cupons & Promos", icon: Tag },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
   { id: "genders" as const, label: "Gênero", icon: UserCheck },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "promos" | "payments" | "regions" | "genders";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders";
 
 interface PromoCode {
   id: string;
@@ -631,11 +630,10 @@ const AdminPanel = () => {
             {activeTab === "users" && "Usuários"}
             {activeTab === "settings" && "Configurações"}
             {activeTab === "shop" && "Shop / Planos"}
-            {activeTab === "coupons" && "Cupons de Desconto"}
+            {activeTab === "coupons" && "Cupons & Promos"}
             {activeTab === "payments" && "Pagamentos"}
             {activeTab === "regions" && "Preço por Região"}
             {activeTab === "genders" && "Preço por Gênero"}
-            {activeTab === "promos" && "Códigos Promocionais"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
@@ -812,6 +810,7 @@ const AdminPanel = () => {
           {/* =================== COUPONS TAB =================== */}
           {activeTab === "coupons" && (
             <>
+              {/* --- Cupons de Desconto --- */}
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Crie e gerencie cupons de desconto.</p>
                 <button onClick={() => {
@@ -877,6 +876,88 @@ const AdminPanel = () => {
                           <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
                         </button>
                         <button onClick={() => deleteCoupon(coupon.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* --- Divider --- */}
+              <div className="my-6 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }} />
+
+              {/* --- Códigos Promocionais (Resgate de Coins) --- */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Gift className="w-4 h-4" style={{ color: "#4ade80" }} /> Códigos Promocionais (Coins)
+                  </h3>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>Códigos que dão coins grátis aos usuários.</p>
+                </div>
+                <button onClick={() => {
+                  setEditingPromo({} as PromoCode);
+                  setPromoForm({ code: "", coins_reward: 100, max_uses: "", expires_at: "" });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Novo Código
+                </button>
+              </div>
+
+              {promosLoading ? <Spinner /> : promos.length === 0 ? (
+                <EmptyState icon={Gift} text="Nenhum código promocional criado" />
+              ) : (
+                <div className="space-y-2">
+                  {promos.map(promo => (
+                    <div key={promo.id}
+                      className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${promo.active ? "" : "opacity-50"}`}
+                      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: "rgba(34,197,94,0.15)" }}>
+                          <Gift className="w-4 h-4" style={{ color: "#4ade80" }} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-mono font-bold tracking-wider text-white">{promo.code}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>
+                              🪙 {promo.coins_reward} coins
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                            <span>Usados: {promo.used_count}{promo.max_uses ? `/${promo.max_uses}` : ""}</span>
+                            {promo.expires_at && <span>⏰ {new Date(promo.expires_at).toLocaleDateString("pt-BR")}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => { navigator.clipboard.writeText(promo.code); toast({ title: "Código copiado!" }); }}
+                          className="p-2 rounded-lg hover:bg-white/5 transition-colors" title="Copiar código">
+                          <Copy className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={async () => {
+                          await supabase.from("promo_codes").update({ active: !promo.active }).eq("id", promo.id);
+                          fetchPromos();
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+                          title={promo.active ? "Desativar" : "Ativar"}>
+                          {promo.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        </button>
+                        <button onClick={() => {
+                          setEditingPromo(promo);
+                          setPromoForm({
+                            code: promo.code,
+                            coins_reward: promo.coins_reward,
+                            max_uses: promo.max_uses ? String(promo.max_uses) : "",
+                            expires_at: promo.expires_at ? promo.expires_at.split("T")[0] : "",
+                          });
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={async () => {
+                          await supabase.from("promo_codes").delete().eq("id", promo.id);
+                          fetchPromos();
+                        }} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
                         </button>
                       </div>
@@ -1132,73 +1213,8 @@ const AdminPanel = () => {
             </>
           )}
 
-          {/* =================== PROMOS TAB =================== */}
-          {activeTab === "promos" && (
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Crie códigos promocionais que dão coins grátis aos usuários.</p>
-                <button onClick={() => {
-                  setEditingPromo({} as PromoCode);
-                  setPromoForm({ code: "", coins_reward: 100, max_uses: "", expires_at: "" });
-                }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
-                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
-                  <Plus className="w-3.5 h-3.5" /> Novo Código
-                </button>
-              </div>
 
-              {promosLoading ? <Spinner /> : promos.length === 0 ? (
-                <EmptyState icon={Gift} text="Nenhum código promocional criado" />
-              ) : (
-                <div className="space-y-2">
-                  {promos.map(promo => (
-                    <div key={promo.id}
-                      className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${promo.active ? "" : "opacity-50"}`}
-                      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-mono font-bold tracking-wider text-white">{promo.code}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>
-                            🪙 {promo.coins_reward} coins
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                          <span>Usados: {promo.used_count}{promo.max_uses ? `/${promo.max_uses}` : ""}</span>
-                          {promo.expires_at && <span>⏰ {new Date(promo.expires_at).toLocaleDateString("pt-BR")}</span>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <button onClick={async () => {
-                          await supabase.from("promo_codes").update({ active: !promo.active }).eq("id", promo.id);
-                          fetchPromos();
-                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-                          title={promo.active ? "Desativar" : "Ativar"}>
-                          {promo.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
-                        </button>
-                        <button onClick={() => {
-                          setEditingPromo(promo);
-                          setPromoForm({
-                            code: promo.code,
-                            coins_reward: promo.coins_reward,
-                            max_uses: promo.max_uses ? String(promo.max_uses) : "",
-                            expires_at: promo.expires_at ? promo.expires_at.split("T")[0] : "",
-                          });
-                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
-                          <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
-                        </button>
-                        <button onClick={async () => {
-                          await supabase.from("promo_codes").delete().eq("id", promo.id);
-                          fetchPromos();
-                        }} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
-                          <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+
         </div>
       </main>
 
