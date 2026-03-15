@@ -83,7 +83,7 @@ const NAV_ITEMS = [
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons", icon: Tag },
-  { id: "promos" as const, label: "Códigos Promo", icon: Gift },
+  { id: "coupons" as const, label: "Cupons & Promos", icon: Tag },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
   { id: "genders" as const, label: "Gênero", icon: UserCheck },
