@@ -869,8 +869,8 @@ const VideoChatRoom = () => {
                 </div>
               </div>
               <div>
-                <p className="text-sm md:text-base font-semibold text-white">Looking for partner...</p>
-                <p className="text-[10px] md:text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>This may take a moment</p>
+                <p className="text-sm md:text-base font-semibold text-white">Procurando parceiro...</p>
+                <p className="text-[10px] md:text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Isso pode levar um momento</p>
               </div>
             </div>
           </div>
