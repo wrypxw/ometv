@@ -454,7 +454,7 @@ const VideoChatRoom = () => {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       setStatus("disconnected");
     }
-  }, [connectToPartner, startLocalCamera]);
+  }, [connectToPartner, startLocalCamera, refundCoins]);
 
   const startSearch = useCallback(async () => {
     const cost = getFilterCost();
