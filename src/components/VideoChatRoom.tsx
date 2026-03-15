@@ -127,6 +127,7 @@ const VideoChatRoom = () => {
   const [shopPackages, setShopPackages] = useState<any[]>([]);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [regionPrices, setRegionPrices] = useState<Record<string, number>>({});
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileTarget, setProfileTarget] = useState<any>(null);
@@ -196,6 +197,21 @@ const VideoChatRoom = () => {
         const now = new Date();
         const valid = data.filter(c => (!c.expires_at || new Date(c.expires_at) > now) && (!c.max_uses || c.used_count < c.max_uses));
         setAvailableCoupons(valid);
+      }
+    });
+    // Load region coin prices
+    supabase.from("region_coin_prices").select("region_type, region_code, region_name, coin_cost").eq("active", true).then(({ data }) => {
+      if (data) {
+        const map: Record<string, number> = {};
+        data.forEach((r: any) => {
+          // Map by region_name for countries, and "ParentName - StateName" for states
+          if (r.region_type === "country") {
+            map[r.region_name] = r.coin_cost;
+          } else if (r.region_type === "state") {
+            map[r.region_name] = r.coin_cost;
+          }
+        });
+        setRegionPrices(map);
       }
     });
   }, []);
@@ -1116,7 +1132,11 @@ const VideoChatRoom = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white">{state}</p>
                       </div>
-                      <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>10 🪙</span>
+                      {(regionPrices[state] !== undefined ? regionPrices[state] : 10) > 0 ? (
+                        <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{regionPrices[state] !== undefined ? regionPrices[state] : 10} 🪙</span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
+                      )}
                     </button>
                   ))}
                 </>
@@ -1148,8 +1168,10 @@ const VideoChatRoom = () => {
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
                     ) : country === "Brazil" ? (
                       <ChevronRight className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />
+                    ) : (regionPrices[country] !== undefined ? regionPrices[country] : 10) > 0 ? (
+                      <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>{regionPrices[country] !== undefined ? regionPrices[country] : 10} 🪙</span>
                     ) : (
-                      <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>10 🪙</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>FREE</span>
                     )}
                   </button>
                 ))
