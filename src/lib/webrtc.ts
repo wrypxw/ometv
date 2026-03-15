@@ -26,13 +26,18 @@ export class Matchmaker {
     this.onMatch = onMatch;
 
     // Clean up old entries first
-    await supabase.rpc("cleanup_old_queue_entries");
+    const { error: cleanupError } = await supabase.rpc("cleanup_old_queue_entries");
+    if (cleanupError) console.warn("Cleanup error (non-blocking):", cleanupError);
 
     // Insert ourselves as waiting first
-    await supabase.from("match_queue").insert({
+    const { error: insertError } = await supabase.from("match_queue").insert({
       session_id: this.sessionId,
       status: "waiting",
     });
+    if (insertError) {
+      console.error("Failed to join match queue:", insertError);
+      throw insertError;
+    }
 
     // Now try to find someone else waiting
     const matched = await this.tryMatch();
