@@ -418,6 +418,9 @@ const VideoChatRoom = () => {
     setStatus("searching");
     setMessages([]);
 
+    // Clear any previous timeout
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+
     // Clean up previous connection
     webrtcRef.current?.destroy();
     webrtcRef.current = null;
@@ -427,12 +430,24 @@ const VideoChatRoom = () => {
     const matchmaker = new Matchmaker();
     matchmakerRef.current = matchmaker;
 
+    // 60s timeout — if no match, stop and refund
+    searchTimerRef.current = setTimeout(() => {
+      if (matchmakerRef.current === matchmaker) {
+        matchmaker.destroy();
+        matchmakerRef.current = null;
+        setStatus("disconnected");
+        // pendingCoinCost will be refunded via the status check below
+      }
+    }, 60000);
+
     try {
       await matchmaker.findMatch((roomId, isInitiator) => {
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
         connectToPartner(roomId, isInitiator);
       });
     } catch (err) {
       console.error("Matchmaking error:", err);
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       setStatus("disconnected");
     }
   }, [connectToPartner, startLocalCamera]);
