@@ -161,7 +161,7 @@ const VideoChatRoom = () => {
     setBuyingPkg(pkgId);
     try {
       const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { package_id: pkgId },
+        body: { package_id: pkgId, coupon_code: appliedCoupon?.code || undefined },
       });
       if (error) throw error;
       if (data?.init_point) {
