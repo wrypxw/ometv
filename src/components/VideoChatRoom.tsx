@@ -204,10 +204,22 @@ const VideoChatRoom = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
+      if (session?.user) {
+        supabase.from("profiles").select("coins").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) setUserCoins(data.coins);
+        });
+      } else {
+        setUserCoins(0);
+      }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
+      if (session?.user) {
+        supabase.from("profiles").select("coins").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) setUserCoins(data.coins);
+        });
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
