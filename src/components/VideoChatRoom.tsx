@@ -128,6 +128,11 @@ const VideoChatRoom = () => {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileTarget, setProfileTarget] = useState<any>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [strangerFollowed, setStrangerFollowed] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
