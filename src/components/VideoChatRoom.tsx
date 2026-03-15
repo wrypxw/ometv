@@ -183,6 +183,13 @@ const VideoChatRoom = () => {
     supabase.from("shop_packages").select("*").eq("active", true).order("sort_order").then(({ data }) => {
       if (data) setShopPackages(data);
     });
+    supabase.from("coupons").select("*").eq("active", true).then(({ data }) => {
+      if (data) {
+        const now = new Date();
+        const valid = data.filter(c => (!c.expires_at || new Date(c.expires_at) > now) && (!c.max_uses || c.used_count < c.max_uses));
+        setAvailableCoupons(valid);
+      }
+    });
   }, []);
 
   const handleEmailAuth = async () => {
