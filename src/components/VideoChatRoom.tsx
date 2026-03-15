@@ -365,6 +365,7 @@ const VideoChatRoom = () => {
     rtc.onDisconnected = () => {
       setStatus("disconnected");
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      setMessages([]);
     };
 
     if (localStreamRef.current) {
@@ -510,6 +511,7 @@ const VideoChatRoom = () => {
     matchmakerRef.current?.destroy();
     matchmakerRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    setMessages([]);
     setStatus("disconnected");
     // Refund coins if user was still searching (never connected)
     if (wasSearching && costToRefund > 0) {
