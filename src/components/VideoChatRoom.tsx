@@ -561,7 +561,8 @@ const VideoChatRoom = () => {
           </div>
         )}
 
-        {/* Top bar overlay - floats over video */}
+        {/* Top bar overlay - only show when not in PiP */}
+        {status !== "connected" && status !== "searching" && (
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-2.5 md:px-5 md:py-4"
           style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 100%)" }}
         >
@@ -588,6 +589,7 @@ const VideoChatRoom = () => {
             )}
           </div>
         </div>
+        )}
 
         {/* Bottom controls - floats over video with gradient fade */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-5 pt-10 flex flex-col items-center gap-2.5 md:gap-3"
