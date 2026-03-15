@@ -5,6 +5,7 @@ import {
   Users, Search, ArrowLeft, Coins, Mail, Lock, Trash2, Plus, Minus, X,
   Shield, Settings, Upload, ShoppingBag, Edit2, GripVertical, ToggleLeft, ToggleRight,
   ChevronLeft, Menu, Tag, Copy, Calendar, CreditCard, Eye, EyeOff, CheckCircle, Clock, XCircle, AlertCircle,
+  Globe, MapPin,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,15 +60,26 @@ const SETTING_LABELS: Record<string, { label: string; placeholder: string; type?
   shop_description: { label: "Descrição Shop", placeholder: "Higher tiers..." },
 };
 
+interface RegionCoinPrice {
+  id: string;
+  region_type: string;
+  region_code: string;
+  region_name: string;
+  parent_code: string | null;
+  coin_cost: number;
+  active: boolean;
+}
+
 const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons", icon: Tag },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
+  { id: "regions" as const, label: "Regiões", icon: Globe },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "payments";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions";
 
 interface PaymentTransaction {
   id: string;
@@ -113,6 +125,11 @@ const AdminPanel = () => {
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
   const [txLoading, setTxLoading] = useState(false);
   const [mpTokenVisible, setMpTokenVisible] = useState(false);
+  const [regions, setRegions] = useState<RegionCoinPrice[]>([]);
+  const [regionsLoading, setRegionsLoading] = useState(false);
+  const [editingRegion, setEditingRegion] = useState<RegionCoinPrice | null>(null);
+  const [regionForm, setRegionForm] = useState({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
+  const [regionSearch, setRegionSearch] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -159,9 +176,16 @@ const AdminPanel = () => {
     setTxLoading(false);
   }, []);
 
+  const fetchRegions = useCallback(async () => {
+    setRegionsLoading(true);
+    const { data } = await supabase.from("region_coin_prices").select("*").order("region_type").order("region_name");
+    if (data) setRegions(data as RegionCoinPrice[]);
+    setRegionsLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
@@ -281,6 +305,45 @@ const AdminPanel = () => {
     fetchCoupons();
   };
 
+  // Regions
+  const saveRegion = async () => {
+    try {
+      const payload = {
+        region_type: regionForm.region_type,
+        region_code: regionForm.region_code.toUpperCase().trim(),
+        region_name: regionForm.region_name.trim(),
+        parent_code: regionForm.parent_code ? regionForm.parent_code.toUpperCase().trim() : null,
+        coin_cost: regionForm.coin_cost,
+        updated_at: new Date().toISOString(),
+      };
+      if (editingRegion?.id) {
+        await supabase.from("region_coin_prices").update(payload).eq("id", editingRegion.id);
+      } else {
+        await supabase.from("region_coin_prices").insert(payload);
+      }
+      toast({ title: "Região salva!" });
+      setEditingRegion(null);
+      fetchRegions();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleRegionActive = async (r: RegionCoinPrice) => {
+    await supabase.from("region_coin_prices").update({ active: !r.active }).eq("id", r.id);
+    fetchRegions();
+  };
+
+  const deleteRegion = async (id: string) => {
+    await supabase.from("region_coin_prices").delete().eq("id", id);
+    fetchRegions();
+  };
+
+  const filteredRegions = regions.filter(r =>
+    r.region_name.toLowerCase().includes(regionSearch.toLowerCase()) ||
+    r.region_code.toLowerCase().includes(regionSearch.toLowerCase())
+  );
+
   const filteredUsers = users.filter(u =>
     u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -359,6 +422,7 @@ const AdminPanel = () => {
             {activeTab === "shop" && "Shop / Planos"}
             {activeTab === "coupons" && "Cupons de Desconto"}
             {activeTab === "payments" && "Pagamentos"}
+            {activeTab === "regions" && "Preço por Região"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
@@ -675,6 +739,108 @@ const AdminPanel = () => {
               )}
             </>
           )}
+
+          {/* =================== REGIONS TAB =================== */}
+          {activeTab === "regions" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Configure o custo em coins para cada país ou estado.</p>
+                <button onClick={() => {
+                  setEditingRegion({} as RegionCoinPrice);
+                  setRegionForm({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Nova Região
+                </button>
+              </div>
+
+              <div className="relative max-w-md mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />
+                <input value={regionSearch} onChange={(e) => setRegionSearch(e.target.value)}
+                  placeholder="Buscar região..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "white" }} />
+              </div>
+
+              {/* Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                {[
+                  { label: "Países", value: regions.filter(r => r.region_type === "country").length, color: "#a78bfa" },
+                  { label: "Estados", value: regions.filter(r => r.region_type === "state").length, color: "#22c55e" },
+                  { label: "Ativos", value: regions.filter(r => r.active).length, color: "#eab308" },
+                ].map(stat => (
+                  <div key={stat.label} className="rounded-xl p-3 text-center"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div className="text-lg font-bold" style={{ color: stat.color }}>{stat.value}</div>
+                    <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {regionsLoading ? <Spinner /> : filteredRegions.length === 0 ? (
+                <EmptyState icon={Globe} text="Nenhuma região configurada" />
+              ) : (
+                <div className="space-y-2">
+                  {filteredRegions.map(region => (
+                    <div key={region.id}
+                      className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${region.active ? "" : "opacity-50"}`}
+                      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: region.region_type === "country" ? "rgba(124,58,237,0.15)" : "rgba(34,197,94,0.15)" }}>
+                          {region.region_type === "country"
+                            ? <Globe className="w-4 h-4" style={{ color: "#a78bfa" }} />
+                            : <MapPin className="w-4 h-4" style={{ color: "#22c55e" }} />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-white">{region.region_name}</span>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full font-mono"
+                              style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                              {region.region_code}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: region.region_type === "country" ? "rgba(124,58,237,0.15)" : "rgba(34,197,94,0.15)", color: region.region_type === "country" ? "#a78bfa" : "#22c55e" }}>
+                              {region.region_type === "country" ? "País" : "Estado"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs font-semibold" style={{ color: "#eab308" }}>🪙 {region.coin_cost} coins</span>
+                            {region.parent_code && (
+                              <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                                País: {region.parent_code}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => toggleRegionActive(region)} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          {region.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        </button>
+                        <button onClick={() => {
+                          setEditingRegion(region);
+                          setRegionForm({
+                            region_type: region.region_type,
+                            region_code: region.region_code,
+                            region_name: region.region_name,
+                            parent_code: region.parent_code || "",
+                            coin_cost: region.coin_cost,
+                          });
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={() => deleteRegion(region.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
@@ -793,6 +959,51 @@ const AdminPanel = () => {
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "white", colorScheme: "dark" }} />
             </div>
             <PrimaryBtn onClick={saveCoupon} disabled={!couponForm.code.trim()} text="💾 Salvar Cupom" />
+          </div>
+        </Modal>
+      )}
+
+      {/* =================== REGION EDIT MODAL =================== */}
+      {editingRegion && (
+        <Modal onClose={() => setEditingRegion(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingRegion.id ? "Editar Região" : "Nova Região"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Tipo</label>
+              <div className="flex gap-2">
+                {["country", "state"].map(t => (
+                  <button key={t} onClick={() => setRegionForm(p => ({ ...p, region_type: t }))}
+                    className="flex-1 py-2 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      background: regionForm.region_type === t ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${regionForm.region_type === t ? "rgba(124,58,237,0.4)" : "rgba(255,255,255,0.08)"}`,
+                      color: regionForm.region_type === t ? "#a78bfa" : "rgba(255,255,255,0.5)",
+                    }}>
+                    {t === "country" ? "🌍 País" : "📍 Estado"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código (ex: BR, US, SP, RJ)</label>
+              <AdminInput value={regionForm.region_code} onChange={v => setRegionForm(p => ({ ...p, region_code: v.toUpperCase() }))} placeholder="BR" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Nome</label>
+              <AdminInput value={regionForm.region_name} onChange={v => setRegionForm(p => ({ ...p, region_name: v }))} placeholder="Brasil" />
+            </div>
+            {regionForm.region_type === "state" && (
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código do País (pai)</label>
+                <AdminInput value={regionForm.parent_code} onChange={v => setRegionForm(p => ({ ...p, parent_code: v.toUpperCase() }))} placeholder="BR" />
+              </div>
+            )}
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Custo em Coins</label>
+              <AdminInput value={String(regionForm.coin_cost)} onChange={v => setRegionForm(p => ({ ...p, coin_cost: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="10" />
+              <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Quantas coins o usuário gasta para acessar esta região.</p>
+            </div>
+            <PrimaryBtn onClick={saveRegion} disabled={!regionForm.region_code.trim() || !regionForm.region_name.trim()} text="💾 Salvar Região" />
           </div>
         </Modal>
       )}

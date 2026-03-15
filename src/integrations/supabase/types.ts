@@ -178,6 +178,42 @@ export type Database = {
         }
         Relationships: []
       }
+      region_coin_prices: {
+        Row: {
+          active: boolean
+          coin_cost: number
+          created_at: string
+          id: string
+          parent_code: string | null
+          region_code: string
+          region_name: string
+          region_type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          coin_cost?: number
+          created_at?: string
+          id?: string
+          parent_code?: string | null
+          region_code: string
+          region_name: string
+          region_type?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          coin_cost?: number
+          created_at?: string
+          id?: string
+          parent_code?: string | null
+          region_code?: string
+          region_name?: string
+          region_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shop_packages: {
         Row: {
           active: boolean
