@@ -220,9 +220,16 @@ const AdminPanel = () => {
     setGendersLoading(false);
   }, []);
 
+  const fetchPromos = useCallback(async () => {
+    setPromosLoading(true);
+    const { data } = await supabase.from("promo_codes").select("*").order("created_at", { ascending: false });
+    if (data) setPromos(data as PromoCode[]);
+    setPromosLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
