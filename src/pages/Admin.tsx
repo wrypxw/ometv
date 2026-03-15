@@ -130,6 +130,7 @@ const AdminPanel = () => {
   const [editingRegion, setEditingRegion] = useState<RegionCoinPrice | null>(null);
   const [regionForm, setRegionForm] = useState({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
   const [regionSearch, setRegionSearch] = useState("");
+  const [populatingRegions, setPopulatingRegions] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -337,6 +338,141 @@ const AdminPanel = () => {
   const deleteRegion = async (id: string) => {
     await supabase.from("region_coin_prices").delete().eq("id", id);
     fetchRegions();
+  };
+
+
+  const populateAllRegions = async () => {
+    setPopulatingRegions(true);
+    try {
+      const allCountries = [
+        { code: "AF", name: "Afghanistan" }, { code: "AL", name: "Albania" }, { code: "DZ", name: "Algeria" },
+        { code: "AD", name: "Andorra" }, { code: "AO", name: "Angola" }, { code: "AG", name: "Antigua and Barbuda" },
+        { code: "AR", name: "Argentina" }, { code: "AM", name: "Armenia" }, { code: "AU", name: "Australia" },
+        { code: "AT", name: "Austria" }, { code: "AZ", name: "Azerbaijan" }, { code: "BS", name: "Bahamas" },
+        { code: "BH", name: "Bahrain" }, { code: "BD", name: "Bangladesh" }, { code: "BB", name: "Barbados" },
+        { code: "BY", name: "Belarus" }, { code: "BE", name: "Belgium" }, { code: "BZ", name: "Belize" },
+        { code: "BJ", name: "Benin" }, { code: "BT", name: "Bhutan" }, { code: "BO", name: "Bolivia" },
+        { code: "BA", name: "Bosnia and Herzegovina" }, { code: "BW", name: "Botswana" }, { code: "BR", name: "Brazil" },
+        { code: "BN", name: "Brunei" }, { code: "BG", name: "Bulgaria" }, { code: "BF", name: "Burkina Faso" },
+        { code: "BI", name: "Burundi" }, { code: "CV", name: "Cabo Verde" }, { code: "KH", name: "Cambodia" },
+        { code: "CM", name: "Cameroon" }, { code: "CA", name: "Canada" }, { code: "CF", name: "Central African Republic" },
+        { code: "TD", name: "Chad" }, { code: "CL", name: "Chile" }, { code: "CN", name: "China" },
+        { code: "CO", name: "Colombia" }, { code: "KM", name: "Comoros" }, { code: "CG", name: "Congo" },
+        { code: "CR", name: "Costa Rica" }, { code: "HR", name: "Croatia" }, { code: "CU", name: "Cuba" },
+        { code: "CY", name: "Cyprus" }, { code: "CZ", name: "Czech Republic" }, { code: "DK", name: "Denmark" },
+        { code: "DJ", name: "Djibouti" }, { code: "DM", name: "Dominica" }, { code: "DO", name: "Dominican Republic" },
+        { code: "TL", name: "East Timor" }, { code: "EC", name: "Ecuador" }, { code: "EG", name: "Egypt" },
+        { code: "SV", name: "El Salvador" }, { code: "GQ", name: "Equatorial Guinea" }, { code: "ER", name: "Eritrea" },
+        { code: "EE", name: "Estonia" }, { code: "SZ", name: "Eswatini" }, { code: "ET", name: "Ethiopia" },
+        { code: "FJ", name: "Fiji" }, { code: "FI", name: "Finland" }, { code: "FR", name: "France" },
+        { code: "GA", name: "Gabon" }, { code: "GM", name: "Gambia" }, { code: "GE", name: "Georgia" },
+        { code: "DE", name: "Germany" }, { code: "GH", name: "Ghana" }, { code: "GR", name: "Greece" },
+        { code: "GD", name: "Grenada" }, { code: "GT", name: "Guatemala" }, { code: "GN", name: "Guinea" },
+        { code: "GW", name: "Guinea-Bissau" }, { code: "GY", name: "Guyana" }, { code: "HT", name: "Haiti" },
+        { code: "HN", name: "Honduras" }, { code: "HU", name: "Hungary" }, { code: "IS", name: "Iceland" },
+        { code: "IN", name: "India" }, { code: "ID", name: "Indonesia" }, { code: "IR", name: "Iran" },
+        { code: "IQ", name: "Iraq" }, { code: "IE", name: "Ireland" }, { code: "IL", name: "Israel" },
+        { code: "IT", name: "Italy" }, { code: "JM", name: "Jamaica" }, { code: "JP", name: "Japan" },
+        { code: "JO", name: "Jordan" }, { code: "KZ", name: "Kazakhstan" }, { code: "KE", name: "Kenya" },
+        { code: "KI", name: "Kiribati" }, { code: "XK", name: "Kosovo" }, { code: "KW", name: "Kuwait" },
+        { code: "KG", name: "Kyrgyzstan" }, { code: "LA", name: "Laos" }, { code: "LV", name: "Latvia" },
+        { code: "LB", name: "Lebanon" }, { code: "LS", name: "Lesotho" }, { code: "LR", name: "Liberia" },
+        { code: "LY", name: "Libya" }, { code: "LI", name: "Liechtenstein" }, { code: "LT", name: "Lithuania" },
+        { code: "LU", name: "Luxembourg" }, { code: "MG", name: "Madagascar" }, { code: "MW", name: "Malawi" },
+        { code: "MY", name: "Malaysia" }, { code: "MV", name: "Maldives" }, { code: "ML", name: "Mali" },
+        { code: "MT", name: "Malta" }, { code: "MH", name: "Marshall Islands" }, { code: "MR", name: "Mauritania" },
+        { code: "MU", name: "Mauritius" }, { code: "MX", name: "Mexico" }, { code: "FM", name: "Micronesia" },
+        { code: "MD", name: "Moldova" }, { code: "MC", name: "Monaco" }, { code: "MN", name: "Mongolia" },
+        { code: "ME", name: "Montenegro" }, { code: "MA", name: "Morocco" }, { code: "MZ", name: "Mozambique" },
+        { code: "MM", name: "Myanmar" }, { code: "NA", name: "Namibia" }, { code: "NR", name: "Nauru" },
+        { code: "NP", name: "Nepal" }, { code: "NL", name: "Netherlands" }, { code: "NZ", name: "New Zealand" },
+        { code: "NI", name: "Nicaragua" }, { code: "NE", name: "Niger" }, { code: "NG", name: "Nigeria" },
+        { code: "KP", name: "North Korea" }, { code: "MK", name: "North Macedonia" }, { code: "NO", name: "Norway" },
+        { code: "OM", name: "Oman" }, { code: "PK", name: "Pakistan" }, { code: "PW", name: "Palau" },
+        { code: "PS", name: "Palestine" }, { code: "PA", name: "Panama" }, { code: "PG", name: "Papua New Guinea" },
+        { code: "PY", name: "Paraguay" }, { code: "PE", name: "Peru" }, { code: "PH", name: "Philippines" },
+        { code: "PL", name: "Poland" }, { code: "PT", name: "Portugal" }, { code: "QA", name: "Qatar" },
+        { code: "RO", name: "Romania" }, { code: "RU", name: "Russia" }, { code: "RW", name: "Rwanda" },
+        { code: "KN", name: "Saint Kitts and Nevis" }, { code: "LC", name: "Saint Lucia" },
+        { code: "VC", name: "Saint Vincent and the Grenadines" }, { code: "WS", name: "Samoa" },
+        { code: "SM", name: "San Marino" }, { code: "ST", name: "Sao Tome and Principe" },
+        { code: "SA", name: "Saudi Arabia" }, { code: "SN", name: "Senegal" }, { code: "RS", name: "Serbia" },
+        { code: "SC", name: "Seychelles" }, { code: "SL", name: "Sierra Leone" }, { code: "SG", name: "Singapore" },
+        { code: "SK", name: "Slovakia" }, { code: "SI", name: "Slovenia" }, { code: "SB", name: "Solomon Islands" },
+        { code: "SO", name: "Somalia" }, { code: "ZA", name: "South Africa" }, { code: "KR", name: "South Korea" },
+        { code: "SS", name: "South Sudan" }, { code: "ES", name: "Spain" }, { code: "LK", name: "Sri Lanka" },
+        { code: "SD", name: "Sudan" }, { code: "SR", name: "Suriname" }, { code: "SE", name: "Sweden" },
+        { code: "CH", name: "Switzerland" }, { code: "SY", name: "Syria" }, { code: "TW", name: "Taiwan" },
+        { code: "TJ", name: "Tajikistan" }, { code: "TZ", name: "Tanzania" }, { code: "TH", name: "Thailand" },
+        { code: "TG", name: "Togo" }, { code: "TO", name: "Tonga" }, { code: "TT", name: "Trinidad and Tobago" },
+        { code: "TN", name: "Tunisia" }, { code: "TR", name: "Turkey" }, { code: "TM", name: "Turkmenistan" },
+        { code: "TV", name: "Tuvalu" }, { code: "UG", name: "Uganda" }, { code: "UA", name: "Ukraine" },
+        { code: "AE", name: "United Arab Emirates" }, { code: "GB", name: "United Kingdom" },
+        { code: "US", name: "United States" }, { code: "UY", name: "Uruguay" }, { code: "UZ", name: "Uzbekistan" },
+        { code: "VU", name: "Vanuatu" }, { code: "VA", name: "Vatican City" }, { code: "VE", name: "Venezuela" },
+        { code: "VN", name: "Vietnam" }, { code: "YE", name: "Yemen" }, { code: "ZM", name: "Zambia" },
+        { code: "ZW", name: "Zimbabwe" },
+      ];
+
+      const brazilStates = [
+        { code: "AC", name: "Acre" }, { code: "AL", name: "Alagoas" }, { code: "AP", name: "Amapá" },
+        { code: "AM", name: "Amazonas" }, { code: "BA", name: "Bahia" }, { code: "CE", name: "Ceará" },
+        { code: "DF", name: "Distrito Federal" }, { code: "ES", name: "Espírito Santo" },
+        { code: "GO", name: "Goiás" }, { code: "MA", name: "Maranhão" }, { code: "MT", name: "Mato Grosso" },
+        { code: "MS", name: "Mato Grosso do Sul" }, { code: "MG", name: "Minas Gerais" },
+        { code: "PA", name: "Pará" }, { code: "PB", name: "Paraíba" }, { code: "PR", name: "Paraná" },
+        { code: "PE", name: "Pernambuco" }, { code: "PI", name: "Piauí" }, { code: "RJ", name: "Rio de Janeiro" },
+        { code: "RN", name: "Rio Grande do Norte" }, { code: "RS", name: "Rio Grande do Sul" },
+        { code: "RO", name: "Rondônia" }, { code: "RR", name: "Roraima" }, { code: "SC", name: "Santa Catarina" },
+        { code: "SP", name: "São Paulo" }, { code: "SE", name: "Sergipe" }, { code: "TO", name: "Tocantins" },
+      ];
+
+      // Get existing region codes to avoid duplicates
+      const existingCodes = new Set(regions.map(r => `${r.region_type}-${r.region_code}`));
+
+      const countryRows = allCountries
+        .filter(c => !existingCodes.has(`country-${c.code}`))
+        .map(c => ({
+          region_type: "country",
+          region_code: c.code,
+          region_name: c.name,
+          parent_code: null,
+          coin_cost: 10,
+          active: true,
+        }));
+
+      const stateRows = brazilStates
+        .filter(s => !existingCodes.has(`state-${s.code}`))
+        .map(s => ({
+          region_type: "state",
+          region_code: s.code,
+          region_name: s.name,
+          parent_code: "BR",
+          coin_cost: 10,
+          active: true,
+        }));
+
+      const allRows = [...countryRows, ...stateRows];
+      if (allRows.length === 0) {
+        toast({ title: "Todas as regiões já estão cadastradas!" });
+        setPopulatingRegions(false);
+        return;
+      }
+
+      // Insert in batches of 50
+      for (let i = 0; i < allRows.length; i += 50) {
+        const batch = allRows.slice(i, i + 50);
+        const { error } = await supabase.from("region_coin_prices").insert(batch);
+        if (error) throw error;
+      }
+
+      toast({ title: `${allRows.length} regiões adicionadas!` });
+      fetchRegions();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally {
+      setPopulatingRegions(false);
+    }
   };
 
   const filteredRegions = regions.filter(r =>
@@ -743,16 +879,25 @@ const AdminPanel = () => {
           {/* =================== REGIONS TAB =================== */}
           {activeTab === "regions" && (
             <>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Configure o custo em coins para cada país ou estado.</p>
-                <button onClick={() => {
-                  setEditingRegion({} as RegionCoinPrice);
-                  setRegionForm({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
-                }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
-                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
-                  <Plus className="w-3.5 h-3.5" /> Nova Região
-                </button>
+                <div className="flex gap-2">
+                  {regions.length === 0 && (
+                    <button onClick={populateAllRegions} disabled={populatingRegions}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105 disabled:opacity-50"
+                      style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+                      <Globe className="w-3.5 h-3.5" /> {populatingRegions ? "Populando..." : "🌍 Popular Tudo"}
+                    </button>
+                  )}
+                  <button onClick={() => {
+                    setEditingRegion({} as RegionCoinPrice);
+                    setRegionForm({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
+                  }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                    <Plus className="w-3.5 h-3.5" /> Nova Região
+                  </button>
+                </div>
               </div>
 
               <div className="relative max-w-md mb-4">
