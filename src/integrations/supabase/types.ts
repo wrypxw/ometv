@@ -217,6 +217,71 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_codes: {
+        Row: {
+          active: boolean
+          code: string
+          coins_reward: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          coins_reward?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          coins_reward?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          used_count?: number
+        }
+        Relationships: []
+      }
+      promo_redemptions: {
+        Row: {
+          coins_received: number
+          id: string
+          promo_code_id: string
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          coins_received?: number
+          id?: string
+          promo_code_id: string
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          coins_received?: number
+          id?: string
+          promo_code_id?: string
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       region_coin_prices: {
         Row: {
           active: boolean

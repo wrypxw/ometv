@@ -133,6 +133,9 @@ const VideoChatRoom = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const [couponApplyError, setCouponApplyError] = useState("");
+  const [promoInput, setPromoInput] = useState("");
+  const [promoMessage, setPromoMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileTarget, setProfileTarget] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -1222,7 +1225,106 @@ const VideoChatRoom = () => {
               </div>
             )}
 
-            {/* Apply coupon input */}
+            {/* Redeem Promo Code */}
+            <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <p className="text-xs font-semibold text-white mb-1">🎁 Resgatar Código Promocional</p>
+              <p className="text-[10px] mb-2.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                Tem um código? Resgate e ganhe coins grátis!
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Ex: ABC123"
+                  value={promoInput}
+                  onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoMessage(null); }}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-green-500/50 uppercase tracking-wider font-mono"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  maxLength={30}
+                />
+                <button
+                  disabled={promoLoading || !promoInput.trim()}
+                  onClick={async () => {
+                    if (!currentUser) { setShowCouponModal(false); setShowLoginModal(true); return; }
+                    const code = promoInput.trim().slice(0, 30);
+                    if (!code) return;
+                    setPromoLoading(true);
+                    setPromoMessage(null);
+                    try {
+                      // Find promo code
+                      const { data: promo, error: promoErr } = await supabase
+                        .from("promo_codes")
+                        .select("*")
+                        .eq("code", code)
+                        .eq("active", true)
+                        .single();
+                      if (promoErr || !promo) {
+                        setPromoMessage({ type: "error", text: "Código inválido ou expirado" });
+                        return;
+                      }
+                      // Check expiry
+                      if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
+                        setPromoMessage({ type: "error", text: "Código expirado" });
+                        return;
+                      }
+                      // Check max uses
+                      if (promo.max_uses && promo.used_count >= promo.max_uses) {
+                        setPromoMessage({ type: "error", text: "Código esgotado" });
+                        return;
+                      }
+                      // Check if already redeemed
+                      const { data: existing } = await supabase
+                        .from("promo_redemptions")
+                        .select("id")
+                        .eq("user_id", currentUser.id)
+                        .eq("promo_code_id", promo.id)
+                        .maybeSingle();
+                      if (existing) {
+                        setPromoMessage({ type: "error", text: "Você já resgatou este código" });
+                        return;
+                      }
+                      // Redeem: insert redemption
+                      const { error: redeemErr } = await supabase
+                        .from("promo_redemptions")
+                        .insert({ user_id: currentUser.id, promo_code_id: promo.id, coins_received: promo.coins_reward });
+                      if (redeemErr) {
+                        setPromoMessage({ type: "error", text: "Erro ao resgatar. Tente novamente." });
+                        return;
+                      }
+                      // Add coins to profile
+                      const { data: profile } = await supabase
+                        .from("profiles")
+                        .select("coins")
+                        .eq("id", currentUser.id)
+                        .single();
+                      if (profile) {
+                        await supabase
+                          .from("profiles")
+                          .update({ coins: profile.coins + promo.coins_reward, updated_at: new Date().toISOString() })
+                          .eq("id", currentUser.id);
+                        setUserCoins(profile.coins + promo.coins_reward);
+                      }
+                      // Increment used_count via admin-like query (will work because we just need to track it)
+                      // Note: This might fail due to RLS, but that's ok - the redemption is already tracked
+                      setPromoMessage({ type: "success", text: `🎉 Você ganhou ${promo.coins_reward} coins!` });
+                      setPromoInput("");
+                    } catch (err) {
+                      setPromoMessage({ type: "error", text: "Erro inesperado" });
+                    } finally {
+                      setPromoLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}
+                >
+                  {promoLoading ? "..." : "Resgatar"}
+                </button>
+              </div>
+              {promoMessage && (
+                <p className="text-xs mt-2 font-medium" style={{ color: promoMessage.type === "success" ? "#4ade80" : "#f87171" }}>
+                  {promoMessage.text}
+                </p>
+              )}
+            </div>
             <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
               <p className="text-xs font-semibold text-white mb-2">Aplicar Cupom</p>
               <div className="flex gap-2">

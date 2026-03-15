@@ -5,7 +5,7 @@ import {
   Users, Search, ArrowLeft, Coins, Mail, Lock, Trash2, Plus, Minus, X,
   Shield, Settings, Upload, ShoppingBag, Edit2, GripVertical, ToggleLeft, ToggleRight,
   ChevronLeft, Menu, Tag, Copy, Calendar, CreditCard, Eye, EyeOff, CheckCircle, Clock, XCircle, AlertCircle,
-  Globe, MapPin, UserCheck,
+  Globe, MapPin, UserCheck, Gift,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -83,12 +83,24 @@ const NAV_ITEMS = [
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons", icon: Tag },
+  { id: "promos" as const, label: "Códigos Promo", icon: Gift },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
   { id: "genders" as const, label: "Gênero", icon: UserCheck },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders";
+type TabId = "users" | "settings" | "shop" | "coupons" | "promos" | "payments" | "regions" | "genders";
+
+interface PromoCode {
+  id: string;
+  code: string;
+  coins_reward: number;
+  max_uses: number | null;
+  used_count: number;
+  active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}
 
 interface PaymentTransaction {
   id: string;
@@ -144,6 +156,10 @@ const AdminPanel = () => {
   const [gendersLoading, setGendersLoading] = useState(false);
   const [editingGender, setEditingGender] = useState<GenderCoinPrice | null>(null);
   const [genderForm, setGenderForm] = useState({ gender_key: "", gender_label: "", coin_cost: 0 });
+  const [promos, setPromos] = useState<PromoCode[]>([]);
+  const [promosLoading, setPromosLoading] = useState(false);
+  const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
+  const [promoForm, setPromoForm] = useState({ code: "", coins_reward: 100, max_uses: "", expires_at: "" });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -204,9 +220,16 @@ const AdminPanel = () => {
     setGendersLoading(false);
   }, []);
 
+  const fetchPromos = useCallback(async () => {
+    setPromosLoading(true);
+    const { data } = await supabase.from("promo_codes").select("*").order("created_at", { ascending: false });
+    if (data) setPromos(data as PromoCode[]);
+    setPromosLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
@@ -612,6 +635,7 @@ const AdminPanel = () => {
             {activeTab === "payments" && "Pagamentos"}
             {activeTab === "regions" && "Preço por Região"}
             {activeTab === "genders" && "Preço por Gênero"}
+            {activeTab === "promos" && "Códigos Promocionais"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
@@ -1107,6 +1131,74 @@ const AdminPanel = () => {
               )}
             </>
           )}
+
+          {/* =================== PROMOS TAB =================== */}
+          {activeTab === "promos" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Crie códigos promocionais que dão coins grátis aos usuários.</p>
+                <button onClick={() => {
+                  setEditingPromo({} as PromoCode);
+                  setPromoForm({ code: "", coins_reward: 100, max_uses: "", expires_at: "" });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Novo Código
+                </button>
+              </div>
+
+              {promosLoading ? <Spinner /> : promos.length === 0 ? (
+                <EmptyState icon={Gift} text="Nenhum código promocional criado" />
+              ) : (
+                <div className="space-y-2">
+                  {promos.map(promo => (
+                    <div key={promo.id}
+                      className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${promo.active ? "" : "opacity-50"}`}
+                      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-mono font-bold tracking-wider text-white">{promo.code}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80" }}>
+                            🪙 {promo.coins_reward} coins
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                          <span>Usados: {promo.used_count}{promo.max_uses ? `/${promo.max_uses}` : ""}</span>
+                          {promo.expires_at && <span>⏰ {new Date(promo.expires_at).toLocaleDateString("pt-BR")}</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={async () => {
+                          await supabase.from("promo_codes").update({ active: !promo.active }).eq("id", promo.id);
+                          fetchPromos();
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+                          title={promo.active ? "Desativar" : "Ativar"}>
+                          {promo.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        </button>
+                        <button onClick={() => {
+                          setEditingPromo(promo);
+                          setPromoForm({
+                            code: promo.code,
+                            coins_reward: promo.coins_reward,
+                            max_uses: promo.max_uses ? String(promo.max_uses) : "",
+                            expires_at: promo.expires_at ? promo.expires_at.split("T")[0] : "",
+                          });
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={async () => {
+                          await supabase.from("promo_codes").delete().eq("id", promo.id);
+                          fetchPromos();
+                        }} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
@@ -1293,6 +1385,48 @@ const AdminPanel = () => {
               <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>0 = grátis. Quantas coins o usuário gasta ao usar este filtro.</p>
             </div>
             <PrimaryBtn onClick={saveGender} disabled={!genderForm.gender_key.trim() || !genderForm.gender_label.trim()} text="💾 Salvar Gênero" />
+          </div>
+        </Modal>
+      )}
+
+      {/* =================== PROMO EDIT MODAL =================== */}
+      {editingPromo && (
+        <Modal onClose={() => setEditingPromo(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingPromo.id ? "Editar Código" : "Novo Código Promocional"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código</label>
+              <AdminInput value={promoForm.code} onChange={v => setPromoForm(p => ({ ...p, code: v.toUpperCase() }))} placeholder="ABC123" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Coins de Recompensa</label>
+              <AdminInput value={String(promoForm.coins_reward)} onChange={v => setPromoForm(p => ({ ...p, coins_reward: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="100" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Máx. Usos (vazio = ilimitado)</label>
+              <AdminInput value={promoForm.max_uses} onChange={v => setPromoForm(p => ({ ...p, max_uses: v }))} type="number" placeholder="Ilimitado" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Expira em</label>
+              <AdminInput value={promoForm.expires_at} onChange={v => setPromoForm(p => ({ ...p, expires_at: v }))} type="date" placeholder="" />
+            </div>
+            <PrimaryBtn onClick={async () => {
+              if (!promoForm.code.trim()) return;
+              const payload: any = {
+                code: promoForm.code.trim().toUpperCase(),
+                coins_reward: promoForm.coins_reward,
+                max_uses: promoForm.max_uses ? parseInt(promoForm.max_uses) : null,
+                expires_at: promoForm.expires_at || null,
+              };
+              if (editingPromo.id) {
+                await supabase.from("promo_codes").update(payload).eq("id", editingPromo.id);
+              } else {
+                await supabase.from("promo_codes").insert(payload);
+              }
+              toast({ title: "Código salvo!" });
+              setEditingPromo(null);
+              fetchPromos();
+            }} text="💾 Salvar Código" />
           </div>
         </Modal>
       )}
