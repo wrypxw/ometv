@@ -387,7 +387,7 @@ const VideoChatRoom = () => {
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-white block">You</span>
+                        <span className="text-sm font-semibold text-white block">{currentUser?.email?.split("@")[0] || "You"}</span>
                         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Online</span>
                       </div>
                     </div>
