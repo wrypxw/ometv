@@ -496,7 +496,7 @@ const VideoChatRoom = () => {
               <button
                 onClick={() => setShowCouponModal(true)}
                 className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
+                style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)" }}>
                 <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
                 Cupom
               </button>
