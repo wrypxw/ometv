@@ -433,12 +433,14 @@ const VideoChatRoom = () => {
     matchmakerRef.current = matchmaker;
 
     // 60s timeout — if no match, stop and refund
-    searchTimerRef.current = setTimeout(() => {
+    searchTimerRef.current = setTimeout(async () => {
       if (matchmakerRef.current === matchmaker) {
         matchmaker.destroy();
         matchmakerRef.current = null;
         setStatus("disconnected");
-        // pendingCoinCost will be refunded via the status check below
+        if (pendingCoinCostRef.current > 0) {
+          await refundCoins(pendingCoinCostRef.current);
+        }
       }
     }, 60000);
 
