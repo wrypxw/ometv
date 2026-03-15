@@ -1004,7 +1004,9 @@ const AdminPanel = () => {
                             </span>
                           </div>
                           <div className="flex items-center gap-3 mt-0.5">
-                            <span className="text-xs font-semibold" style={{ color: "#eab308" }}>🪙 {region.coin_cost} coins</span>
+                            <span className="text-xs font-semibold" style={{ color: region.coin_cost === 0 ? "#4ade80" : "#eab308" }}>
+                              {region.coin_cost === 0 ? "🆓 FREE" : `🪙 ${region.coin_cost} coins`}
+                            </span>
                             {region.parent_code && (
                               <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
                                 País: {region.parent_code}
