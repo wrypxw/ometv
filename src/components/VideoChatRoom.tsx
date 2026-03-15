@@ -913,17 +913,18 @@ const VideoChatRoom = () => {
         />
 
         {!cameraAllowed && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="absolute inset-0 flex items-center justify-center z-10"
+            style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16162a 50%, #111128 100%)" }}>
             <div className="text-center space-y-3 px-6">
+              {/* User silhouette */}
               <div
-                className="w-14 h-14 md:w-18 md:h-18 rounded-full flex items-center justify-center mx-auto"
-                style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center mx-auto"
+                style={{ background: "rgba(255,255,255,0.06)", border: "2px solid rgba(255,255,255,0.08)" }}
               >
-                <VideoOff className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                <User className="w-12 h-12 md:w-16 md:h-16" style={{ color: "rgba(255,255,255,0.15)" }} />
               </div>
-              <h3 className="text-sm md:text-lg font-bold text-white">Camera permission denied</h3>
-              <p className="text-[11px] md:text-sm leading-relaxed max-w-xs mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
-                To enable video, please grant permission to access your camera in your browser settings.
+              <p className="text-[10px] md:text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
+                Câmera desativada — somente chat
               </p>
             </div>
           </div>
