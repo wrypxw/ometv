@@ -215,6 +215,14 @@ const VideoChatRoom = () => {
         setRegionPrices(map);
       }
     });
+    // Load gender coin prices
+    supabase.from("gender_coin_prices").select("gender_key, coin_cost").eq("active", true).then(({ data }) => {
+      if (data) {
+        const map: Record<string, number> = {};
+        data.forEach((g: any) => { map[g.gender_key] = g.coin_cost; });
+        setGenderPrices(map);
+      }
+    });
   }, []);
 
   const handleEmailAuth = async () => {
