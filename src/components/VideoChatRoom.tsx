@@ -959,7 +959,7 @@ const VideoChatRoom = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowLoginModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => { setShowLoginModal(false); setAuthError(""); }}>
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} />
           <div
             className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-2xl p-6 md:p-8 text-center"
@@ -985,13 +985,60 @@ const VideoChatRoom = () => {
               <span className="text-gradient">ChatRandom</span>
               <span style={{ color: "rgba(255,255,255,0.2)" }}>.gg</span>
             </h2>
-            <p className="text-xs md:text-sm mt-1.5 mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Sign in to start chatting!
+            <p className="text-xs md:text-sm mt-1.5 mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+              {authMode === "login" ? "Sign in to start chatting!" : "Create your account"}
             </p>
+
+            {/* Email / Password form */}
+            <div className="space-y-2.5 mb-4">
+              <input
+                type="email"
+                placeholder="Email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                className="w-full py-3 px-4 rounded-xl text-sm text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-purple-500/50"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleEmailAuth()}
+                className="w-full py-3 px-4 rounded-xl text-sm text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-purple-500/50"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              />
+              {authError && (
+                <p className="text-xs" style={{ color: authError.includes("Check your email") ? "#22c55e" : "#f87171" }}>
+                  {authError}
+                </p>
+              )}
+              <button
+                onClick={handleEmailAuth}
+                disabled={authLoading || !authEmail || !authPassword}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                {authLoading ? "..." : authMode === "login" ? "Sign In" : "Create Account"}
+              </button>
+              <button
+                onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
+                className="text-xs"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >
+                {authMode === "login" ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+              <span className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.25)" }}>or</span>
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+            </div>
 
             <div className="space-y-2.5">
               <button
-                onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
+                onClick={handleGoogleAuth}
                 className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "white", color: "#1a1a2e" }}
               >
@@ -1005,16 +1052,7 @@ const VideoChatRoom = () => {
               </button>
 
               <button
-                onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
-                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: "#1877F2" }}
-              >
-                <Facebook className="w-5 h-5" />
-                Continue with Facebook
-              </button>
-
-              <button
-                onClick={() => { setIsLoggedIn(true); setShowLoginModal(false); }}
+                onClick={handleAppleAuth}
                 className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "white", color: "#1a1a2e" }}
               >
