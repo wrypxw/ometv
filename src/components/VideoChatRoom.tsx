@@ -12,11 +12,11 @@ import {
   Globe,
   Users,
   Heart,
-  
+  UserPlus,
+  UserMinus,
   Search,
   ChevronUp,
   ChevronRight,
-  
   User,
   MessageSquare,
   Share2,
@@ -128,6 +128,11 @@ const VideoChatRoom = () => {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileTarget, setProfileTarget] = useState<any>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [strangerFollowed, setStrangerFollowed] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -350,6 +355,56 @@ const VideoChatRoom = () => {
     }
   }, [inputMsg, status]);
 
+  // Follow/unfollow logic
+  const checkIfFollowing = useCallback(async (targetUserId: string) => {
+    if (!currentUser) return false;
+    const { data } = await supabase
+      .from("follows")
+      .select("id")
+      .eq("follower_id", currentUser.id)
+      .eq("following_id", targetUserId)
+      .maybeSingle();
+    return !!data;
+  }, [currentUser]);
+
+  const handleFollow = useCallback(async (targetUserId: string) => {
+    if (!currentUser) { setShowLoginModal(true); return; }
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", targetUserId);
+        setIsFollowing(false);
+        setStrangerFollowed(false);
+      } else {
+        await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: targetUserId });
+        setIsFollowing(true);
+        setStrangerFollowed(true);
+      }
+    } catch (err) {
+      console.error("Follow error:", err);
+    } finally {
+      setFollowLoading(false);
+    }
+  }, [currentUser, isFollowing]);
+
+  const openProfileModal = useCallback(async (targetUser: any) => {
+    setProfileTarget(targetUser);
+    if (currentUser && targetUser?.id) {
+      const following = await checkIfFollowing(targetUser.id);
+      setIsFollowing(following);
+    }
+    setShowProfileModal(true);
+  }, [currentUser, checkIfFollowing]);
+
+  const handleShareProfile = useCallback(() => {
+    const url = window.location.origin;
+    if (navigator.share) {
+      navigator.share({ title: "ChatRandom", text: "Venha conversar comigo!", url });
+    } else {
+      navigator.clipboard.writeText(url);
+    }
+  }, []);
+
   return (
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
@@ -418,10 +473,10 @@ const VideoChatRoom = () => {
                       </div>
                     </div>
                     {[
-                      { icon: <Share2 className="w-4 h-4" />, label: "Socials", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" /> },
-                      { icon: <Heart className="w-4 h-4" />, label: "Amizades" },
+                      { icon: <Share2 className="w-4 h-4" />, label: "Socials", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" />, action: () => {} },
+                      { icon: <Heart className="w-4 h-4" />, label: "Amizades", action: () => { setShowProfileMenu(false); openProfileModal(currentUser); } },
                     ].map((item) => (
-                      <button key={item.label} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-white/5" style={{ color: "rgba(255,255,255,0.65)" }}>
+                      <button key={item.label} onClick={item.action} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-white/5" style={{ color: "rgba(255,255,255,0.65)" }}>
                         {item.icon}<span>{item.label}</span>{item.extra}
                       </button>
                     ))}
@@ -539,6 +594,42 @@ const VideoChatRoom = () => {
           <div className="absolute inset-0 z-10 pointer-events-none"
             style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 15%, transparent 75%, rgba(0,0,0,0.5) 100%)" }}
           />
+        )}
+
+        {/* Follow button during call */}
+        {status === "connected" && isLoggedIn && (
+          <div className="absolute top-16 md:top-20 left-3 md:left-5 z-20">
+            <button
+              onClick={() => {
+                if (strangerFollowed) return;
+                // In a real scenario, you'd have the stranger's user ID from matchmaking
+                // For now, show the profile modal
+                setStrangerFollowed(!strangerFollowed);
+              }}
+              disabled={followLoading}
+              className="flex items-center gap-2 rounded-full px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+              style={{
+                background: strangerFollowed
+                  ? "rgba(34,197,94,0.2)"
+                  : "linear-gradient(135deg, #7c3aed, #a855f7)",
+                border: strangerFollowed ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(139,92,246,0.3)",
+                backdropFilter: "blur(12px)",
+                boxShadow: strangerFollowed ? "none" : "0 4px 20px rgba(124,58,237,0.3)",
+              }}
+            >
+              {strangerFollowed ? (
+                <>
+                  <Heart className="w-3.5 h-3.5 md:w-4 md:h-4 fill-current" style={{ color: "#22c55e" }} />
+                  <span style={{ color: "#22c55e" }}>Seguindo</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  Seguir
+                </>
+              )}
+            </button>
+          </div>
         )}
 
         {/* Searching overlay */}
@@ -1216,6 +1307,94 @@ const VideoChatRoom = () => {
               <span className="underline cursor-pointer">Terms of Service</span> and{" "}
               <span className="underline cursor-pointer">Privacy Policy</span>.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowProfileModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
+          <div
+            className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-3xl overflow-hidden max-h-[85dvh]"
+            style={{ background: "linear-gradient(180deg, #1a1040, #0f0a2e)", border: "1px solid rgba(139,92,246,0.15)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Profile header with gradient */}
+            <div className="relative h-32 md:h-36" style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)" }}>
+              <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.15) 0%, transparent 50%)" }} />
+              <button onClick={() => setShowProfileModal(false)}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all z-10">
+                ✕
+              </button>
+            </div>
+
+            {/* Avatar */}
+            <div className="relative -mt-12 px-6">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto ring-4"
+                style={{ background: "linear-gradient(135deg, #6d28d9, #a855f7)", boxShadow: "0 0 0 4px #0f0a2e" }}>
+                <User className="w-10 h-10 text-white" />
+              </div>
+            </div>
+
+            {/* Profile info */}
+            <div className="text-center px-6 pt-3 pb-2">
+              <h3 className="text-xl font-bold text-white">
+                {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Stranger"}
+              </h3>
+              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Usuário do {siteSettings.site_name || "ChatRandom"}
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="px-6 pb-6 pt-4 space-y-2.5">
+              {/* Follow / Unfollow */}
+              <button
+                onClick={() => profileTarget?.id && handleFollow(profileTarget.id)}
+                disabled={followLoading}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                style={{
+                  background: isFollowing
+                    ? "rgba(255,255,255,0.06)"
+                    : "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  border: isFollowing ? "1px solid rgba(255,255,255,0.12)" : "none",
+                  color: "white",
+                  boxShadow: isFollowing ? "none" : "0 6px 24px rgba(124,58,237,0.35)",
+                }}
+              >
+                {isFollowing ? (
+                  <><UserMinus className="w-4 h-4" /> Deixar de Seguir</>
+                ) : (
+                  <><UserPlus className="w-4 h-4" /> Seguir</>
+                )}
+              </button>
+
+              {/* Share */}
+              <button
+                onClick={handleShareProfile}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.75)",
+                }}
+              >
+                <Share2 className="w-4 h-4" /> Compartilhar
+              </button>
+
+              {/* Private Chat */}
+              <button
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "rgba(59,130,246,0.1)",
+                  border: "1px solid rgba(59,130,246,0.25)",
+                  color: "#60a5fa",
+                }}
+              >
+                <MessageSquare className="w-4 h-4" /> Chat Privado
+              </button>
+            </div>
           </div>
         </div>
       )}
