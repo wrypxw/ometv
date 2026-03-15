@@ -148,7 +148,31 @@ const VideoChatRoom = () => {
   const webrtcRef = useRef<WebRTCConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  // Real online users via Supabase Realtime Presence
+  const handleBuyPackage = async (pkgId: string) => {
+    if (!currentUser) {
+      setShowLoginModal(true);
+      return;
+    }
+    setBuyingPkg(pkgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: { package_id: pkgId },
+      });
+      if (error) throw error;
+      if (data?.init_point) {
+        window.open(data.init_point, "_blank");
+      } else if (data?.sandbox_init_point) {
+        window.open(data.sandbox_init_point, "_blank");
+      }
+    } catch (err: any) {
+      console.error("Purchase error:", err);
+      alert("Erro ao iniciar pagamento. Tente novamente.");
+    } finally {
+      setBuyingPkg(null);
+    }
+  };
+
+
   useEffect(() => {
     const channel = supabase.channel('online-users', {
       config: { presence: { key: crypto.randomUUID() } },
