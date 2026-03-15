@@ -130,6 +130,9 @@ const VideoChatRoom = () => {
   const [regionPrices, setRegionPrices] = useState<Record<string, number>>({});
   const [genderPrices, setGenderPrices] = useState<Record<string, number>>({});
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplyError, setCouponApplyError] = useState("");
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileTarget, setProfileTarget] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -139,6 +142,8 @@ const VideoChatRoom = () => {
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
+  const [userCoins, setUserCoins] = useState(0);
+  const [showCoinConfirm, setShowCoinConfirm] = useState<{ cost: number; label: string; onConfirm: () => void } | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -156,7 +161,7 @@ const VideoChatRoom = () => {
     setBuyingPkg(pkgId);
     try {
       const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { package_id: pkgId },
+        body: { package_id: pkgId, coupon_code: appliedCoupon?.code || undefined },
       });
       if (error) throw error;
       if (data?.init_point) {
@@ -199,10 +204,22 @@ const VideoChatRoom = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
+      if (session?.user) {
+        supabase.from("profiles").select("coins").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) setUserCoins(data.coins);
+        });
+      } else {
+        setUserCoins(0);
+      }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
+      if (session?.user) {
+        supabase.from("profiles").select("coins").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) setUserCoins(data.coins);
+        });
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -354,7 +371,32 @@ const VideoChatRoom = () => {
     }
   }, []);
 
-  const startSearch = useCallback(async () => {
+  // Calculate total coin cost for current filters
+  const getFilterCost = useCallback(() => {
+    let cost = 0;
+    // Region cost
+    if (selectedCountry !== "Worldwide") {
+      const regionName = selectedCountry.startsWith("Brazil - ") ? selectedCountry.replace("Brazil - ", "") : selectedCountry;
+      cost += regionPrices[regionName] !== undefined ? regionPrices[regionName] : 10;
+    }
+    // Gender cost
+    if (selectedGender !== "Gender") {
+      cost += genderPrices[selectedGender] !== undefined ? genderPrices[selectedGender] : (selectedGender === "Both" ? 0 : 15);
+    }
+    return cost;
+  }, [selectedCountry, selectedGender, regionPrices, genderPrices]);
+
+  const deductCoins = useCallback(async (amount: number) => {
+    if (!currentUser || amount <= 0) return true;
+    const { data } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
+    if (!data || data.coins < amount) return false;
+    const { error } = await supabase.from("profiles").update({ coins: data.coins - amount, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+    if (error) return false;
+    setUserCoins(data.coins - amount);
+    return true;
+  }, [currentUser]);
+
+  const doStartSearch = useCallback(async () => {
     if (!cameraAllowed || !localStreamRef.current) {
       await startLocalCamera();
       if (!localStreamRef.current) return;
@@ -375,6 +417,28 @@ const VideoChatRoom = () => {
       connectToPartner(roomId, isInitiator);
     });
   }, [connectToPartner, cameraAllowed, startLocalCamera]);
+
+  const startSearch = useCallback(async () => {
+    const cost = getFilterCost();
+    if (cost > 0 && isLoggedIn) {
+      // Show confirmation
+      setShowCoinConfirm({
+        cost,
+        label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gender" ? " + " : ""}${selectedGender !== "Gender" ? selectedGender : ""}`.trim() || "filtros",
+        onConfirm: async () => {
+          setShowCoinConfirm(null);
+          const ok = await deductCoins(cost);
+          if (!ok) {
+            alert("Coins insuficientes! Compre mais coins na loja.");
+            return;
+          }
+          await doStartSearch();
+        },
+      });
+      return;
+    }
+    await doStartSearch();
+  }, [getFilterCost, isLoggedIn, selectedCountry, selectedGender, deductCoins, doStartSearch]);
 
   const nextPerson = useCallback(async () => {
     webrtcRef.current?.destroy();
@@ -926,16 +990,24 @@ const VideoChatRoom = () => {
 
           {/* Start / Stop+Next */}
           {status === "idle" || status === "disconnected" ? (
-            <button
-              onClick={!cameraAllowed ? startLocalCamera : startSearch}
-              className="w-full max-w-md py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-              style={{
-                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
-              }}
-            >
-              👋 Start Video Chat
-            </button>
+            <>
+              <button
+                onClick={!cameraAllowed ? startLocalCamera : startSearch}
+                className="w-full max-w-md py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+                style={{
+                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
+                }}
+              >
+                👋 Start Video Chat
+                {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
+              </button>
+              {isLoggedIn && (
+                <p className="text-center text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  Seu saldo: <span style={{ color: "#fbbf24" }}>{userCoins} 🪙</span>
+                </p>
+              )}
+            </>
           ) : (
             <div className="flex md:hidden items-center gap-2 w-full max-w-md">
               <button
@@ -1017,7 +1089,16 @@ const VideoChatRoom = () => {
                     className="w-full py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-semibold text-center"
                     style={{ background: "rgba(0,0,0,0.25)", color: "#4ade80" }}
                   >
-                    R${(pkg.price_cents / 100).toFixed(2).replace('.', ',')}
+                    {appliedCoupon ? (
+                      <>
+                        <span style={{ textDecoration: "line-through", color: "rgba(255,255,255,0.35)", fontSize: "0.65rem" }}>
+                          R${(pkg.price_cents / 100).toFixed(2).replace('.', ',')}
+                        </span>{" "}
+                        R${((pkg.price_cents * (100 - appliedCoupon.discount_percent) / 100) / 100).toFixed(2).replace('.', ',')}
+                      </>
+                    ) : (
+                      <>R${(pkg.price_cents / 100).toFixed(2).replace('.', ',')}</>
+                    )}
                   </div>
                 </button>
               ))}
@@ -1110,6 +1191,8 @@ const VideoChatRoom = () => {
                         onClick={() => {
                           navigator.clipboard.writeText(coupon.code);
                           setCopiedCoupon(coupon.id);
+                          setCouponInput(coupon.code);
+                          setAppliedCoupon({ code: coupon.code, discount_percent: coupon.discount_percent });
                           setTimeout(() => setCopiedCoupon(null), 2000);
                         }}
                         className="px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95"
@@ -1130,9 +1213,85 @@ const VideoChatRoom = () => {
                 ))}
               </div>
             )}
-            <p className="text-[10px] mt-5 text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Cole o código no checkout para aplicar o desconto.
+
+            {/* Apply coupon input */}
+            <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <p className="text-xs font-semibold text-white mb-2">Aplicar Cupom</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Digite o código"
+                  value={couponInput}
+                  onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponApplyError(""); }}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50 uppercase"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                />
+                <button
+                  onClick={async () => {
+                    const code = couponInput.trim();
+                    if (!code) return;
+                    const found = availableCoupons.find(c => c.code === code);
+                    if (found) {
+                      setAppliedCoupon({ code: found.code, discount_percent: found.discount_percent });
+                      setCouponApplyError("");
+                      setCouponInput("");
+                    } else {
+                      setCouponApplyError("Cupom inválido ou expirado");
+                    }
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+                >
+                  Aplicar
+                </button>
+              </div>
+              {couponApplyError && <p className="text-[10px] mt-1.5" style={{ color: "#f87171" }}>{couponApplyError}</p>}
+              {appliedCoupon && (
+                <div className="flex items-center justify-between mt-2 px-3 py-2 rounded-xl" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                  <span className="text-xs font-semibold" style={{ color: "#4ade80" }}>✓ {appliedCoupon.code} — {appliedCoupon.discount_percent}% OFF</span>
+                  <button onClick={() => setAppliedCoupon(null)} className="text-[10px] text-white/40 hover:text-white/60">✕</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Coin Confirmation Modal */}
+      {showCoinConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center" onClick={() => setShowCoinConfirm(null)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }} />
+          <div
+            className="relative w-[90%] max-w-xs rounded-2xl p-6 text-center"
+            style={{ background: "linear-gradient(180deg, #1e1b4b, #0f0a2e)", border: "1px solid rgba(139,92,246,0.2)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-4xl mb-3">🪙</div>
+            <h3 className="text-lg font-bold text-white mb-1">Confirmar gasto</h3>
+            <p className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Usar <span className="font-bold text-white">{showCoinConfirm.cost} coins</span> para:
             </p>
+            <p className="text-sm font-semibold mb-3" style={{ color: "#a78bfa" }}>{showCoinConfirm.label}</p>
+            <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Seu saldo: <span className="font-bold" style={{ color: userCoins >= showCoinConfirm.cost ? "#4ade80" : "#f87171" }}>{userCoins} coins</span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCoinConfirm(null)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02]"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={showCoinConfirm.onConfirm}
+                disabled={userCoins < showCoinConfirm.cost}
+                className="flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                Confirmar
+              </button>
+            </div>
           </div>
         </div>
       )}
