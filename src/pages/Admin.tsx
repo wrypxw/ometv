@@ -879,16 +879,25 @@ const AdminPanel = () => {
           {/* =================== REGIONS TAB =================== */}
           {activeTab === "regions" && (
             <>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Configure o custo em coins para cada país ou estado.</p>
-                <button onClick={() => {
-                  setEditingRegion({} as RegionCoinPrice);
-                  setRegionForm({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
-                }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
-                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
-                  <Plus className="w-3.5 h-3.5" /> Nova Região
-                </button>
+                <div className="flex gap-2">
+                  {regions.length === 0 && (
+                    <button onClick={populateAllRegions} disabled={populatingRegions}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105 disabled:opacity-50"
+                      style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+                      <Globe className="w-3.5 h-3.5" /> {populatingRegions ? "Populando..." : "🌍 Popular Tudo"}
+                    </button>
+                  )}
+                  <button onClick={() => {
+                    setEditingRegion({} as RegionCoinPrice);
+                    setRegionForm({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
+                  }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                    <Plus className="w-3.5 h-3.5" /> Nova Região
+                  </button>
+                </div>
               </div>
 
               <div className="relative max-w-md mb-4">
