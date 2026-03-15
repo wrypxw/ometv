@@ -125,6 +125,11 @@ const AdminPanel = () => {
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
   const [txLoading, setTxLoading] = useState(false);
   const [mpTokenVisible, setMpTokenVisible] = useState(false);
+  const [regions, setRegions] = useState<RegionCoinPrice[]>([]);
+  const [regionsLoading, setRegionsLoading] = useState(false);
+  const [editingRegion, setEditingRegion] = useState<RegionCoinPrice | null>(null);
+  const [regionForm, setRegionForm] = useState({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
+  const [regionSearch, setRegionSearch] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
