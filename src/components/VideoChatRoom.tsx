@@ -128,6 +128,7 @@ const VideoChatRoom = () => {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const [regionPrices, setRegionPrices] = useState<Record<string, number>>({});
+  const [genderPrices, setGenderPrices] = useState<Record<string, number>>({});
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileTarget, setProfileTarget] = useState<any>(null);
@@ -212,6 +213,14 @@ const VideoChatRoom = () => {
           }
         });
         setRegionPrices(map);
+      }
+    });
+    // Load gender coin prices
+    supabase.from("gender_coin_prices").select("gender_key, coin_cost").eq("active", true).then(({ data }) => {
+      if (data) {
+        const map: Record<string, number> = {};
+        data.forEach((g: any) => { map[g.gender_key] = g.coin_cost; });
+        setGenderPrices(map);
       }
     });
   }, []);
@@ -1206,15 +1215,17 @@ const VideoChatRoom = () => {
             </div>
             <h2 className="text-lg md:text-xl font-bold text-white mb-1">Gender Preferences</h2>
             <p className="text-xs md:text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              <span className="font-bold text-white">15 Coins</span> are used whenever you match with the gender filter on.
+              Coins are used when you match with a gender filter on.
             </p>
 
             <div className="grid grid-cols-3 gap-2.5 md:gap-3 mb-5">
               {[
-                { id: "Male", emoji: "👨", color: "#38bdf8", borderColor: "#38bdf8", cost: true },
-                { id: "Both", emoji: "👫", color: "#a855f7", borderColor: "#a855f7", cost: false },
-                { id: "Female", emoji: "👩", color: "#ec4899", borderColor: "#ec4899", cost: true },
-              ].map((g) => (
+                { id: "Male", emoji: "👨", color: "#38bdf8", borderColor: "#38bdf8" },
+                { id: "Both", emoji: "👫", color: "#a855f7", borderColor: "#a855f7" },
+                { id: "Female", emoji: "👩", color: "#ec4899", borderColor: "#ec4899" },
+              ].map((g) => {
+                const cost = genderPrices[g.id] !== undefined ? genderPrices[g.id] : (g.id === "Both" ? 0 : 15);
+                return (
                 <button
                   key={g.id}
                   onClick={() => setTempGender(g.id)}
@@ -1224,14 +1235,18 @@ const VideoChatRoom = () => {
                     border: tempGender === g.id ? `2px solid ${g.borderColor}` : "2px solid rgba(255,255,255,0.06)",
                   }}
                 >
-                  {g.cost && (
+                  {cost > 0 && (
                     <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                      style={{ background: "#eab308", color: "#000" }}>15 🪙</span>
+                      style={{ background: "#eab308", color: "#000" }}>{cost} 🪙</span>
+                  )}
+                  {cost === 0 && (
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                      style={{ background: "rgba(34,197,94,0.9)", color: "#fff" }}>FREE</span>
                   )}
                   <span className="text-3xl md:text-4xl">{g.emoji}</span>
                   <span className="text-xs md:text-sm font-semibold" style={{ color: g.color }}>{g.id}</span>
                 </button>
-              ))}
+              )})}
             </div>
 
             <button

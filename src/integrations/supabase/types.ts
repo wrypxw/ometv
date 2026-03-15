@@ -68,6 +68,36 @@ export type Database = {
         }
         Relationships: []
       }
+      gender_coin_prices: {
+        Row: {
+          active: boolean
+          coin_cost: number
+          created_at: string
+          gender_key: string
+          gender_label: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          coin_cost?: number
+          created_at?: string
+          gender_key: string
+          gender_label: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          coin_cost?: number
+          created_at?: string
+          gender_key?: string
+          gender_label?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       match_queue: {
         Row: {
           created_at: string

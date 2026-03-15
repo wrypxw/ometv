@@ -5,7 +5,7 @@ import {
   Users, Search, ArrowLeft, Coins, Mail, Lock, Trash2, Plus, Minus, X,
   Shield, Settings, Upload, ShoppingBag, Edit2, GripVertical, ToggleLeft, ToggleRight,
   ChevronLeft, Menu, Tag, Copy, Calendar, CreditCard, Eye, EyeOff, CheckCircle, Clock, XCircle, AlertCircle,
-  Globe, MapPin,
+  Globe, MapPin, UserCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -70,6 +70,14 @@ interface RegionCoinPrice {
   active: boolean;
 }
 
+interface GenderCoinPrice {
+  id: string;
+  gender_key: string;
+  gender_label: string;
+  coin_cost: number;
+  active: boolean;
+}
+
 const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
@@ -77,9 +85,10 @@ const NAV_ITEMS = [
   { id: "coupons" as const, label: "Cupons", icon: Tag },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
+  { id: "genders" as const, label: "Gênero", icon: UserCheck },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders";
 
 interface PaymentTransaction {
   id: string;
@@ -131,6 +140,10 @@ const AdminPanel = () => {
   const [regionForm, setRegionForm] = useState({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
   const [regionSearch, setRegionSearch] = useState("");
   const [populatingRegions, setPopulatingRegions] = useState(false);
+  const [genders, setGenders] = useState<GenderCoinPrice[]>([]);
+  const [gendersLoading, setGendersLoading] = useState(false);
+  const [editingGender, setEditingGender] = useState<GenderCoinPrice | null>(null);
+  const [genderForm, setGenderForm] = useState({ gender_key: "", gender_label: "", coin_cost: 0 });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -184,9 +197,16 @@ const AdminPanel = () => {
     setRegionsLoading(false);
   }, []);
 
+  const fetchGenders = useCallback(async () => {
+    setGendersLoading(true);
+    const { data } = await supabase.from("gender_coin_prices").select("*").order("gender_key");
+    if (data) setGenders(data as GenderCoinPrice[]);
+    setGendersLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
@@ -475,6 +495,38 @@ const AdminPanel = () => {
     }
   };
 
+  // Gender functions
+  const saveGender = async () => {
+    try {
+      const payload = {
+        gender_key: genderForm.gender_key.trim(),
+        gender_label: genderForm.gender_label.trim(),
+        coin_cost: genderForm.coin_cost,
+        updated_at: new Date().toISOString(),
+      };
+      if (editingGender?.id) {
+        await supabase.from("gender_coin_prices").update(payload).eq("id", editingGender.id);
+      } else {
+        await supabase.from("gender_coin_prices").insert(payload);
+      }
+      toast({ title: "Gênero salvo!" });
+      setEditingGender(null);
+      fetchGenders();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleGenderActive = async (g: GenderCoinPrice) => {
+    await supabase.from("gender_coin_prices").update({ active: !g.active }).eq("id", g.id);
+    fetchGenders();
+  };
+
+  const deleteGender = async (id: string) => {
+    await supabase.from("gender_coin_prices").delete().eq("id", id);
+    fetchGenders();
+  };
+
   const filteredRegions = regions.filter(r =>
     r.region_name.toLowerCase().includes(regionSearch.toLowerCase()) ||
     r.region_code.toLowerCase().includes(regionSearch.toLowerCase())
@@ -559,6 +611,7 @@ const AdminPanel = () => {
             {activeTab === "coupons" && "Cupons de Desconto"}
             {activeTab === "payments" && "Pagamentos"}
             {activeTab === "regions" && "Preço por Região"}
+            {activeTab === "genders" && "Preço por Gênero"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
@@ -986,6 +1039,72 @@ const AdminPanel = () => {
               )}
             </>
           )}
+
+          {/* =================== GENDERS TAB =================== */}
+          {activeTab === "genders" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Configure o custo em coins para cada filtro de gênero.</p>
+                <button onClick={() => {
+                  setEditingGender({} as GenderCoinPrice);
+                  setGenderForm({ gender_key: "", gender_label: "", coin_cost: 0 });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Novo Gênero
+                </button>
+              </div>
+
+              {gendersLoading ? <Spinner /> : genders.length === 0 ? (
+                <EmptyState icon={UserCheck} text="Nenhum gênero configurado" />
+              ) : (
+                <div className="space-y-2">
+                  {genders.map(g => {
+                    const emoji = g.gender_key === "Male" ? "👨" : g.gender_key === "Female" ? "👩" : g.gender_key === "Both" ? "👫" : "🧑";
+                    const accentColor = g.gender_key === "Male" ? "#38bdf8" : g.gender_key === "Female" ? "#ec4899" : "#a855f7";
+                    return (
+                      <div key={g.id}
+                        className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${g.active ? "" : "opacity-50"}`}
+                        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-xl"
+                            style={{ background: `${accentColor}15` }}>
+                            {emoji}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-white">{g.gender_label}</span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full font-mono"
+                                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                                {g.gender_key}
+                              </span>
+                            </div>
+                            <span className="text-xs font-semibold" style={{ color: g.coin_cost === 0 ? "#22c55e" : "#eab308" }}>
+                              {g.coin_cost === 0 ? "FREE" : `🪙 ${g.coin_cost} coins`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => toggleGenderActive(g)} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                            {g.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                          </button>
+                          <button onClick={() => {
+                            setEditingGender(g);
+                            setGenderForm({ gender_key: g.gender_key, gender_label: g.gender_label, coin_cost: g.coin_cost });
+                          }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                            <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                          </button>
+                          <button onClick={() => deleteGender(g.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
@@ -1149,6 +1268,29 @@ const AdminPanel = () => {
               <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Quantas coins o usuário gasta para acessar esta região.</p>
             </div>
             <PrimaryBtn onClick={saveRegion} disabled={!regionForm.region_code.trim() || !regionForm.region_name.trim()} text="💾 Salvar Região" />
+          </div>
+        </Modal>
+      )}
+
+      {/* =================== GENDER EDIT MODAL =================== */}
+      {editingGender && (
+        <Modal onClose={() => setEditingGender(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingGender.id ? "Editar Gênero" : "Novo Gênero"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Chave (ex: Male, Female, Both)</label>
+              <AdminInput value={genderForm.gender_key} onChange={v => setGenderForm(p => ({ ...p, gender_key: v }))} placeholder="Male" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Label (nome exibido)</label>
+              <AdminInput value={genderForm.gender_label} onChange={v => setGenderForm(p => ({ ...p, gender_label: v }))} placeholder="Male" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Custo em Coins</label>
+              <AdminInput value={String(genderForm.coin_cost)} onChange={v => setGenderForm(p => ({ ...p, coin_cost: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="15" />
+              <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>0 = grátis. Quantas coins o usuário gasta ao usar este filtro.</p>
+            </div>
+            <PrimaryBtn onClick={saveGender} disabled={!genderForm.gender_key.trim() || !genderForm.gender_label.trim()} text="💾 Salvar Gênero" />
           </div>
         </Modal>
       )}
