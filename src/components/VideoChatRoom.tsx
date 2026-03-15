@@ -1430,6 +1430,81 @@ const VideoChatRoom = () => {
           </div>
         </div>
       )}
+
+      {/* Friends List Modal */}
+      {showFriendsModal && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowFriendsModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
+          <div
+            className="relative w-full md:max-w-md md:mx-4 rounded-t-3xl md:rounded-2xl p-5 md:p-7 max-h-[85dvh] overflow-y-auto"
+            style={{ background: "linear-gradient(180deg, #1a1040, #0f0a2e)", border: "1px solid rgba(139,92,246,0.15)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex md:hidden justify-center mb-4">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(139,92,246,0.4)" }} />
+            </div>
+
+            <button onClick={() => setShowFriendsModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+              ✕
+            </button>
+
+            <div className="text-center mb-5">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
+                style={{ background: "linear-gradient(135deg, #ec4899, #8b5cf6)", boxShadow: "0 8px 30px rgba(236,72,153,0.3)" }}>
+                <Heart className="w-7 h-7 text-white fill-current" />
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Amizades</h2>
+              <p className="text-xs mt-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Pessoas que você está seguindo
+              </p>
+            </div>
+
+            {friendsLoading ? (
+              <div className="flex justify-center py-10">
+                <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: "rgba(139,92,246,0.2)", borderTopColor: "#a855f7" }} />
+              </div>
+            ) : friendsList.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="text-4xl mb-3">👥</div>
+                <p className="text-sm font-medium text-white/60">Nenhuma amizade ainda</p>
+                <p className="text-xs mt-1 text-white/30">Siga pessoas durante as calls!</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {friendsList.map((friend) => (
+                  <div key={friend.following_id}
+                    className="flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-white/5"
+                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold text-white"
+                      style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
+                      {(friend.display_name || friend.email || "?")[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">
+                        {friend.display_name || friend.email?.split("@")[0] || "Usuário"}
+                      </p>
+                      <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        Seguindo desde {new Date(friend.created_at).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowFriendsModal(false);
+                        openProfileModal({ id: friend.following_id, display_name: friend.display_name, email: friend.email });
+                      }}
+                      className="p-2 rounded-xl hover:bg-white/10 transition-all"
+                      style={{ color: "rgba(255,255,255,0.5)" }}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
