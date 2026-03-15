@@ -804,7 +804,7 @@ const VideoChatRoom = () => {
 
             {/* Header */}
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h2 className="text-lg md:text-xl font-bold text-white">Shop</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">{siteSettings.shop_title || "Shop"}</h2>
               <div className="flex items-center gap-1.5 text-sm" style={{ color: "#eab308" }}>
                 <Heart className="w-4 h-4 fill-current" />
                 <span className="text-white font-medium">0</span>
@@ -812,21 +812,14 @@ const VideoChatRoom = () => {
             </div>
 
             <p className="text-xs md:text-sm mb-4 md:mb-5" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Higher tiers give you more bonus coins!
+              {siteSettings.shop_description || "Higher tiers give you more bonus coins!"}
             </p>
 
-            {/* Coin Packages Grid - 2 cols mobile, 3 cols desktop */}
+            {/* Coin Packages Grid - dynamic from DB */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-4 md:mb-5">
-              {[
-                { coins: "500", bonus: "", price: "$3.99" },
-                { coins: "1.000", bonus: "+120", price: "$7.49" },
-                { coins: "2.500", bonus: "+300", price: "$17.49" },
-                { coins: "5.000", bonus: "+550", price: "$33.49" },
-                { coins: "10.000", bonus: "+1.100", price: "$64.49" },
-                { coins: "25.000", bonus: "+2.600", price: "$156.49" },
-              ].map((pkg, i) => (
+              {shopPackages.map((pkg, i) => (
                 <button
-                  key={i}
+                  key={pkg.id}
                   className="rounded-xl p-2.5 md:p-3 flex flex-col items-center gap-1.5 md:gap-2 transition-opacity hover:opacity-90"
                   style={{
                     background: i < 3
@@ -838,13 +831,13 @@ const VideoChatRoom = () => {
                     {i === 0 ? "🪙" : i < 3 ? "💰" : i < 5 ? "💎" : "🎁"}
                   </div>
                   <div className="text-xs md:text-sm font-bold text-white leading-tight text-center">
-                    {pkg.coins} {pkg.bonus && <span style={{ color: "#4ade80" }}>{pkg.bonus}</span>} Coins
+                    {pkg.coins.toLocaleString()} {pkg.bonus > 0 && <span style={{ color: "#4ade80" }}>+{pkg.bonus.toLocaleString()}</span>} Coins
                   </div>
                   <div
                     className="w-full py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-semibold text-center"
                     style={{ background: "rgba(0,0,0,0.25)", color: "#4ade80" }}
                   >
-                    {pkg.price}
+                    ${(pkg.price_cents / 100).toFixed(2)}
                   </div>
                 </button>
               ))}
