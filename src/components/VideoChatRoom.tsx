@@ -466,7 +466,7 @@ const VideoChatRoom = () => {
       }
       setShowCoinConfirm({
         cost,
-        label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gender" ? " + " : ""}${selectedGender !== "Gender" ? ({ "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender) : ""}`.trim() || "filtros",
+        label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gênero" ? " + " : ""}${selectedGender !== "Gênero" ? ({ "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender) : ""}`.trim() || "filtros",
         onConfirm: async () => {
           setShowCoinConfirm(null);
           const ok = await deductCoins(cost);
