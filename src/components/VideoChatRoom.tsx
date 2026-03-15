@@ -1332,7 +1332,7 @@ const VideoChatRoom = () => {
             {/* Avatar */}
             <div className="relative -mt-12 px-6">
               <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto ring-4"
-                style={{ background: "linear-gradient(135deg, #6d28d9, #a855f7)", ringColor: "#0f0a2e" }}>
+                style={{ background: "linear-gradient(135deg, #6d28d9, #a855f7)", boxShadow: "0 0 0 4px #0f0a2e" }}>
                 <User className="w-10 h-10 text-white" />
               </div>
             </div>
