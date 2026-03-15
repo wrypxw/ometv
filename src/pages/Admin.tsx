@@ -140,6 +140,10 @@ const AdminPanel = () => {
   const [regionForm, setRegionForm] = useState({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
   const [regionSearch, setRegionSearch] = useState("");
   const [populatingRegions, setPopulatingRegions] = useState(false);
+  const [genders, setGenders] = useState<GenderCoinPrice[]>([]);
+  const [gendersLoading, setGendersLoading] = useState(false);
+  const [editingGender, setEditingGender] = useState<GenderCoinPrice | null>(null);
+  const [genderForm, setGenderForm] = useState({ gender_key: "", gender_label: "", coin_cost: 0 });
   const navigate = useNavigate();
   const { toast } = useToast();
 
