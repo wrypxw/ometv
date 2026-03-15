@@ -1062,7 +1062,7 @@ const VideoChatRoom = () => {
                   boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
                 }}
               >
-                {cameraAllowed ? "👋 Start Video Chat" : "💬 Start Chat"}
+                {cameraAllowed ? "👋 Iniciar Vídeo Chat" : "💬 Iniciar Chat"}
                 {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
               </button>
               {isLoggedIn && (
