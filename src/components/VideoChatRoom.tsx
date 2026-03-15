@@ -387,7 +387,7 @@ const VideoChatRoom = () => {
       cost += regionPrices[stateName] !== undefined ? regionPrices[stateName] : 10;
     }
     // Gender cost
-    if (selectedGender !== "Gender") {
+    if (selectedGender !== "Gênero") {
       cost += genderPrices[selectedGender] !== undefined ? genderPrices[selectedGender] : (selectedGender === "Both" ? 0 : 15);
     }
     return cost;
