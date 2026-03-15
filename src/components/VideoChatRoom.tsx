@@ -576,13 +576,14 @@ const VideoChatRoom = () => {
   }, [currentUser, checkIfFollowing]);
 
   const handleShareProfile = useCallback(() => {
-    const url = window.location.origin;
+    const profileId = profileTarget?.id || currentUser?.id;
+    const url = profileId ? `${window.location.origin}/profile/${profileId}` : window.location.origin;
     if (navigator.share) {
-      navigator.share({ title: "ChatRandom", text: "Venha conversar comigo!", url });
+      navigator.share({ title: profileTarget?.display_name || "Meu Perfil", text: "Confira meu perfil e me siga!", url });
     } else {
       navigator.clipboard.writeText(url);
     }
-  }, []);
+  }, [profileTarget, currentUser]);
 
   const fetchFriends = useCallback(async () => {
     if (!currentUser) return;
