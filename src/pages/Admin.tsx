@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Users, Search, ArrowLeft, Coins, Mail, Lock, Trash2, Plus, Minus, X,
   Shield, Settings, Upload, ShoppingBag, Edit2, GripVertical, ToggleLeft, ToggleRight,
-  ChevronLeft, Menu,
+  ChevronLeft, Menu, Tag, Copy, Calendar,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +33,17 @@ interface ShopPackage {
   active: boolean;
 }
 
+interface Coupon {
+  id: string;
+  code: string;
+  discount_percent: number;
+  max_uses: number | null;
+  used_count: number;
+  active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}
+
 const SETTING_LABELS: Record<string, { label: string; placeholder: string; type?: string }> = {
   site_name: { label: "Nome do Site", placeholder: "ChatRandom" },
   site_suffix: { label: "Sufixo", placeholder: ".gg" },
@@ -52,9 +63,12 @@ const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
+  { id: "coupons" as const, label: "Cupons", icon: Tag },
 ];
 
-type TabId = "users" | "settings" | "shop";
+type TabId = "users" | "settings" | "shop" | "coupons";
+
+
 
 const AdminPanel = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -76,6 +90,10 @@ const AdminPanel = () => {
   const [editingPkg, setEditingPkg] = useState<ShopPackage | null>(null);
   const [pkgForm, setPkgForm] = useState({ coins: 0, bonus: 0, price_cents: 0, sort_order: 0 });
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [couponsLoading, setCouponsLoading] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [couponForm, setCouponForm] = useState({ code: "", discount_percent: 10, max_uses: "", expires_at: "" });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -108,9 +126,16 @@ const AdminPanel = () => {
     setPackagesLoading(false);
   }, []);
 
+  const fetchCoupons = useCallback(async () => {
+    setCouponsLoading(true);
+    const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
+    if (data) setCoupons(data as Coupon[]);
+    setCouponsLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
@@ -198,6 +223,38 @@ const AdminPanel = () => {
     fetchPackages();
   };
 
+  // Coupons
+  const saveCoupon = async () => {
+    try {
+      const payload: any = {
+        code: couponForm.code.toUpperCase().trim(),
+        discount_percent: couponForm.discount_percent,
+        max_uses: couponForm.max_uses ? parseInt(couponForm.max_uses) : null,
+        expires_at: couponForm.expires_at || null,
+      };
+      if (editingCoupon?.id) {
+        await supabase.from("coupons").update(payload).eq("id", editingCoupon.id);
+      } else {
+        await supabase.from("coupons").insert(payload);
+      }
+      toast({ title: "Cupom salvo!" });
+      setEditingCoupon(null);
+      fetchCoupons();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleCouponActive = async (c: Coupon) => {
+    await supabase.from("coupons").update({ active: !c.active }).eq("id", c.id);
+    fetchCoupons();
+  };
+
+  const deleteCoupon = async (id: string) => {
+    await supabase.from("coupons").delete().eq("id", id);
+    fetchCoupons();
+  };
+
   const filteredUsers = users.filter(u =>
     u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -274,6 +331,7 @@ const AdminPanel = () => {
             {activeTab === "users" && "Usuários"}
             {activeTab === "settings" && "Configurações"}
             {activeTab === "shop" && "Shop / Planos"}
+            {activeTab === "coupons" && "Cupons de Desconto"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
@@ -420,6 +478,84 @@ const AdminPanel = () => {
               )}
             </>
           )}
+
+          {/* =================== COUPONS TAB =================== */}
+          {activeTab === "coupons" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Crie e gerencie cupons de desconto.</p>
+                <button onClick={() => {
+                  setEditingCoupon({} as Coupon);
+                  setCouponForm({ code: "", discount_percent: 10, max_uses: "", expires_at: "" });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Novo Cupom
+                </button>
+              </div>
+
+              {couponsLoading ? <Spinner /> : coupons.length === 0 ? (
+                <EmptyState icon={Tag} text="Nenhum cupom criado" />
+              ) : (
+                <div className="space-y-2">
+                  {coupons.map(coupon => (
+                    <div key={coupon.id}
+                      className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${coupon.active ? "" : "opacity-50"}`}
+                      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: "rgba(124,58,237,0.15)" }}>
+                          <Tag className="w-4 h-4" style={{ color: "#a78bfa" }} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-white font-mono tracking-wider">{coupon.code}</span>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e" }}>
+                              -{coupon.discount_percent}%
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                              Usos: {coupon.used_count}{coupon.max_uses ? `/${coupon.max_uses}` : " (ilimitado)"}
+                            </span>
+                            {coupon.expires_at && (
+                              <span className="text-[11px] flex items-center gap-1" style={{ color: new Date(coupon.expires_at) < new Date() ? "#ef4444" : "rgba(255,255,255,0.35)" }}>
+                                <Calendar className="w-3 h-3" />
+                                {new Date(coupon.expires_at).toLocaleDateString("pt-BR")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => { navigator.clipboard.writeText(coupon.code); toast({ title: "Código copiado!" }); }}
+                          className="p-2 rounded-lg hover:bg-white/5 transition-colors" title="Copiar código">
+                          <Copy className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={() => toggleCouponActive(coupon)} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          {coupon.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        </button>
+                        <button onClick={() => {
+                          setEditingCoupon(coupon);
+                          setCouponForm({
+                            code: coupon.code,
+                            discount_percent: coupon.discount_percent,
+                            max_uses: coupon.max_uses ? String(coupon.max_uses) : "",
+                            expires_at: coupon.expires_at ? coupon.expires_at.split("T")[0] : "",
+                          });
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={() => deleteCoupon(coupon.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
@@ -510,6 +646,34 @@ const AdminPanel = () => {
               <AdminInput value={String(pkgForm.sort_order)} onChange={v => setPkgForm(p => ({ ...p, sort_order: parseInt(v) || 0 }))} type="number" placeholder="1" />
             </div>
             <PrimaryBtn onClick={savePkg} text="💾 Salvar Pacote" />
+          </div>
+        </Modal>
+      )}
+
+      {/* =================== COUPON EDIT MODAL =================== */}
+      {editingCoupon && (
+        <Modal onClose={() => setEditingCoupon(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingCoupon.id ? "Editar Cupom" : "Novo Cupom"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código do Cupom</label>
+              <AdminInput value={couponForm.code} onChange={v => setCouponForm(p => ({ ...p, code: v.toUpperCase() }))} placeholder="EX: DESCONTO20" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Desconto (%)</label>
+              <AdminInput value={String(couponForm.discount_percent)} onChange={v => setCouponForm(p => ({ ...p, discount_percent: Math.min(100, Math.max(0, parseInt(v) || 0)) }))} type="number" placeholder="10" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Máximo de usos (vazio = ilimitado)</label>
+              <AdminInput value={couponForm.max_uses} onChange={v => setCouponForm(p => ({ ...p, max_uses: v }))} type="number" placeholder="100" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Data de expiração (opcional)</label>
+              <input type="date" value={couponForm.expires_at} onChange={e => setCouponForm(p => ({ ...p, expires_at: e.target.value }))}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "white", colorScheme: "dark" }} />
+            </div>
+            <PrimaryBtn onClick={saveCoupon} disabled={!couponForm.code.trim()} text="💾 Salvar Cupom" />
           </div>
         </Modal>
       )}
