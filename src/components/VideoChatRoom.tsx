@@ -559,7 +559,7 @@ const VideoChatRoom = () => {
                       { icon: <User className="w-4 h-4" />, label: "Perfil", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" />, action: async () => {
                         setShowProfileMenu(false);
                         if (currentUser) {
-                          const { data: profile } = await supabase.from("profiles").select("id, display_name, email, coins").eq("id", currentUser.id).single();
+                          const { data: profile } = await supabase.from("profiles").select("id, display_name, email, coins, age, bio, instagram").eq("id", currentUser.id).single();
                           if (profile) {
                             openProfileModal(profile);
                           } else {
