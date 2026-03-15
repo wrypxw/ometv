@@ -1169,11 +1169,11 @@ const VideoChatRoom = () => {
 
             {/* Disclaimers */}
             <div className="space-y-1 text-[10px] md:text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-              <p>*Filters (e.g. gender, location, etc.) are based on the user's input. The results may not be accurate.</p>
-              <p>* If you cancel searching before you get a match, your coins will NOT be refunded.</p>
+              <p>*Filtros (gênero, localização, etc.) são baseados na escolha do usuário. Os resultados podem não ser precisos.</p>
+              <p>* Se você cancelar a busca antes de encontrar um match, suas coins serão reembolsadas.</p>
               <p>* Preços em BRL (Reais). O valor pode variar conforme sua localização.</p>
-              <p>* VAT is calculated at checkout.</p>
-              <p>* Make sure to read our <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Refund Policy</span>.</p>
+              <p>* O IVA é calculado no checkout.</p>
+              <p>* Certifique-se de ler nossos <span className="underline cursor-pointer">Termos de Serviço</span> e <span className="underline cursor-pointer">Política de Reembolso</span>.</p>
             </div>
           </div>
         </div>
