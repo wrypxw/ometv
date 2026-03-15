@@ -439,7 +439,6 @@ const VideoChatRoom = () => {
   const startSearch = useCallback(async () => {
     const cost = getFilterCost();
     if (cost > 0 && isLoggedIn) {
-      // Show confirmation
       setShowCoinConfirm({
         cost,
         label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gender" ? " + " : ""}${selectedGender !== "Gender" ? selectedGender : ""}`.trim() || "filtros",
@@ -458,15 +457,19 @@ const VideoChatRoom = () => {
             });
             return;
           }
+          setPendingCoinCost(cost);
           await doStartSearch();
         },
       });
       return;
     }
+    setPendingCoinCost(0);
     await doStartSearch();
   }, [getFilterCost, isLoggedIn, selectedCountry, selectedGender, deductCoins, doStartSearch]);
 
   const nextPerson = useCallback(async () => {
+    // No refund on next — coins already consumed for this session
+    setPendingCoinCost(0);
     webrtcRef.current?.destroy();
     webrtcRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
@@ -474,14 +477,21 @@ const VideoChatRoom = () => {
     await startSearch();
   }, [startSearch]);
 
-  const stopChat = useCallback(() => {
+  const stopChat = useCallback(async () => {
+    const wasSearching = status === "searching";
+    const costToRefund = pendingCoinCost;
     webrtcRef.current?.destroy();
     webrtcRef.current = null;
     matchmakerRef.current?.destroy();
     matchmakerRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
     setStatus("disconnected");
-  }, []);
+    // Refund coins if user was still searching (never connected)
+    if (wasSearching && costToRefund > 0) {
+      await refundCoins(costToRefund);
+    }
+    setPendingCoinCost(0);
+  }, [status, pendingCoinCost, refundCoins]);
 
   const sendMessage = useCallback(() => {
     const text = inputMsg.trim();
