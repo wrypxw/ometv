@@ -156,6 +156,10 @@ const AdminPanel = () => {
   const [gendersLoading, setGendersLoading] = useState(false);
   const [editingGender, setEditingGender] = useState<GenderCoinPrice | null>(null);
   const [genderForm, setGenderForm] = useState({ gender_key: "", gender_label: "", coin_cost: 0 });
+  const [promos, setPromos] = useState<PromoCode[]>([]);
+  const [promosLoading, setPromosLoading] = useState(false);
+  const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
+  const [promoForm, setPromoForm] = useState({ code: "", coins_reward: 100, max_uses: "", expires_at: "" });
   const navigate = useNavigate();
   const { toast } = useToast();
 
