@@ -495,6 +495,38 @@ const AdminPanel = () => {
     }
   };
 
+  // Gender functions
+  const saveGender = async () => {
+    try {
+      const payload = {
+        gender_key: genderForm.gender_key.trim(),
+        gender_label: genderForm.gender_label.trim(),
+        coin_cost: genderForm.coin_cost,
+        updated_at: new Date().toISOString(),
+      };
+      if (editingGender?.id) {
+        await supabase.from("gender_coin_prices").update(payload).eq("id", editingGender.id);
+      } else {
+        await supabase.from("gender_coin_prices").insert(payload);
+      }
+      toast({ title: "Gênero salvo!" });
+      setEditingGender(null);
+      fetchGenders();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleGenderActive = async (g: GenderCoinPrice) => {
+    await supabase.from("gender_coin_prices").update({ active: !g.active }).eq("id", g.id);
+    fetchGenders();
+  };
+
+  const deleteGender = async (id: string) => {
+    await supabase.from("gender_coin_prices").delete().eq("id", id);
+    fetchGenders();
+  };
+
   const filteredRegions = regions.filter(r =>
     r.region_name.toLowerCase().includes(regionSearch.toLowerCase()) ||
     r.region_code.toLowerCase().includes(regionSearch.toLowerCase())
