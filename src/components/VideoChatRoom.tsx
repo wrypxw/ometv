@@ -939,7 +939,7 @@ const VideoChatRoom = () => {
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
                 >
                   <SkipForward className="w-4 h-4" />
-                  Next
+                   Próximo
                 </button>
               </div>
             </div>
