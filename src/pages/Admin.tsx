@@ -305,6 +305,45 @@ const AdminPanel = () => {
     fetchCoupons();
   };
 
+  // Regions
+  const saveRegion = async () => {
+    try {
+      const payload = {
+        region_type: regionForm.region_type,
+        region_code: regionForm.region_code.toUpperCase().trim(),
+        region_name: regionForm.region_name.trim(),
+        parent_code: regionForm.parent_code ? regionForm.parent_code.toUpperCase().trim() : null,
+        coin_cost: regionForm.coin_cost,
+        updated_at: new Date().toISOString(),
+      };
+      if (editingRegion?.id) {
+        await supabase.from("region_coin_prices").update(payload).eq("id", editingRegion.id);
+      } else {
+        await supabase.from("region_coin_prices").insert(payload);
+      }
+      toast({ title: "Região salva!" });
+      setEditingRegion(null);
+      fetchRegions();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleRegionActive = async (r: RegionCoinPrice) => {
+    await supabase.from("region_coin_prices").update({ active: !r.active }).eq("id", r.id);
+    fetchRegions();
+  };
+
+  const deleteRegion = async (id: string) => {
+    await supabase.from("region_coin_prices").delete().eq("id", id);
+    fetchRegions();
+  };
+
+  const filteredRegions = regions.filter(r =>
+    r.region_name.toLowerCase().includes(regionSearch.toLowerCase()) ||
+    r.region_code.toLowerCase().includes(regionSearch.toLowerCase())
+  );
+
   const filteredUsers = users.filter(u =>
     u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
