@@ -437,6 +437,32 @@ const AdminPanel = () => {
                   <SettingsSection title="🌐 Redes Sociais" keys={["facebook_url", "discord_url", "twitter_url", "instagram_url", "tiktok_url"]} getValue={getSettingValue} onChange={updateSettingLocal} />
                   <SettingsSection title="🛒 Shop" keys={["shop_enabled", "shop_title", "shop_description"]} getValue={getSettingValue} onChange={updateSettingLocal} />
 
+                  {/* Mercado Pago Config */}
+                  <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <h3 className="text-sm font-semibold text-white mb-3">💳 Mercado Pago</h3>
+                    <div>
+                      <label className="text-[11px] font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.4)" }}>Access Token</label>
+                      <div className="flex gap-2">
+                        <input
+                          type={mpTokenVisible ? "text" : "password"}
+                          value={getSettingValue("mp_access_token")}
+                          onChange={e => updateSettingLocal("mp_access_token", e.target.value)}
+                          placeholder="APP_USR-..."
+                          className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+                          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "white" }}
+                        />
+                        <button onClick={() => setMpTokenVisible(!mpTokenVisible)}
+                          className="px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                          style={{ border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
+                          {mpTokenVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
+                        Encontre em: mercadopago.com.br → Seu negócio → Configurações → Credenciais
+                      </p>
+                    </div>
+                  </div>
+
                   {Object.keys(settingsDirty).length > 0 && (
                     <button onClick={saveSettings} disabled={savingSettings}
                       className="w-full py-3 rounded-xl font-semibold text-white text-sm disabled:opacity-50 transition-all hover:scale-[1.01] active:scale-[0.99]"
