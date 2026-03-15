@@ -285,7 +285,7 @@ const VideoChatRoom = () => {
           options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        setAuthError("Check your email to confirm your account!");
+        setAuthError("Verifique seu e-mail para confirmar sua conta!");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: authEmail,
