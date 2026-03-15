@@ -130,6 +130,9 @@ const VideoChatRoom = () => {
   const [regionPrices, setRegionPrices] = useState<Record<string, number>>({});
   const [genderPrices, setGenderPrices] = useState<Record<string, number>>({});
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplyError, setCouponApplyError] = useState("");
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileTarget, setProfileTarget] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -139,6 +142,8 @@ const VideoChatRoom = () => {
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
+  const [userCoins, setUserCoins] = useState(0);
+  const [showCoinConfirm, setShowCoinConfirm] = useState<{ cost: number; label: string; onConfirm: () => void } | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
