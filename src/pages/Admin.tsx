@@ -648,6 +648,34 @@ const AdminPanel = () => {
           </div>
         </Modal>
       )}
+
+      {/* =================== COUPON EDIT MODAL =================== */}
+      {editingCoupon && (
+        <Modal onClose={() => setEditingCoupon(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingCoupon.id ? "Editar Cupom" : "Novo Cupom"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código do Cupom</label>
+              <AdminInput value={couponForm.code} onChange={v => setCouponForm(p => ({ ...p, code: v.toUpperCase() }))} placeholder="EX: DESCONTO20" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Desconto (%)</label>
+              <AdminInput value={String(couponForm.discount_percent)} onChange={v => setCouponForm(p => ({ ...p, discount_percent: Math.min(100, Math.max(0, parseInt(v) || 0)) }))} type="number" placeholder="10" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Máximo de usos (vazio = ilimitado)</label>
+              <AdminInput value={couponForm.max_uses} onChange={v => setCouponForm(p => ({ ...p, max_uses: v }))} type="number" placeholder="100" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Data de expiração (opcional)</label>
+              <input type="date" value={couponForm.expires_at} onChange={e => setCouponForm(p => ({ ...p, expires_at: e.target.value }))}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-purple-500/40"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "white", colorScheme: "dark" }} />
+            </div>
+            <PrimaryBtn onClick={saveCoupon} disabled={!couponForm.code.trim()} text="💾 Salvar Cupom" />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
