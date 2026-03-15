@@ -1271,6 +1271,29 @@ const AdminPanel = () => {
           </div>
         </Modal>
       )}
+
+      {/* =================== GENDER EDIT MODAL =================== */}
+      {editingGender && (
+        <Modal onClose={() => setEditingGender(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingGender.id ? "Editar Gênero" : "Novo Gênero"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Chave (ex: Male, Female, Both)</label>
+              <AdminInput value={genderForm.gender_key} onChange={v => setGenderForm(p => ({ ...p, gender_key: v }))} placeholder="Male" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Label (nome exibido)</label>
+              <AdminInput value={genderForm.gender_label} onChange={v => setGenderForm(p => ({ ...p, gender_label: v }))} placeholder="Male" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Custo em Coins</label>
+              <AdminInput value={String(genderForm.coin_cost)} onChange={v => setGenderForm(p => ({ ...p, coin_cost: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="15" />
+              <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>0 = grátis. Quantas coins o usuário gasta ao usar este filtro.</p>
+            </div>
+            <PrimaryBtn onClick={saveGender} disabled={!genderForm.gender_key.trim() || !genderForm.gender_label.trim()} text="💾 Salvar Gênero" />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
