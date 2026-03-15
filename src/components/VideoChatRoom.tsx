@@ -1756,9 +1756,9 @@ const VideoChatRoom = () => {
             </div>
 
             <p className="text-[10px] md:text-xs mt-5 leading-relaxed" style={{ color: "rgba(255,255,255,0.25)" }}>
-              I confirm that I am at least 18 years old and I agree to the{" "}
-              <span className="underline cursor-pointer">Terms of Service</span> and{" "}
-              <span className="underline cursor-pointer">Privacy Policy</span>.
+              Confirmo que tenho pelo menos 18 anos e concordo com os{" "}
+              <span className="underline cursor-pointer">Termos de Serviço</span> e{" "}
+              <span className="underline cursor-pointer">Política de Privacidade</span>.
             </p>
           </div>
         </div>
