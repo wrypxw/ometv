@@ -667,6 +667,7 @@ const VideoChatRoom = () => {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Shop Modal */}
