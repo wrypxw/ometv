@@ -16,7 +16,6 @@ import {
   ChevronUp,
   ChevronRight,
   Facebook,
-  History,
   User,
   MessageSquare,
   Share2,
