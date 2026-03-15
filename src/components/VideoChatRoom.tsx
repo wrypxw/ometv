@@ -357,6 +357,7 @@ const VideoChatRoom = () => {
         remoteVideoRef.current.srcObject = stream;
       }
       setStatus("connected");
+      setPendingCoinCost(0); // Connected successfully, coins consumed
     };
 
     rtc.onDisconnected = () => {
