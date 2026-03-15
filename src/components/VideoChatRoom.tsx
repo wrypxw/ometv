@@ -1499,9 +1499,9 @@ const VideoChatRoom = () => {
             <div className="flex md:hidden justify-center mb-4">
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
-            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Region Preferences</h2>
+            <h2 className="text-lg md:text-xl font-bold text-white mb-1">Preferências de Região</h2>
             <p className="text-xs md:text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Choose a region to match with. Some regions require coins.
+              Escolha uma região para buscar. Apenas estados do BR requerem coins.
             </p>
 
             <div className="space-y-1 max-h-56 md:max-h-64 overflow-y-auto mb-5">
