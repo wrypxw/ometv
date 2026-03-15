@@ -11,7 +11,7 @@ import {
   Globe,
   Users,
   Heart,
-  Maximize2,
+  
   Search,
   ChevronUp,
   ChevronRight,
