@@ -1191,6 +1191,8 @@ const VideoChatRoom = () => {
                         onClick={() => {
                           navigator.clipboard.writeText(coupon.code);
                           setCopiedCoupon(coupon.id);
+                          setCouponInput(coupon.code);
+                          setAppliedCoupon({ code: coupon.code, discount_percent: coupon.discount_percent });
                           setTimeout(() => setCopiedCoupon(null), 2000);
                         }}
                         className="px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95"
