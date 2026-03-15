@@ -123,6 +123,7 @@ const VideoChatRoom = () => {
   const [authError, setAuthError] = useState("");
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [showBrazilStates, setShowBrazilStates] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -164,6 +165,17 @@ const VideoChatRoom = () => {
       setCurrentUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Load site settings
+  useEffect(() => {
+    supabase.from("site_settings").select("key, value").then(({ data }) => {
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach((s: any) => { map[s.key] = s.value; });
+        setSiteSettings(map);
+      }
+    });
   }, []);
 
   const handleEmailAuth = async () => {
@@ -431,20 +443,24 @@ const VideoChatRoom = () => {
         {/* Center content (idle state) */}
         {status !== "connected" && status !== "searching" && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
-            <div
-              className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse-glow"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
-            >
-              <svg className="w-9 h-7 md:w-11 md:h-8" viewBox="0 0 36 28" fill="none">
-                <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
-                <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
-                <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-              </svg>
-            </div>
+            {siteSettings.logo_url ? (
+              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover mb-4 md:mb-6 animate-pulse-glow" />
+            ) : (
+              <div
+                className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse-glow"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                <svg className="w-9 h-7 md:w-11 md:h-8" viewBox="0 0 36 28" fill="none">
+                  <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
+                  <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
+                  <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                </svg>
+              </div>
+            )}
 
             <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-              <span className="text-gradient">ChatRandom</span>
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>.gg</span>
+              <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
             </h1>
             <div className="flex items-center gap-2 mt-2 md:mt-3">
               <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse" style={{ background: "#22c55e" }} />
@@ -453,24 +469,61 @@ const VideoChatRoom = () => {
               </span>
             </div>
 
-            {/* Social buttons */}
-            <div className="flex items-center gap-2.5 mt-5 md:mt-8">
-              <button
-                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
-                style={{ background: "#1877F2" }}
-              >
-                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                Share
-              </button>
-              <button
-                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
-                style={{ background: "#5865F2" }}
-              >
-                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/>
-                </svg>
-                Discord
-              </button>
+            {/* Social buttons - dynamic */}
+            <div className="flex items-center gap-2.5 mt-5 md:mt-8 flex-wrap justify-center">
+              {siteSettings.facebook_url && (
+                <a href={siteSettings.facebook_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                  style={{ background: "#1877F2" }}>
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  Facebook
+                </a>
+              )}
+              {siteSettings.discord_url && (
+                <a href={siteSettings.discord_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                  style={{ background: "#5865F2" }}>
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+                  Discord
+                </a>
+              )}
+              {siteSettings.twitter_url && (
+                <a href={siteSettings.twitter_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                  style={{ background: "#000" }}>
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  X
+                </a>
+              )}
+              {siteSettings.instagram_url && (
+                <a href={siteSettings.instagram_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                  style={{ background: "linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)" }}>
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                  Instagram
+                </a>
+              )}
+              {siteSettings.tiktok_url && (
+                <a href={siteSettings.tiktok_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                  style={{ background: "#000" }}>
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.72a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.15z"/></svg>
+                  TikTok
+                </a>
+              )}
+              {/* Fallback if no socials configured */}
+              {!siteSettings.facebook_url && !siteSettings.discord_url && !siteSettings.twitter_url && !siteSettings.instagram_url && !siteSettings.tiktok_url && (
+                <>
+                  <button className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95" style={{ background: "#1877F2" }}>
+                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    Share
+                  </button>
+                  <button className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95" style={{ background: "#5865F2" }}>
+                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+                    Discord
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -970,20 +1023,22 @@ const VideoChatRoom = () => {
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
 
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
-            >
-              <svg width="32" height="24" viewBox="0 0 36 28" fill="none">
-                <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
-                <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
-                <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-              </svg>
-            </div>
+            {siteSettings.logo_url ? (
+              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-cover mx-auto mb-5 animate-pulse-glow" />
+            ) : (
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
+                <svg width="32" height="24" viewBox="0 0 36 28" fill="none">
+                  <ellipse cx="11" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
+                  <ellipse cx="25" cy="14" rx="8" ry="7" stroke="white" strokeWidth="2" fill="none" />
+                  <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                </svg>
+              </div>
+            )}
 
             <h2 className="text-xl font-extrabold">
-              <span className="text-gradient">ChatRandom</span>
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>.gg</span>
+              <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
             </h2>
             <p className="text-xs md:text-sm mt-1.5 mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
               {authMode === "login" ? "Sign in to start chatting!" : "Create your account"}
