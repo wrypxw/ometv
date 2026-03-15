@@ -1628,7 +1628,7 @@ const VideoChatRoom = () => {
                       style={{ background: "rgba(34,197,94,0.9)", color: "#fff" }}>FREE</span>
                   )}
                   <span className="text-3xl md:text-4xl">{g.emoji}</span>
-                  <span className="text-xs md:text-sm font-semibold" style={{ color: g.color }}>{g.id}</span>
+                  <span className="text-xs md:text-sm font-semibold" style={{ color: g.color }}>{g.label}</span>
                 </button>
               )})}
             </div>
