@@ -125,6 +125,9 @@ const VideoChatRoom = () => {
   const [showBrazilStates, setShowBrazilStates] = useState(false);
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
   const [shopPackages, setShopPackages] = useState<any[]>([]);
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
