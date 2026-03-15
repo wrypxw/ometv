@@ -331,6 +331,7 @@ const AdminPanel = () => {
             {activeTab === "users" && "Usuários"}
             {activeTab === "settings" && "Configurações"}
             {activeTab === "shop" && "Shop / Planos"}
+            {activeTab === "coupons" && "Cupons de Desconto"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
