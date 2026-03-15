@@ -100,23 +100,25 @@ Deno.serve(async (req) => {
     if (status === "approved" && transaction.status !== "approved") {
       const totalCoins = transaction.coins_amount + transaction.bonus_amount;
       
-      await supabaseAdmin
+      // Get current coins and increment (service role bypasses RLS)
+      const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .update({
-          coins: totalCoins, // We use RPC for proper increment
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", transaction.user_id);
+        .select("coins")
+        .eq("id", transaction.user_id)
+        .single();
 
-      // Use direct SQL increment via RPC-like approach
-      // Actually let's use the admin function properly
-      const { error: coinError } = await supabaseAdmin.rpc("admin_update_coins", {
-        _user_id: transaction.user_id,
-        _amount: totalCoins,
-      });
+      if (profile) {
+        const { error: coinError } = await supabaseAdmin
+          .from("profiles")
+          .update({
+            coins: profile.coins + totalCoins,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", transaction.user_id);
 
-      if (coinError) {
-        console.error("Failed to credit coins:", coinError.message);
+        if (coinError) {
+          console.error("Failed to credit coins:", coinError.message);
+        }
       }
 
       // Increment coupon usage if applicable
