@@ -33,6 +33,17 @@ interface ShopPackage {
   active: boolean;
 }
 
+interface Coupon {
+  id: string;
+  code: string;
+  discount_percent: number;
+  max_uses: number | null;
+  used_count: number;
+  active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}
+
 const SETTING_LABELS: Record<string, { label: string; placeholder: string; type?: string }> = {
   site_name: { label: "Nome do Site", placeholder: "ChatRandom" },
   site_suffix: { label: "Sufixo", placeholder: ".gg" },
