@@ -1194,9 +1194,46 @@ const VideoChatRoom = () => {
                 ))}
               </div>
             )}
-            <p className="text-[10px] mt-5 text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Cole o código no checkout para aplicar o desconto.
-            </p>
+
+            {/* Apply coupon input */}
+            <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <p className="text-xs font-semibold text-white mb-2">Aplicar Cupom</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Digite o código"
+                  value={couponInput}
+                  onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponApplyError(""); }}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50 uppercase"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                />
+                <button
+                  onClick={async () => {
+                    const code = couponInput.trim();
+                    if (!code) return;
+                    const found = availableCoupons.find(c => c.code === code);
+                    if (found) {
+                      setAppliedCoupon({ code: found.code, discount_percent: found.discount_percent });
+                      setCouponApplyError("");
+                      setCouponInput("");
+                    } else {
+                      setCouponApplyError("Cupom inválido ou expirado");
+                    }
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+                >
+                  Aplicar
+                </button>
+              </div>
+              {couponApplyError && <p className="text-[10px] mt-1.5" style={{ color: "#f87171" }}>{couponApplyError}</p>}
+              {appliedCoupon && (
+                <div className="flex items-center justify-between mt-2 px-3 py-2 rounded-xl" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                  <span className="text-xs font-semibold" style={{ color: "#4ade80" }}>✓ {appliedCoupon.code} — {appliedCoupon.discount_percent}% OFF</span>
+                  <button onClick={() => setAppliedCoupon(null)} className="text-[10px] text-white/40 hover:text-white/60">✕</button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
