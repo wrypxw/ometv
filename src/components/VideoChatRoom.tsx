@@ -901,7 +901,7 @@ const VideoChatRoom = () => {
                 <input
                   value={inputMsg}
                   onChange={(e) => setInputMsg(e.target.value)}
-                  placeholder="Type a message..."
+                  placeholder="Digite uma mensagem..."
                   className="flex-1 rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-xs md:text-sm focus:outline-none focus:ring-1 transition-all"
                   style={{
                     background: "rgba(255,255,255,0.06)",
