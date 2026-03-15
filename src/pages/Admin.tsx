@@ -609,6 +609,72 @@ const AdminPanel = () => {
               )}
             </>
           )}
+
+          {/* =================== PAYMENTS TAB =================== */}
+          {activeTab === "payments" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Histórico de transações via Mercado Pago.</p>
+                <button onClick={fetchTransactions}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.3)" }}>
+                  🔄 Atualizar
+                </button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {[
+                  { label: "Total", value: transactions.length, color: "#a78bfa" },
+                  { label: "Aprovados", value: transactions.filter(t => t.status === "approved").length, color: "#22c55e" },
+                  { label: "Pendentes", value: transactions.filter(t => t.status === "pending").length, color: "#eab308" },
+                  { label: "Receita (R$)", value: (transactions.filter(t => t.status === "approved").reduce((s, t) => s + t.amount_cents, 0) / 100).toFixed(2), color: "#22c55e" },
+                ].map(stat => (
+                  <div key={stat.label} className="rounded-xl p-3 text-center"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div className="text-lg font-bold" style={{ color: stat.color }}>{stat.value}</div>
+                    <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {txLoading ? <Spinner /> : transactions.length === 0 ? (
+                <EmptyState icon={CreditCard} text="Nenhuma transação ainda" />
+              ) : (
+                <div className="space-y-2">
+                  {transactions.map(tx => {
+                    const StatusIcon = tx.status === "approved" ? CheckCircle : tx.status === "pending" ? Clock : tx.status === "rejected" ? XCircle : AlertCircle;
+                    const statusColor = tx.status === "approved" ? "#22c55e" : tx.status === "pending" ? "#eab308" : "#ef4444";
+                    const userName = users.find(u => u.id === tx.user_id)?.display_name || users.find(u => u.id === tx.user_id)?.email || tx.user_id.slice(0, 8);
+                    return (
+                      <div key={tx.id} className="rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+                        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <StatusIcon className="w-5 h-5 shrink-0" style={{ color: statusColor }} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium text-white">{userName}</span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${statusColor}15`, color: statusColor }}>
+                                {tx.status.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 mt-0.5">
+                              <span className="text-xs" style={{ color: "#eab308" }}>🪙 {tx.coins_amount}{tx.bonus_amount > 0 ? ` +${tx.bonus_amount}` : ""}</span>
+                              <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>R$ {(tx.amount_cents / 100).toFixed(2)}</span>
+                              {tx.coupon_code && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>🏷️ {tx.coupon_code} (-{tx.discount_percent}%)</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>
+                          {new Date(tx.created_at).toLocaleString("pt-BR")}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
