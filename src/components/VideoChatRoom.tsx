@@ -851,6 +851,63 @@ const VideoChatRoom = () => {
         </div>
       )}
 
+      {/* Coupon Modal */}
+      {showCouponModal && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowCouponModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+          <div
+            className="relative w-full md:max-w-md md:mx-4 rounded-t-2xl md:rounded-2xl p-4 md:p-6 max-h-[85dvh] overflow-y-auto"
+            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex md:hidden justify-center mb-3">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
+            </div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                🎟️ Cupons de Desconto
+              </h2>
+              <button onClick={() => setShowCouponModal(false)} className="text-white/50 hover:text-white">✕</button>
+            </div>
+            {availableCoupons.length === 0 ? (
+              <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Nenhum cupom disponível no momento.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {availableCoupons.map((coupon) => (
+                  <div key={coupon.id} className="rounded-xl p-4 flex items-center justify-between"
+                    style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.1))", border: "1px solid rgba(245,158,11,0.3)" }}>
+                    <div>
+                      <div className="text-sm font-bold text-white tracking-wider">{coupon.code}</div>
+                      <div className="text-xs mt-1" style={{ color: "#f59e0b" }}>{coupon.discount_percent}% de desconto</div>
+                      {coupon.expires_at && (
+                        <div className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          Válido até {new Date(coupon.expires_at).toLocaleDateString("pt-BR")}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(coupon.code);
+                        setCopiedCoupon(coupon.id);
+                        setTimeout(() => setCopiedCoupon(null), 2000);
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:scale-105"
+                      style={{ background: copiedCoupon === coupon.id ? "#22c55e" : "#f59e0b" }}>
+                      {copiedCoupon === coupon.id ? "Copiado!" : "Copiar"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-[10px] mt-4 text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
+              Use o código no checkout para aplicar o desconto.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Region Preferences Modal */}
       {showRegion && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowRegion(false)}>
