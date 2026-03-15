@@ -1053,28 +1053,31 @@ const VideoChatRoom = () => {
             </button>
           </div>
 
-          {/* Start / Stop+Next */}
-          {status === "idle" || status === "disconnected" ? (
-            <>
-              <button
-                onClick={startSearch}
-                className="w-full max-w-md py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                  boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
-                }}
-              >
-                {cameraAllowed ? "👋 Iniciar Vídeo Chat" : "💬 Iniciar Chat"}
-                {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
-              </button>
-              {isLoggedIn && (
-                <p className="text-center text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  Seu saldo: <span style={{ color: "#fbbf24" }}>{userCoins} 🪙</span>
-                </p>
-              )}
-            </>
-          ) : (
-            <div className="flex md:hidden items-center gap-2 w-full max-w-md">
+          {/* Start button */}
+          <button
+            onClick={startSearch}
+            className="w-full max-w-md py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+            style={{
+              background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+              boxShadow: "0 8px 32px -8px rgba(124, 58, 237, 0.5)",
+            }}
+          >
+            {cameraAllowed ? "👋 Iniciar Vídeo Chat" : "💬 Iniciar Chat"}
+            {getFilterCost() > 0 && <span className="ml-2 text-xs opacity-75">({getFilterCost()} 🪙)</span>}
+          </button>
+          {isLoggedIn && (
+            <p className="text-center text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Seu saldo: <span style={{ color: "#fbbf24" }}>{userCoins} 🪙</span>
+            </p>
+          )}
+        </div>
+        )}
+
+        {/* Mobile Stop/Next buttons - shown during searching/connected when camera is off (split screen mode) */}
+        {(status === "searching" || status === "connected") && !cameraAllowed && (
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-3 pb-3 pt-8 md:hidden"
+            style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%)" }}>
+            <div className="flex items-center gap-2 w-full max-w-md mx-auto">
               <button
                 onClick={stopChat}
                 className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -1084,7 +1087,7 @@ const VideoChatRoom = () => {
                   backdropFilter: "blur(8px)",
                 }}
               >
-                 Parar
+                Parar
               </button>
               <button
                 onClick={nextPerson}
@@ -1095,11 +1098,10 @@ const VideoChatRoom = () => {
                 }}
               >
                 <SkipForward className="w-3.5 h-3.5" />
-                 Próximo
+                Próximo
               </button>
             </div>
-          )}
-        </div>
+          </div>
         )}
       </div>
 
