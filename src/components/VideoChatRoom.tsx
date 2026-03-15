@@ -128,6 +128,7 @@ const VideoChatRoom = () => {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const [regionPrices, setRegionPrices] = useState<Record<string, number>>({});
+  const [genderPrices, setGenderPrices] = useState<Record<string, number>>({});
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileTarget, setProfileTarget] = useState<any>(null);
