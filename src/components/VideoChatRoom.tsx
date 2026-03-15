@@ -403,7 +403,7 @@ const VideoChatRoom = () => {
                     ))}
                     <div className="my-1.5 mx-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
                     <button
-                      onClick={() => { setIsLoggedIn(false); setShowProfileMenu(false); }}
+                      onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-red-500/10"
                       style={{ color: "#f87171" }}
                     >
