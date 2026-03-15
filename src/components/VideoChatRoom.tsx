@@ -496,7 +496,7 @@ const VideoChatRoom = () => {
               <button
                 onClick={() => setShowCouponModal(true)}
                 className="flex items-center gap-2 rounded-full px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
+                style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)" }}>
                 <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
                 Cupom
               </button>
@@ -854,55 +854,100 @@ const VideoChatRoom = () => {
       {/* Coupon Modal */}
       {showCouponModal && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowCouponModal(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)" }} />
           <div
-            className="relative w-full md:max-w-md md:mx-4 rounded-t-2xl md:rounded-2xl p-4 md:p-6 max-h-[85dvh] overflow-y-auto"
-            style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)" }}
+            className="relative w-full md:max-w-md md:mx-4 rounded-t-3xl md:rounded-2xl p-5 md:p-7 max-h-[85dvh] overflow-y-auto"
+            style={{ background: "linear-gradient(180deg, #1e1b4b, #0f0a2e)", border: "1px solid rgba(139,92,246,0.2)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex md:hidden justify-center mb-3">
-              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
+            <div className="flex md:hidden justify-center mb-4">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(139,92,246,0.4)" }} />
             </div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                🎟️ Cupons de Desconto
-              </h2>
-              <button onClick={() => setShowCouponModal(false)} className="text-white/50 hover:text-white">✕</button>
-            </div>
-            {availableCoupons.length === 0 ? (
-              <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.4)" }}>
-                Nenhum cupom disponível no momento.
+
+            {/* Header with icon */}
+            <div className="text-center mb-5">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
+                style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 8px 30px rgba(139,92,246,0.4)" }}>
+                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Cupons de Desconto</h2>
+              <p className="text-xs mt-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Aproveite nossas ofertas especiais!
               </p>
+            </div>
+
+            <button onClick={() => setShowCouponModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+              ✕
+            </button>
+
+            {availableCoupons.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="text-4xl mb-3">🎫</div>
+                <p className="text-sm font-medium text-white/60">Nenhum cupom disponível</p>
+                <p className="text-xs mt-1 text-white/30">Volte mais tarde para novas ofertas!</p>
+              </div>
             ) : (
               <div className="space-y-3">
-                {availableCoupons.map((coupon) => (
-                  <div key={coupon.id} className="rounded-xl p-4 flex items-center justify-between"
-                    style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.1))", border: "1px solid rgba(245,158,11,0.3)" }}>
-                    <div>
-                      <div className="text-sm font-bold text-white tracking-wider">{coupon.code}</div>
-                      <div className="text-xs mt-1" style={{ color: "#f59e0b" }}>{coupon.discount_percent}% de desconto</div>
-                      {coupon.expires_at && (
-                        <div className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
-                          Válido até {new Date(coupon.expires_at).toLocaleDateString("pt-BR")}
+                {availableCoupons.map((coupon, i) => (
+                  <div key={coupon.id}
+                    className="rounded-2xl p-4 relative overflow-hidden transition-all hover:scale-[1.02]"
+                    style={{
+                      background: i % 3 === 0
+                        ? "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.1))"
+                        : i % 3 === 1
+                        ? "linear-gradient(135deg, rgba(236,72,153,0.2), rgba(190,24,93,0.1))"
+                        : "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(29,78,216,0.1))",
+                      border: `1px solid ${i % 3 === 0 ? "rgba(139,92,246,0.3)" : i % 3 === 1 ? "rgba(236,72,153,0.3)" : "rgba(59,130,246,0.3)"}`,
+                    }}>
+                    {/* Decorative circles */}
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" style={{ background: "#0f0a2e" }} />
+                    <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" style={{ background: "#0f0a2e" }} />
+
+                    <div className="flex items-center justify-between pl-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-black text-white">{coupon.discount_percent}%</span>
+                          <span className="text-xs font-semibold uppercase tracking-wider" style={{
+                            color: i % 3 === 0 ? "#a78bfa" : i % 3 === 1 ? "#f472b6" : "#60a5fa"
+                          }}>OFF</span>
                         </div>
-                      )}
+                        <div className="text-[11px] font-mono font-bold tracking-[0.2em] text-white/80 mt-1 px-2 py-0.5 rounded"
+                          style={{ background: "rgba(255,255,255,0.08)" }}>
+                          {coupon.code}
+                        </div>
+                        {coupon.expires_at && (
+                          <div className="text-[10px] mt-1.5 text-white/25">
+                            ⏰ Até {new Date(coupon.expires_at).toLocaleDateString("pt-BR")}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(coupon.code);
+                          setCopiedCoupon(coupon.id);
+                          setTimeout(() => setCopiedCoupon(null), 2000);
+                        }}
+                        className="px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95"
+                        style={{
+                          background: copiedCoupon === coupon.id
+                            ? "linear-gradient(135deg, #22c55e, #16a34a)"
+                            : i % 3 === 0
+                            ? "linear-gradient(135deg, #8b5cf6, #6d28d9)"
+                            : i % 3 === 1
+                            ? "linear-gradient(135deg, #ec4899, #be185d)"
+                            : "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                          boxShadow: copiedCoupon === coupon.id ? "0 4px 15px rgba(34,197,94,0.3)" : "0 4px 15px rgba(0,0,0,0.2)",
+                        }}>
+                        {copiedCoupon === coupon.id ? "✓ Copiado!" : "Copiar"}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(coupon.code);
-                        setCopiedCoupon(coupon.id);
-                        setTimeout(() => setCopiedCoupon(null), 2000);
-                      }}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:scale-105"
-                      style={{ background: copiedCoupon === coupon.id ? "#22c55e" : "#f59e0b" }}>
-                      {copiedCoupon === coupon.id ? "Copiado!" : "Copiar"}
-                    </button>
                   </div>
                 ))}
               </div>
             )}
-            <p className="text-[10px] mt-4 text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
-              Use o código no checkout para aplicar o desconto.
+            <p className="text-[10px] mt-5 text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
+              Cole o código no checkout para aplicar o desconto.
             </p>
           </div>
         </div>
