@@ -133,6 +133,9 @@ const VideoChatRoom = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const [couponApplyError, setCouponApplyError] = useState("");
+  const [promoInput, setPromoInput] = useState("");
+  const [promoMessage, setPromoMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileTarget, setProfileTarget] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
