@@ -1604,9 +1604,9 @@ const VideoChatRoom = () => {
 
             <div className="grid grid-cols-3 gap-2.5 md:gap-3 mb-5">
               {[
-                { id: "Male", emoji: "👨", color: "#38bdf8", borderColor: "#38bdf8" },
-                { id: "Both", emoji: "👫", color: "#a855f7", borderColor: "#a855f7" },
-                { id: "Female", emoji: "👩", color: "#ec4899", borderColor: "#ec4899" },
+                { id: "Male", emoji: "👨", label: "Homem", color: "#38bdf8", borderColor: "#38bdf8" },
+                { id: "Both", emoji: "👫", label: "Ambos", color: "#a855f7", borderColor: "#a855f7" },
+                { id: "Female", emoji: "👩", label: "Mulher", color: "#ec4899", borderColor: "#ec4899" },
               ].map((g) => {
                 const cost = genderPrices[g.id] !== undefined ? genderPrices[g.id] : (g.id === "Both" ? 0 : 15);
                 return (
