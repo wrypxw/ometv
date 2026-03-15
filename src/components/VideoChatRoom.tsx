@@ -381,10 +381,10 @@ const VideoChatRoom = () => {
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
     let cost = 0;
-    // Region cost
-    if (selectedCountry !== "Worldwide") {
-      const regionName = selectedCountry.startsWith("Brazil - ") ? selectedCountry.replace("Brazil - ", "") : selectedCountry;
-      cost += regionPrices[regionName] !== undefined ? regionPrices[regionName] : 10;
+    // Region cost - only BR states are paid, countries are FREE
+    if (selectedCountry.startsWith("Brazil - ")) {
+      const stateName = selectedCountry.replace("Brazil - ", "");
+      cost += regionPrices[stateName] !== undefined ? regionPrices[stateName] : 10;
     }
     // Gender cost
     if (selectedGender !== "Gender") {
