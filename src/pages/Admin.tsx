@@ -152,9 +152,16 @@ const AdminPanel = () => {
     setCouponsLoading(false);
   }, []);
 
+  const fetchTransactions = useCallback(async () => {
+    setTxLoading(true);
+    const { data } = await supabase.from("payment_transactions").select("*").order("created_at", { ascending: false }).limit(100);
+    if (data) setTransactions(data as PaymentTransaction[]);
+    setTxLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
