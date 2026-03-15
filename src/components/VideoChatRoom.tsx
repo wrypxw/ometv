@@ -1724,7 +1724,7 @@ const VideoChatRoom = () => {
 
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.25)" }}>or</span>
+              <span className="text-[10px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.25)" }}>ou</span>
               <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
             </div>
 
