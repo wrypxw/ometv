@@ -998,7 +998,9 @@ const VideoChatRoom = () => {
               {shopPackages.map((pkg, i) => (
                 <button
                   key={pkg.id}
-                  className="rounded-xl p-2.5 md:p-3 flex flex-col items-center gap-1.5 md:gap-2 transition-opacity hover:opacity-90"
+                  onClick={() => handleBuyPackage(pkg.id)}
+                  disabled={buyingPkg === pkg.id}
+                  className="rounded-xl p-2.5 md:p-3 flex flex-col items-center gap-1.5 md:gap-2 transition-opacity hover:opacity-90 disabled:opacity-50"
                   style={{
                     background: i < 3
                       ? "linear-gradient(180deg, #7c3aed, #6d28d9)"
