@@ -199,6 +199,21 @@ const VideoChatRoom = () => {
         setAvailableCoupons(valid);
       }
     });
+    // Load region coin prices
+    supabase.from("region_coin_prices").select("region_type, region_code, region_name, coin_cost").eq("active", true).then(({ data }) => {
+      if (data) {
+        const map: Record<string, number> = {};
+        data.forEach((r: any) => {
+          // Map by region_name for countries, and "ParentName - StateName" for states
+          if (r.region_type === "country") {
+            map[r.region_name] = r.coin_cost;
+          } else if (r.region_type === "state") {
+            map[r.region_name] = r.coin_cost;
+          }
+        });
+        setRegionPrices(map);
+      }
+    });
   }, []);
 
   const handleEmailAuth = async () => {
