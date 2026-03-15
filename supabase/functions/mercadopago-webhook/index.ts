@@ -25,12 +25,15 @@ Deno.serve(async (req) => {
     }
 
     const paymentId = body.data?.id;
-    if (!paymentId) {
-      return new Response(JSON.stringify({ error: "No payment ID" }), {
+    // Validate paymentId is a numeric string (MercadoPago IDs are numeric)
+    if (!paymentId || !/^\d{1,20}$/.test(String(paymentId))) {
+      return new Response(JSON.stringify({ error: "Invalid payment ID" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const sanitizedPaymentId = String(paymentId);
 
     // Get MP access token
     const { data: mpSetting } = await supabaseAdmin
@@ -47,14 +50,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch payment details from Mercado Pago
-    const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    // Verify payment by fetching directly from MercadoPago API (source-of-truth verification)
+    // This ensures we never trust the webhook body for payment status - we always confirm with MP
+    const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${sanitizedPaymentId}`, {
       headers: { "Authorization": `Bearer ${mpSetting.value}` },
     });
 
     if (!mpResponse.ok) {
       console.error("MP payment fetch error:", mpResponse.status);
-      return new Response(JSON.stringify({ error: "Failed to fetch payment" }), {
+      return new Response(JSON.stringify({ error: "Failed to verify payment" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -67,6 +71,26 @@ Deno.serve(async (req) => {
     if (!transactionId) {
       console.error("No external_reference in payment");
       return new Response(JSON.stringify({ received: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate transactionId is a valid UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(transactionId)) {
+      console.error("Invalid external_reference format:", transactionId);
+      return new Response(JSON.stringify({ error: "Invalid reference" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate status is one of known MP statuses
+    const validStatuses = ["approved", "pending", "authorized", "in_process", "in_mediation", "rejected", "cancelled", "refunded", "charged_back"];
+    if (!validStatuses.includes(status)) {
+      console.error("Unknown payment status:", status);
+      return new Response(JSON.stringify({ error: "Unknown status" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -86,11 +110,29 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify the payment amount matches the transaction to prevent amount manipulation
+    const mpAmountCents = Math.round(payment.transaction_amount * 100);
+    if (mpAmountCents !== transaction.amount_cents) {
+      console.error("Amount mismatch:", mpAmountCents, "vs", transaction.amount_cents);
+      await supabaseAdmin
+        .from("payment_transactions")
+        .update({
+          status: "amount_mismatch",
+          mp_payment_id: sanitizedPaymentId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", transactionId);
+      return new Response(JSON.stringify({ error: "Amount mismatch" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Update transaction status
     await supabaseAdmin
       .from("payment_transactions")
       .update({
-        mp_payment_id: String(paymentId),
+        mp_payment_id: sanitizedPaymentId,
         status: status,
         updated_at: new Date().toISOString(),
       })
