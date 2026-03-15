@@ -371,7 +371,32 @@ const VideoChatRoom = () => {
     }
   }, []);
 
-  const startSearch = useCallback(async () => {
+  // Calculate total coin cost for current filters
+  const getFilterCost = useCallback(() => {
+    let cost = 0;
+    // Region cost
+    if (selectedCountry !== "Worldwide") {
+      const regionName = selectedCountry.startsWith("Brazil - ") ? selectedCountry.replace("Brazil - ", "") : selectedCountry;
+      cost += regionPrices[regionName] !== undefined ? regionPrices[regionName] : 10;
+    }
+    // Gender cost
+    if (selectedGender !== "Gender") {
+      cost += genderPrices[selectedGender] !== undefined ? genderPrices[selectedGender] : (selectedGender === "Both" ? 0 : 15);
+    }
+    return cost;
+  }, [selectedCountry, selectedGender, regionPrices, genderPrices]);
+
+  const deductCoins = useCallback(async (amount: number) => {
+    if (!currentUser || amount <= 0) return true;
+    const { data } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
+    if (!data || data.coins < amount) return false;
+    const { error } = await supabase.from("profiles").update({ coins: data.coins - amount, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+    if (error) return false;
+    setUserCoins(data.coins - amount);
+    return true;
+  }, [currentUser]);
+
+  const doStartSearch = useCallback(async () => {
     if (!cameraAllowed || !localStreamRef.current) {
       await startLocalCamera();
       if (!localStreamRef.current) return;
@@ -392,6 +417,28 @@ const VideoChatRoom = () => {
       connectToPartner(roomId, isInitiator);
     });
   }, [connectToPartner, cameraAllowed, startLocalCamera]);
+
+  const startSearch = useCallback(async () => {
+    const cost = getFilterCost();
+    if (cost > 0 && isLoggedIn) {
+      // Show confirmation
+      setShowCoinConfirm({
+        cost,
+        label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gender" ? " + " : ""}${selectedGender !== "Gender" ? selectedGender : ""}`.trim() || "filtros",
+        onConfirm: async () => {
+          setShowCoinConfirm(null);
+          const ok = await deductCoins(cost);
+          if (!ok) {
+            alert("Coins insuficientes! Compre mais coins na loja.");
+            return;
+          }
+          await doStartSearch();
+        },
+      });
+      return;
+    }
+    await doStartSearch();
+  }, [getFilterCost, isLoggedIn, selectedCountry, selectedGender, deductCoins, doStartSearch]);
 
   const nextPerson = useCallback(async () => {
     webrtcRef.current?.destroy();
