@@ -1247,6 +1247,45 @@ const VideoChatRoom = () => {
         </div>
       )}
 
+      {/* Coin Confirmation Modal */}
+      {showCoinConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center" onClick={() => setShowCoinConfirm(null)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }} />
+          <div
+            className="relative w-[90%] max-w-xs rounded-2xl p-6 text-center"
+            style={{ background: "linear-gradient(180deg, #1e1b4b, #0f0a2e)", border: "1px solid rgba(139,92,246,0.2)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-4xl mb-3">🪙</div>
+            <h3 className="text-lg font-bold text-white mb-1">Confirmar gasto</h3>
+            <p className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Usar <span className="font-bold text-white">{showCoinConfirm.cost} coins</span> para:
+            </p>
+            <p className="text-sm font-semibold mb-3" style={{ color: "#a78bfa" }}>{showCoinConfirm.label}</p>
+            <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Seu saldo: <span className="font-bold" style={{ color: userCoins >= showCoinConfirm.cost ? "#4ade80" : "#f87171" }}>{userCoins} coins</span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCoinConfirm(null)}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02]"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={showCoinConfirm.onConfirm}
+                disabled={userCoins < showCoinConfirm.cost}
+                className="flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Region Preferences Modal */}
       {showRegion && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowRegion(false)}>
