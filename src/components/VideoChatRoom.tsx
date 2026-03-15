@@ -1310,6 +1310,94 @@ const VideoChatRoom = () => {
           </div>
         </div>
       )}
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowProfileModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
+          <div
+            className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-3xl overflow-hidden max-h-[85dvh]"
+            style={{ background: "linear-gradient(180deg, #1a1040, #0f0a2e)", border: "1px solid rgba(139,92,246,0.15)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Profile header with gradient */}
+            <div className="relative h-32 md:h-36" style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)" }}>
+              <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.15) 0%, transparent 50%)" }} />
+              <button onClick={() => setShowProfileModal(false)}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all z-10">
+                ✕
+              </button>
+            </div>
+
+            {/* Avatar */}
+            <div className="relative -mt-12 px-6">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto ring-4"
+                style={{ background: "linear-gradient(135deg, #6d28d9, #a855f7)", ringColor: "#0f0a2e" }}>
+                <User className="w-10 h-10 text-white" />
+              </div>
+            </div>
+
+            {/* Profile info */}
+            <div className="text-center px-6 pt-3 pb-2">
+              <h3 className="text-xl font-bold text-white">
+                {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Stranger"}
+              </h3>
+              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Usuário do {siteSettings.site_name || "ChatRandom"}
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="px-6 pb-6 pt-4 space-y-2.5">
+              {/* Follow / Unfollow */}
+              <button
+                onClick={() => profileTarget?.id && handleFollow(profileTarget.id)}
+                disabled={followLoading}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                style={{
+                  background: isFollowing
+                    ? "rgba(255,255,255,0.06)"
+                    : "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  border: isFollowing ? "1px solid rgba(255,255,255,0.12)" : "none",
+                  color: "white",
+                  boxShadow: isFollowing ? "none" : "0 6px 24px rgba(124,58,237,0.35)",
+                }}
+              >
+                {isFollowing ? (
+                  <><UserMinus className="w-4 h-4" /> Deixar de Seguir</>
+                ) : (
+                  <><UserPlus className="w-4 h-4" /> Seguir</>
+                )}
+              </button>
+
+              {/* Share */}
+              <button
+                onClick={handleShareProfile}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.75)",
+                }}
+              >
+                <Share2 className="w-4 h-4" /> Compartilhar
+              </button>
+
+              {/* Private Chat */}
+              <button
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "rgba(59,130,246,0.1)",
+                  border: "1px solid rgba(59,130,246,0.25)",
+                  color: "#60a5fa",
+                }}
+              >
+                <MessageSquare className="w-4 h-4" /> Chat Privado
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
