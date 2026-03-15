@@ -429,7 +429,15 @@ const VideoChatRoom = () => {
           setShowCoinConfirm(null);
           const ok = await deductCoins(cost);
           if (!ok) {
-            alert("Coins insuficientes! Compre mais coins na loja.");
+            setShowCoinConfirm(null);
+            setShowCoinConfirm({
+              cost,
+              label: "Saldo insuficiente!",
+              onConfirm: () => {
+                setShowCoinConfirm(null);
+                setShowShop(true);
+              },
+            });
             return;
           }
           await doStartSearch();
