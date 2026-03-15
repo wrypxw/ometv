@@ -197,9 +197,16 @@ const AdminPanel = () => {
     setRegionsLoading(false);
   }, []);
 
+  const fetchGenders = useCallback(async () => {
+    setGendersLoading(true);
+    const { data } = await supabase.from("gender_coin_prices").select("*").order("gender_key");
+    if (data) setGenders(data as GenderCoinPrice[]);
+    setGendersLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
