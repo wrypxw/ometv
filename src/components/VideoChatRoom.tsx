@@ -123,6 +123,7 @@ const VideoChatRoom = () => {
   const [authError, setAuthError] = useState("");
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [showBrazilStates, setShowBrazilStates] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
