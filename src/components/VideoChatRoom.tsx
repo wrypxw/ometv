@@ -147,8 +147,9 @@ const VideoChatRoom = () => {
   const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
   const [userCoins, setUserCoins] = useState(0);
   const [showCoinConfirm, setShowCoinConfirm] = useState<{ cost: number; label: string; onConfirm: () => void } | null>(null);
-  const [pendingCoinCost, setPendingCoinCost] = useState(0);
+  const [pendingCoinCost, _setPendingCoinCost] = useState(0);
   const pendingCoinCostRef = useRef(0);
+  const setPendingCoinCost = useCallback((v: number) => { _setPendingCoinCost(v); pendingCoinCostRef.current = v; }, []);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
