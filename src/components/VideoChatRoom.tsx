@@ -1701,7 +1701,7 @@ const VideoChatRoom = () => {
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
               />
               {authError && (
-                <p className="text-xs" style={{ color: authError.includes("Check your email") ? "#22c55e" : "#f87171" }}>
+                <p className="text-xs" style={{ color: authError.includes("Check your email") || authError.includes("Verifique") ? "#22c55e" : "#f87171" }}>
                   {authError}
                 </p>
               )}
