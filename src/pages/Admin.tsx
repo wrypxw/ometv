@@ -1388,6 +1388,48 @@ const AdminPanel = () => {
           </div>
         </Modal>
       )}
+
+      {/* =================== PROMO EDIT MODAL =================== */}
+      {editingPromo && (
+        <Modal onClose={() => setEditingPromo(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingPromo.id ? "Editar Código" : "Novo Código Promocional"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Código</label>
+              <AdminInput value={promoForm.code} onChange={v => setPromoForm(p => ({ ...p, code: v.toUpperCase() }))} placeholder="ABC123" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Coins de Recompensa</label>
+              <AdminInput value={String(promoForm.coins_reward)} onChange={v => setPromoForm(p => ({ ...p, coins_reward: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="100" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Máx. Usos (vazio = ilimitado)</label>
+              <AdminInput value={promoForm.max_uses} onChange={v => setPromoForm(p => ({ ...p, max_uses: v }))} type="number" placeholder="Ilimitado" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Expira em</label>
+              <AdminInput value={promoForm.expires_at} onChange={v => setPromoForm(p => ({ ...p, expires_at: v }))} type="date" placeholder="" />
+            </div>
+            <PrimaryBtn onClick={async () => {
+              if (!promoForm.code.trim()) return;
+              const payload: any = {
+                code: promoForm.code.trim().toUpperCase(),
+                coins_reward: promoForm.coins_reward,
+                max_uses: promoForm.max_uses ? parseInt(promoForm.max_uses) : null,
+                expires_at: promoForm.expires_at || null,
+              };
+              if (editingPromo.id) {
+                await supabase.from("promo_codes").update(payload).eq("id", editingPromo.id);
+              } else {
+                await supabase.from("promo_codes").insert(payload);
+              }
+              toast({ title: "Código salvo!" });
+              setEditingPromo(null);
+              fetchPromos();
+            }} text="💾 Salvar Código" />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
