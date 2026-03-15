@@ -642,7 +642,7 @@ const AdminPanel = () => {
           )}
         </div>
 
-        <div className="p-4 md:p-6 max-w-5xl">
+        <div className="p-3 md:p-6 max-w-5xl overflow-x-hidden">
           {/* =================== USERS TAB =================== */}
           {activeTab === "users" && (
             <>
