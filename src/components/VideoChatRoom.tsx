@@ -1678,7 +1678,7 @@ const VideoChatRoom = () => {
               <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
             </h2>
             <p className="text-xs md:text-sm mt-1.5 mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              {authMode === "login" ? "Sign in to start chatting!" : "Create your account"}
+              {authMode === "login" ? "Entre para começar a conversar!" : "Crie sua conta"}
             </p>
 
             {/* Email / Password form */}
