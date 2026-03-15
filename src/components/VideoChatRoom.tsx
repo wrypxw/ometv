@@ -153,8 +153,66 @@ const VideoChatRoom = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+  // Auth state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+      setCurrentUser(session?.user ?? null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session?.user);
+      setCurrentUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
-  const startLocalCamera = useCallback(async () => {
+  const handleEmailAuth = async () => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      if (authMode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        setAuthError("Check your email to confirm your account!");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        setShowLoginModal(false);
+      }
+    } catch (err: any) {
+      setAuthError(err.message || "Authentication failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) setAuthError(error.message || "Google sign in failed");
+  };
+
+  const handleAppleAuth = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) setAuthError(error.message || "Apple sign in failed");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setShowProfileMenu(false);
+  };
+
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
