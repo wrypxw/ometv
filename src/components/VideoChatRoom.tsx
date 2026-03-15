@@ -1576,10 +1576,10 @@ const VideoChatRoom = () => {
               className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:scale-[1.02] active:scale-[0.98] mb-2"
               style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 4px 16px -4px rgba(124,58,237,0.4)" }}
             >
-              Save
+              Salvar
             </button>
             <button onClick={() => setShowRegion(false)} className="w-full py-2 text-sm font-medium transition-colors" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Cancel
+              Cancelar
             </button>
           </div>
         </div>
