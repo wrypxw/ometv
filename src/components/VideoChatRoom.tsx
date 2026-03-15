@@ -12,11 +12,11 @@ import {
   Globe,
   Users,
   Heart,
-  
+  UserPlus,
+  UserMinus,
   Search,
   ChevronUp,
   ChevronRight,
-  
   User,
   MessageSquare,
   Share2,
