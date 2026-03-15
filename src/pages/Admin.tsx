@@ -64,9 +64,25 @@ const NAV_ITEMS = [
   { id: "settings" as const, label: "Configurações", icon: Settings },
   { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons", icon: Tag },
+  { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments";
+
+interface PaymentTransaction {
+  id: string;
+  user_id: string;
+  amount_cents: number;
+  currency: string;
+  coins_amount: number;
+  bonus_amount: number;
+  coupon_code: string | null;
+  discount_percent: number;
+  mp_preference_id: string | null;
+  mp_payment_id: string | null;
+  status: string;
+  created_at: string;
+}
 
 
 
