@@ -400,9 +400,9 @@ const VideoChatRoom = () => {
   }, [currentUser]);
 
   const doStartSearch = useCallback(async () => {
-    if (!cameraAllowed || !localStreamRef.current) {
+    // Try to get camera if we don't have it yet, but don't block if denied
+    if (!localStreamRef.current) {
       await startLocalCamera();
-      if (!localStreamRef.current) return;
     }
     setStatus("searching");
     setMessages([]);
