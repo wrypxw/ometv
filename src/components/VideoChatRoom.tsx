@@ -1685,7 +1685,7 @@ const VideoChatRoom = () => {
             <div className="space-y-2.5 mb-4">
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="E-mail"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
                 className="w-full py-3 px-4 rounded-xl text-sm text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-purple-500/50"
