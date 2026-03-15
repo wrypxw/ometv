@@ -1039,6 +1039,72 @@ const AdminPanel = () => {
               )}
             </>
           )}
+
+          {/* =================== GENDERS TAB =================== */}
+          {activeTab === "genders" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Configure o custo em coins para cada filtro de gênero.</p>
+                <button onClick={() => {
+                  setEditingGender({} as GenderCoinPrice);
+                  setGenderForm({ gender_key: "", gender_label: "", coin_cost: 0 });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Novo Gênero
+                </button>
+              </div>
+
+              {gendersLoading ? <Spinner /> : genders.length === 0 ? (
+                <EmptyState icon={UserCheck} text="Nenhum gênero configurado" />
+              ) : (
+                <div className="space-y-2">
+                  {genders.map(g => {
+                    const emoji = g.gender_key === "Male" ? "👨" : g.gender_key === "Female" ? "👩" : g.gender_key === "Both" ? "👫" : "🧑";
+                    const accentColor = g.gender_key === "Male" ? "#38bdf8" : g.gender_key === "Female" ? "#ec4899" : "#a855f7";
+                    return (
+                      <div key={g.id}
+                        className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${g.active ? "" : "opacity-50"}`}
+                        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-xl"
+                            style={{ background: `${accentColor}15` }}>
+                            {emoji}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-white">{g.gender_label}</span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full font-mono"
+                                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                                {g.gender_key}
+                              </span>
+                            </div>
+                            <span className="text-xs font-semibold" style={{ color: g.coin_cost === 0 ? "#22c55e" : "#eab308" }}>
+                              {g.coin_cost === 0 ? "FREE" : `🪙 ${g.coin_cost} coins`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => toggleGenderActive(g)} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                            {g.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                          </button>
+                          <button onClick={() => {
+                            setEditingGender(g);
+                            setGenderForm({ gender_key: g.gender_key, gender_label: g.gender_label, coin_cost: g.coin_cost });
+                          }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                            <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                          </button>
+                          <button onClick={() => deleteGender(g.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
 
