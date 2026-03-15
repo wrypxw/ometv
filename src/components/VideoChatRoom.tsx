@@ -975,7 +975,7 @@ const VideoChatRoom = () => {
                 <User className="w-12 h-12 md:w-16 md:h-16" style={{ color: "rgba(255,255,255,0.15)" }} />
               </div>
               <p className="text-[10px] md:text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-                Câmera desativada — somente chat
+                Câmera desativada — apenas chat
               </p>
             </div>
           </div>
