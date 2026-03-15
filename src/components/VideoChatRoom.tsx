@@ -365,6 +365,7 @@ const VideoChatRoom = () => {
     rtc.onDisconnected = () => {
       setStatus("disconnected");
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      setMessages([]);
     };
 
     if (localStreamRef.current) {
