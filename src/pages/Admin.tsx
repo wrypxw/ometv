@@ -130,6 +130,7 @@ const AdminPanel = () => {
   const [editingRegion, setEditingRegion] = useState<RegionCoinPrice | null>(null);
   const [regionForm, setRegionForm] = useState({ region_type: "country", region_code: "", region_name: "", parent_code: "", coin_cost: 10 });
   const [regionSearch, setRegionSearch] = useState("");
+  const [populatingRegions, setPopulatingRegions] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
