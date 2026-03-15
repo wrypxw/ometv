@@ -455,8 +455,8 @@ const VideoChatRoom = () => {
             </div>
 
             <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-              <span className="text-gradient">ChatRandom</span>
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>.gg</span>
+              <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
             </h1>
             <div className="flex items-center gap-2 mt-2 md:mt-3">
               <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse" style={{ background: "#22c55e" }} />
