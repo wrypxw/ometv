@@ -70,6 +70,14 @@ interface RegionCoinPrice {
   active: boolean;
 }
 
+interface GenderCoinPrice {
+  id: string;
+  gender_key: string;
+  gender_label: string;
+  coin_cost: number;
+  active: boolean;
+}
+
 const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
@@ -77,9 +85,10 @@ const NAV_ITEMS = [
   { id: "coupons" as const, label: "Cupons", icon: Tag },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
+  { id: "genders" as const, label: "Gênero", icon: UserCheck },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders";
 
 interface PaymentTransaction {
   id: string;
