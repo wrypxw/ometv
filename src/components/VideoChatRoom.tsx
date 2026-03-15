@@ -592,6 +592,7 @@ const VideoChatRoom = () => {
         )}
 
         {/* Bottom controls - floats over video with gradient fade */}
+        {status !== "connected" && status !== "searching" && (
         <div className="absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-5 pt-10 flex flex-col items-center gap-2.5 md:gap-3"
           style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}
         >
