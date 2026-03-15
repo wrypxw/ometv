@@ -5,7 +5,7 @@ import {
   Users, Search, ArrowLeft, Coins, Mail, Lock, Trash2, Plus, Minus, X,
   Shield, Settings, Upload, ShoppingBag, Edit2, GripVertical, ToggleLeft, ToggleRight,
   ChevronLeft, Menu, Tag, Copy, Calendar, CreditCard, Eye, EyeOff, CheckCircle, Clock, XCircle, AlertCircle,
-  Globe, MapPin,
+  Globe, MapPin, UserCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
