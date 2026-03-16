@@ -1061,6 +1061,20 @@ const VideoChatRoom = () => {
           </div>
         )}
 
+        {/* Gift buttons - desktop, right side */}
+        {status === "connected" && giftsList.length > 0 && (
+          <div className="hidden md:flex absolute right-4 bottom-20 z-20 flex-col gap-2">
+            {giftsList.map(g => (
+              <button key={g.id} onClick={() => sendGift(g)} disabled={sendingGift === g.id}
+                className="w-12 h-12 rounded-full flex flex-col items-center justify-center transition-all hover:scale-110 active:scale-90"
+                style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}>
+                <span className="text-xl leading-none">{g.emoji}</span>
+                <span className="text-[8px] font-bold leading-none mt-0.5" style={{ color: "#fbbf24" }}>{g.coin_cost}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Stop/Next buttons - pinned to very bottom (desktop only, mobile moved to bottom panel) */}
         {(status === "connected" || status === "searching") && (
           <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-4 pt-6" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
