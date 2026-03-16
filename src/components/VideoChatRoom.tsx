@@ -296,6 +296,10 @@ const VideoChatRoom = () => {
         setGenderPrices(map);
       }
     });
+    // Load gifts
+    supabase.from("gifts").select("id, emoji, name, coin_cost").eq("active", true).order("sort_order").then(({ data }) => {
+      if (data) setGiftsList(data);
+    });
   }, []);
 
   const handleEmailAuth = async () => {
