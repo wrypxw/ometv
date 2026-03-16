@@ -2555,6 +2555,7 @@ const VideoChatRoom = () => {
                     </button>
                   ))}
                 </div>
+                <div className="flex items-center rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <span className="pl-3 text-sm select-none whitespace-nowrap" style={{ color: "rgba(255,255,255,0.4)" }}>instagram.com/</span>
                   <input
                     type="text"
