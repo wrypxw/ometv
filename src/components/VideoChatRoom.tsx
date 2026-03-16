@@ -1306,8 +1306,8 @@ const VideoChatRoom = () => {
       {receivedGift && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
           <div className="animate-bounce text-center">
-            <span className="text-7xl md:text-8xl drop-shadow-2xl">{receivedGift.emoji}</span>
-            <p className="text-white text-sm md:text-base font-bold mt-2 drop-shadow-lg" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>
+            <span className="text-[120px] md:text-[160px] drop-shadow-2xl">{receivedGift.emoji}</span>
+            <p className="text-white text-lg md:text-2xl font-extrabold mt-2 drop-shadow-lg" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>
               Você recebeu: {receivedGift.name}!
             </p>
           </div>
