@@ -469,6 +469,11 @@ const VideoChatRoom = () => {
         setStrangerLocation(loc || null);
         return;
       }
+      if (text.startsWith("__SYS_UID__:")) {
+        const uid = text.replace("__SYS_UID__:", "").trim();
+        setStrangerUserId(uid || null);
+        return;
+      }
       if (text.startsWith("__SYS_GIFT__:")) {
         try {
           const gift = JSON.parse(text.replace("__SYS_GIFT__:", ""));
