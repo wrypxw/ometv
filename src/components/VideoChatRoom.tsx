@@ -154,6 +154,9 @@ const VideoChatRoom = () => {
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
   const [userCoins, setUserCoins] = useState(0);
+  const [giftsList, setGiftsList] = useState<{ id: string; emoji: string; name: string; coin_cost: number }[]>([]);
+  const [receivedGift, setReceivedGift] = useState<{ emoji: string; name: string } | null>(null);
+  const [sendingGift, setSendingGift] = useState<string | null>(null);
   const [showCoinConfirm, setShowCoinConfirm] = useState<{ cost: number; label: string; onConfirm: () => void } | null>(null);
   const [pendingCoinCost, _setPendingCoinCost] = useState(0);
   const pendingCoinCostRef = useRef(0);
