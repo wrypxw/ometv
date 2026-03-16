@@ -76,9 +76,11 @@ export class Matchmaker {
         .single();
 
       if (data && data.status === "matched" && data.matched_with) {
-        const roomId = data.matched_with + "_" + this.sessionId;
+        const ids = [this.sessionId, data.matched_with].sort();
+        const roomId = ids[0] + "_" + ids[1];
+        const isInitiator = this.sessionId === ids[0];
         this.stopPolling();
-        this.onMatch?.(roomId, false);
+        this.onMatch?.(roomId, isInitiator);
       } else if (data && data.status === "waiting") {
         // Try to match again
         await this.tryMatch();
