@@ -401,6 +401,11 @@ const VideoChatRoom = () => {
     rtc.onConnected = () => {
       setStatus("connected");
       setPendingCoinCost(0);
+      // Send our instagram handle to the stranger
+      const igHandle = userInstagram || "";
+      setTimeout(() => {
+        rtc.sendChatMessage(`__SYS_IG__:${igHandle}`);
+      }, 500);
     };
 
     rtc.onRemoteStream = (stream) => {
