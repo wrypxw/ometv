@@ -1712,13 +1712,24 @@ const VideoChatRoom = () => {
               >
                 {authLoading ? "..." : authMode === "login" ? "Entrar" : "Criar Conta"}
               </button>
-              <button
-                onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
-                className="text-xs"
-                style={{ color: "rgba(255,255,255,0.4)" }}
-              >
-                {authMode === "login" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar"}
-              </button>
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
+                  className="text-xs"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
+                >
+                  {authMode === "login" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar"}
+                </button>
+                {authMode === "login" && (
+                  <button
+                    onClick={handleForgotPassword}
+                    className="text-xs"
+                    style={{ color: "rgba(168,85,247,0.7)" }}
+                  >
+                    Esqueci a senha
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3 mb-4">
