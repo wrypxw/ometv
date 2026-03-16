@@ -70,7 +70,7 @@ const Profile = () => {
   const handleShare = useCallback(() => {
     const displayName = profile?.display_name;
     const slug = displayName ? encodeURIComponent(displayName) : resolvedId;
-    const url = slug ? `${window.location.origin}/@${slug}` : window.location.origin;
+    const url = slug ? `${window.location.origin}/profile/${slug}` : window.location.origin;
     if (navigator.share) {
       navigator.share({ title: displayName || "Perfil", text: "Confira este perfil!", url });
     } else {
