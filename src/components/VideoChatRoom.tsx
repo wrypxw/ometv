@@ -674,6 +674,11 @@ const VideoChatRoom = () => {
             Loja
           </button>
 
+          {/* Display name centered */}
+          <span className="text-xs md:text-sm font-semibold truncate max-w-[120px] md:max-w-[180px]" style={{ color: "rgba(255,255,255,0.6)" }}>
+            {isLoggedIn && userDisplayName ? `@${userDisplayName}` : "Anônimo"}
+          </span>
+
           {/* User icon */}
           {isLoggedIn ? (
             <div className="relative">
