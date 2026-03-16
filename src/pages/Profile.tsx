@@ -160,9 +160,11 @@ const Profile = () => {
           <h3 className="text-xl font-bold text-white">
             {profile.display_name || "Anônimo"}
           </h3>
-          {profile.age && (
+          {(profile.age || profile.gender) && (
             <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {profile.age} anos
+              {profile.gender === "male" ? "♂ Homem" : profile.gender === "female" ? "♀ Mulher" : profile.gender === "other" ? "⚧ Outro" : ""}
+              {profile.age && profile.gender ? " · " : ""}
+              {profile.age ? `${profile.age} anos` : ""}
             </p>
           )}
           {profile.bio && (
