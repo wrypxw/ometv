@@ -554,15 +554,8 @@ const VideoChatRoom = () => {
     if (!text || status !== "connected") return;
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), text, sender: "me" }]);
     setInputMsg("");
-    if (Math.random() > 0.3) {
-      const replies = ["Que legal!", "Haha!", "Sério?", "Massa 😄", "Interessante!", "Também!"];
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { id: crypto.randomUUID(), text: replies[Math.floor(Math.random() * replies.length)], sender: "stranger" },
-        ]);
-      }, 800 + Math.random() * 2000);
-    }
+    // Send via WebRTC data channel to the other person
+    webrtcRef.current?.sendChatMessage(text);
   }, [inputMsg, status]);
 
   // Follow/unfollow logic

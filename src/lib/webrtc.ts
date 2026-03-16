@@ -153,10 +153,12 @@ export class WebRTCConnection {
   private roomId: string;
   private sessionId: string;
   private signalingChannel: ReturnType<typeof supabase.channel> | null = null;
+  private dataChannel: RTCDataChannel | null = null;
   public onRemoteStream: ((stream: MediaStream) => void) | null = null;
   public onDisconnected: (() => void) | null = null;
+  public onMessage: ((text: string) => void) | null = null;
 
-  constructor(roomId: string, sessionId: string) {
+  constructor(roomId: string, sessionId: string, isInitiator: boolean = false) {
     this.roomId = roomId;
     this.sessionId = sessionId;
     this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
@@ -182,6 +184,31 @@ export class WebRTCConnection {
         this.onDisconnected?.();
       }
     };
+
+    // Data channel for text chat
+    if (isInitiator) {
+      this.dataChannel = this.pc.createDataChannel("chat");
+      this.setupDataChannel(this.dataChannel);
+    }
+
+    this.pc.ondatachannel = (event) => {
+      this.dataChannel = event.channel;
+      this.setupDataChannel(this.dataChannel);
+    };
+  }
+
+  private setupDataChannel(channel: RTCDataChannel) {
+    channel.onmessage = (event) => {
+      this.onMessage?.(event.data);
+    };
+  }
+
+  sendChatMessage(text: string): boolean {
+    if (this.dataChannel && this.dataChannel.readyState === "open") {
+      this.dataChannel.send(text);
+      return true;
+    }
+    return false;
   }
 
   addLocalStream(stream: MediaStream) {
