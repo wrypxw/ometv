@@ -113,6 +113,7 @@ const VideoChatRoom = () => {
   const [tempGender, setTempGender] = useState("Both");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [cameraAllowed, setCameraAllowed] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
