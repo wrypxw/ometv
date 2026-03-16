@@ -433,6 +433,7 @@ const VideoChatRoom = () => {
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setMessages([]);
       setStrangerInstagram(null);
+      setStrangerLocation(null);
     };
 
     rtc.onMessage = (text) => {
