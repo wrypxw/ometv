@@ -138,32 +138,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create Mercado Pago preference
-    const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
+    // Create PIX payment via Mercado Pago API
+    const mpResponse = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${mpSetting.value}`,
         "Content-Type": "application/json",
+        "X-Idempotency-Key": transaction.id,
       },
       body: JSON.stringify({
-        items: [
-          {
-            title: `${pkg.coins + pkg.bonus} Coins`,
-            quantity: 1,
-            unit_price: finalPrice / 100,
-            currency_id: "BRL",
-          },
-        ],
+        transaction_amount: finalPrice / 100,
+        description: `${pkg.coins + pkg.bonus} Coins`,
+        payment_method_id: "pix",
         payer: {
           email: profile?.email || user.email,
         },
         external_reference: transaction.id,
-        back_urls: {
-          success: `${req.headers.get("origin") || supabaseUrl}/shop?status=success`,
-          failure: `${req.headers.get("origin") || supabaseUrl}/shop?status=failure`,
-          pending: `${req.headers.get("origin") || supabaseUrl}/shop?status=pending`,
-        },
-        auto_return: "approved",
         notification_url: `${supabaseUrl}/functions/v1/mercadopago-webhook`,
       }),
     });
@@ -171,7 +161,7 @@ Deno.serve(async (req) => {
     if (!mpResponse.ok) {
       const errBody = await mpResponse.text();
       console.error("MP API error:", mpResponse.status, errBody);
-      return new Response(JSON.stringify({ error: "Failed to create payment preference" }), {
+      return new Response(JSON.stringify({ error: "Failed to create PIX payment" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -179,17 +169,21 @@ Deno.serve(async (req) => {
 
     const mpData = await mpResponse.json();
 
-    // Update transaction with MP preference ID
+    // Update transaction with MP payment ID
     await supabaseAdmin
       .from("payment_transactions")
-      .update({ mp_preference_id: mpData.id, updated_at: new Date().toISOString() })
+      .update({ mp_payment_id: String(mpData.id), updated_at: new Date().toISOString() })
       .eq("id", transaction.id);
 
+    // Extract PIX data
+    const pixData = mpData.point_of_interaction?.transaction_data;
+
     return new Response(JSON.stringify({
-      init_point: mpData.init_point,
-      sandbox_init_point: mpData.sandbox_init_point,
-      preference_id: mpData.id,
       transaction_id: transaction.id,
+      qr_code: pixData?.qr_code || "",
+      qr_code_base64: pixData?.qr_code_base64 || "",
+      ticket_url: pixData?.ticket_url || "",
+      mp_payment_id: String(mpData.id),
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
