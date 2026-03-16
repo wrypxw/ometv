@@ -1285,7 +1285,62 @@ const AdminPanel = () => {
             </>
           )}
 
+          {/* =================== GIFTS TAB =================== */}
+          {activeTab === "gifts" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Configure os presentes que usuários podem enviar durante chamadas.</p>
+                <button onClick={() => {
+                  setEditingGift({} as GiftItem);
+                  setGiftForm({ emoji: "🎁", name: "", coin_cost: 10, sort_order: 0 });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Novo Presente
+                </button>
+              </div>
 
+              {giftsLoading ? <Spinner /> : giftItems.length === 0 ? (
+                <EmptyState icon={Gift} text="Nenhum presente configurado" />
+              ) : (
+                <div className="space-y-2">
+                  {giftItems.map(g => (
+                    <div key={g.id}
+                      className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${g.active ? "" : "opacity-50"}`}
+                      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-2xl"
+                          style={{ background: "rgba(234,179,8,0.1)" }}>
+                          {g.emoji}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-sm font-medium text-white">{g.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold" style={{ color: "#eab308" }}>🪙 {g.coin_cost} coins</span>
+                            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>ordem: {g.sort_order}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => toggleGiftActive(g)} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          {g.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        </button>
+                        <button onClick={() => {
+                          setEditingGift(g);
+                          setGiftForm({ emoji: g.emoji, name: g.name, coin_cost: g.coin_cost, sort_order: g.sort_order });
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={() => deleteGift(g.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
 
         </div>
       </main>
