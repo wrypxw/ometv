@@ -626,7 +626,7 @@ const VideoChatRoom = () => {
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
       <div
-        className={`${status === "connected" || status === "searching" ? "h-[100dvh] md:h-full w-full" : "h-[50dvh] md:h-full md:flex-1"} relative flex flex-col overflow-hidden`}
+        className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col overflow-hidden"
         style={{
           background: `
             radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.35) 0%, transparent 50%),
