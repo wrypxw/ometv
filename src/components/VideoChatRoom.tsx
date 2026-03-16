@@ -729,6 +729,10 @@ const VideoChatRoom = () => {
   const nextPerson = useCallback(async () => {
     // No refund on next — coins already consumed for this session
     setPendingCoinCost(0);
+    // Signal the other person to skip too
+    webrtcRef.current?.sendChatMessage("__SYS_SKIP__");
+    // Small delay to ensure message is sent before destroying
+    await new Promise(r => setTimeout(r, 100));
     webrtcRef.current?.destroy();
     webrtcRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
