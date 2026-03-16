@@ -680,7 +680,7 @@ const VideoChatRoom = () => {
         _amount: gift.coin_cost,
       });
       if (error || success === false) {
-        setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
+        setShowCoinConfirm({ cost: gift.coin_cost, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
         setSendingGift(null);
         return;
       }
