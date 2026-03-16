@@ -927,12 +927,12 @@ const VideoChatRoom = () => {
               </form>
             )}
 
-            {/* Desktop Stop/Next */}
-            <div className="hidden md:block px-5 pb-5 pt-1">
-              <div className="flex items-center gap-3 justify-center">
+            {/* Stop/Next buttons - all devices */}
+            <div className="px-3 md:px-5 pb-3 md:pb-5 pt-1">
+              <div className="flex items-center gap-2 md:gap-3 justify-center">
                 <button
                   onClick={stopChat}
-                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm transition-all hover:scale-105 active:scale-95"
+                  className="flex-1 md:flex-none px-6 md:px-8 py-3 md:py-3.5 rounded-2xl font-semibold text-white text-xs md:text-sm transition-all hover:scale-105 active:scale-95"
                   style={{
                     background: "rgba(255,255,255,0.08)",
                     border: "1px solid rgba(255,255,255,0.12)",
@@ -943,10 +943,10 @@ const VideoChatRoom = () => {
                 </button>
                 <button
                   onClick={nextPerson}
-                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                  className="flex-1 md:flex-none px-6 md:px-8 py-3 md:py-3.5 rounded-2xl font-semibold text-white text-xs md:text-sm flex items-center justify-center gap-1.5 md:gap-2 transition-all hover:scale-105 active:scale-95"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
                 >
-                  <SkipForward className="w-4 h-4" />
+                  <SkipForward className="w-3.5 h-3.5 md:w-4 md:h-4" />
                    Próximo
                 </button>
               </div>
