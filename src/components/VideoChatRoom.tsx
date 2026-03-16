@@ -555,6 +555,13 @@ const VideoChatRoom = () => {
       setSendingGift(null);
       return;
     }
+    // Transfer coins to recipient
+    if (strangerUserId) {
+      const { data: recipientProfile } = await supabase.from("profiles").select("coins").eq("id", strangerUserId).single();
+      if (recipientProfile) {
+        await supabase.from("profiles").update({ coins: recipientProfile.coins + gift.coin_cost, updated_at: new Date().toISOString() }).eq("id", strangerUserId);
+      }
+    }
     const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
     webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name, senderName, cost: gift.coin_cost })}`);
     // Add gift message to own chat
