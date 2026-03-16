@@ -252,14 +252,14 @@ const VideoChatRoom = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch user location by IP
+  // Fetch user location by IP - state/region only
   useEffect(() => {
     fetch("https://ipapi.co/json/")
       .then(r => r.json())
       .then(data => {
         const parts = [];
         if (data.country_name) parts.push(data.country_name);
-        if (data.city) parts.push(data.city);
+        if (data.region_code) parts.push(data.region_code);
         setUserLocation(parts.join(" • ") || "");
       })
       .catch(() => setUserLocation(""));
