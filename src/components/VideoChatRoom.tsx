@@ -732,7 +732,7 @@ const VideoChatRoom = () => {
           { id: crypto.randomUUID(), text: "Ninguém disponível no momento. Tente novamente!", sender: "stranger" },
         ]);
       }
-    }, 10000);
+    }, 3000);
 
     try {
       await matchmaker.findMatch((roomId, isInitiator) => {
