@@ -94,10 +94,17 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        // Use direct SQL update instead of RPC to avoid auth.uid() being null with service role
+        // Get current coins first, then add the amount
+        const { data: profile, error: fetchError } = await supabaseAdmin
+          .from("profiles")
+          .select("coins")
+          .eq("id", userId)
+          .single();
+        if (fetchError) throw fetchError;
+        const newCoins = Math.max(0, (profile.coins || 0) + amount);
         const { error } = await supabaseAdmin
           .from("profiles")
-          .update({ coins: amount, updated_at: new Date().toISOString() })
+          .update({ coins: newCoins, updated_at: new Date().toISOString() })
           .eq("id", userId);
         if (error) throw error;
         return new Response(JSON.stringify({ success: true }), {
