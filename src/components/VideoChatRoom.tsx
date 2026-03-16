@@ -472,6 +472,12 @@ const VideoChatRoom = () => {
       if (text.startsWith("__SYS_UID__:")) {
         const uid = text.replace("__SYS_UID__:", "").trim();
         setStrangerUserId(uid || null);
+        // Check if already following this person
+        if (uid && currentUser) {
+          supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", uid).maybeSingle().then(({ data }) => {
+            setStrangerFollowed(!!data);
+          });
+        }
         return;
       }
       if (text.startsWith("__SYS_GIFT__:")) {
