@@ -422,6 +422,12 @@ const VideoChatRoom = () => {
     };
 
     rtc.onMessage = (text) => {
+      // Handle system messages (instagram handle exchange)
+      if (text.startsWith("__SYS_IG__:")) {
+        const ig = text.replace("__SYS_IG__:", "").trim();
+        setStrangerInstagram(ig || null);
+        return;
+      }
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), text, sender: "stranger" },
