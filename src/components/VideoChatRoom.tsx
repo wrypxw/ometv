@@ -303,6 +303,26 @@ const VideoChatRoom = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!authEmail) {
+      setAuthError("Digite seu e-mail primeiro");
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(authEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setAuthError("Verifique seu e-mail para redefinir sua senha!");
+    } catch (err: any) {
+      setAuthError(err.message || "Erro ao enviar e-mail");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const handleGoogleAuth = async () => {
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
@@ -1693,13 +1713,24 @@ const VideoChatRoom = () => {
               >
                 {authLoading ? "..." : authMode === "login" ? "Entrar" : "Criar Conta"}
               </button>
-              <button
-                onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
-                className="text-xs"
-                style={{ color: "rgba(255,255,255,0.4)" }}
-              >
-                {authMode === "login" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar"}
-              </button>
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
+                  className="text-xs"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
+                >
+                  {authMode === "login" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar"}
+                </button>
+                {authMode === "login" && (
+                  <button
+                    onClick={handleForgotPassword}
+                    className="text-xs"
+                    style={{ color: "rgba(168,85,247,0.7)" }}
+                  >
+                    Esqueci a senha
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3 mb-4">
