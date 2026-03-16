@@ -83,7 +83,7 @@ export class Matchmaker {
         // Try to match again
         await this.tryMatch();
       }
-    }, 800);
+    }, 300);
   }
 
   private async tryMatch(): Promise<boolean> {
