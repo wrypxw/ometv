@@ -1187,7 +1187,7 @@ const AdminPanel = () => {
                               </span>
                             </div>
                             <span className="text-xs font-semibold" style={{ color: g.coin_cost === 0 ? "#22c55e" : "#eab308" }}>
-                              {g.coin_cost === 0 ? "FREE" : `🪙 ${g.coin_cost} coins`}
+                              {g.coin_cost === 0 ? "GRÁTIS" : `🪙 ${g.coin_cost} coins`}
                             </span>
                           </div>
                         </div>
