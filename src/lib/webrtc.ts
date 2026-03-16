@@ -57,11 +57,11 @@ export class Matchmaker {
         (payload) => {
           const updated = payload.new as any;
           if (updated.status === "matched" && updated.matched_with) {
-            // The other person matched us - they are the initiator
-            // Use THEIR session_id as room prefix for consistency
-            const roomId = updated.matched_with + "_" + this.sessionId;
+            const ids = [this.sessionId, updated.matched_with].sort();
+            const roomId = ids[0] + "_" + ids[1];
+            const isInitiator = this.sessionId === ids[0];
             this.stopPolling();
-            this.onMatch?.(roomId, false);
+            this.onMatch?.(roomId, isInitiator);
           }
         }
       )
@@ -76,9 +76,11 @@ export class Matchmaker {
         .single();
 
       if (data && data.status === "matched" && data.matched_with) {
-        const roomId = data.matched_with + "_" + this.sessionId;
+        const ids = [this.sessionId, data.matched_with].sort();
+        const roomId = ids[0] + "_" + ids[1];
+        const isInitiator = this.sessionId === ids[0];
         this.stopPolling();
-        this.onMatch?.(roomId, false);
+        this.onMatch?.(roomId, isInitiator);
       } else if (data && data.status === "waiting") {
         // Try to match again
         await this.tryMatch();
@@ -98,17 +100,22 @@ export class Matchmaker {
       .single();
 
     if (waiting) {
-      // Use OUR session_id as room prefix since we are the initiator
-      const roomId = this.sessionId + "_" + waiting.session_id;
-
-      // Update the other person's entry to matched
-      const { error } = await supabase
+      // Update the other person's entry to matched — only if still waiting (atomic check)
+      const { data: updated, error } = await supabase
         .from("match_queue")
         .update({ status: "matched", matched_with: this.sessionId })
         .eq("id", waiting.id)
-        .eq("status", "waiting"); // Only if still waiting (avoid race)
+        .eq("status", "waiting")
+        .select()
+        .maybeSingle();
 
-      if (error) return false;
+      // If update returned no rows, someone else grabbed them — retry later
+      if (error || !updated) return false;
+
+      // Deterministic room ID: alphabetically smaller session_id first
+      const ids = [this.sessionId, waiting.session_id].sort();
+      const roomId = ids[0] + "_" + ids[1];
+      const isInitiator = this.sessionId === ids[0];
 
       // Update our entry too
       await supabase
@@ -117,7 +124,7 @@ export class Matchmaker {
         .eq("session_id", this.sessionId);
 
       this.stopPolling();
-      this.onMatch?.(roomId, true);
+      this.onMatch?.(roomId, isInitiator);
       return true;
     }
 
