@@ -472,6 +472,12 @@ const VideoChatRoom = () => {
       if (text.startsWith("__SYS_UID__:")) {
         const uid = text.replace("__SYS_UID__:", "").trim();
         setStrangerUserId(uid || null);
+        // Check if already following this person
+        if (uid && currentUser) {
+          supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", uid).maybeSingle().then(({ data }) => {
+            setStrangerFollowed(!!data);
+          });
+        }
         return;
       }
       if (text.startsWith("__SYS_GIFT__:")) {
@@ -548,6 +554,13 @@ const VideoChatRoom = () => {
       setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
       setSendingGift(null);
       return;
+    }
+    // Transfer coins to recipient
+    if (strangerUserId) {
+      const { data: recipientProfile } = await supabase.from("profiles").select("coins").eq("id", strangerUserId).single();
+      if (recipientProfile) {
+        await supabase.from("profiles").update({ coins: recipientProfile.coins + gift.coin_cost, updated_at: new Date().toISOString() }).eq("id", strangerUserId);
+      }
     }
     const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
     webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name, senderName, cost: gift.coin_cost })}`);
@@ -1063,11 +1076,8 @@ const VideoChatRoom = () => {
         {status === "connected" && isLoggedIn && strangerUserId && strangerUserId !== currentUser?.id && (
           <div className="absolute top-16 md:top-20 left-3 md:left-5 z-20">
             <button
-              onClick={() => {
-                if (strangerFollowed) return;
-                handleFollow(strangerUserId);
-              }}
-              disabled={followLoading || strangerFollowed}
+              onClick={() => handleFollow(strangerUserId)}
+              disabled={followLoading}
               className="flex items-center gap-2 rounded-full px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
               style={{
                 background: strangerFollowed
