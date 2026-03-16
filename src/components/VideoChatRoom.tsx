@@ -238,6 +238,8 @@ const VideoChatRoom = () => {
         supabase.from("profiles").select("coins, display_name, instagram").eq("id", session.user.id).single().then(({ data }) => {
           if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); setUserInstagram(data.instagram || null); }
         });
+      } else {
+        setShowLoginModal(true);
       }
     });
     return () => subscription.unsubscribe();
