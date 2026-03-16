@@ -2393,6 +2393,14 @@ const VideoChatRoom = () => {
                       <UserMinus className="w-4 h-4" />
                     </button>
                     <button
+                      onClick={() => openPrivateChat({ id: friend.following_id, display_name: friend.display_name, email: friend.email })}
+                      className="p-2 rounded-xl hover:bg-blue-500/20 transition-all"
+                      title="Chat Privado"
+                      style={{ color: "#60a5fa" }}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => {
                         setShowFriendsModal(false);
                         openProfileModal({ id: friend.following_id, display_name: friend.display_name, email: friend.email });
