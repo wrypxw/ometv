@@ -711,7 +711,7 @@ const AdminPanel = () => {
                   <SettingsSection title="🏷️ Identidade" keys={["site_name", "site_suffix"]} getValue={getSettingValue} onChange={updateSettingLocal} />
                   <SettingsSection title="🖼️ Imagens" keys={["logo_url", "favicon_url"]} getValue={getSettingValue} onChange={updateSettingLocal} onUpload={handleImageUpload} uploadingKey={uploadingKey} />
                   <SettingsSection title="🌐 Redes Sociais" keys={["facebook_url", "discord_url", "twitter_url", "instagram_url", "tiktok_url"]} getValue={getSettingValue} onChange={updateSettingLocal} />
-                  <SettingsSection title="🛒 Shop" keys={["shop_enabled", "shop_title", "shop_description"]} getValue={getSettingValue} onChange={updateSettingLocal} />
+                  <SettingsSection title="🛒 Loja" keys={["shop_enabled", "shop_title", "shop_description"]} getValue={getSettingValue} onChange={updateSettingLocal} />
 
                   {/* Mercado Pago Config */}
                   <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
