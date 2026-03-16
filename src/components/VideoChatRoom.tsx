@@ -485,13 +485,38 @@ const VideoChatRoom = () => {
     };
 
     rtc.onDisconnected = () => {
-      setStatus("disconnected");
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setMessages([]);
       setStrangerInstagram(null);
       setStrangerLocation(null);
       setStrangerUserId(null);
       setStrangerFollowed(false);
+      // Auto-search for next person when the other person disconnects
+      setStatus("searching");
+      webrtcRef.current?.destroy();
+      webrtcRef.current = null;
+      
+      // Quick re-search
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      matchmakerRef.current?.destroy();
+      const newMatchmaker = new Matchmaker();
+      matchmakerRef.current = newMatchmaker;
+      
+      searchTimerRef.current = setTimeout(() => {
+        if (matchmakerRef.current === newMatchmaker) {
+          newMatchmaker.destroy();
+          matchmakerRef.current = null;
+          setStatus("disconnected");
+        }
+      }, 5000);
+      
+      newMatchmaker.findMatch((newRoomId, newIsInitiator) => {
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+        connectToPartner(newRoomId, newIsInitiator);
+      }).catch(() => {
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+        setStatus("disconnected");
+      });
     };
 
     rtc.onMessage = (text) => {
