@@ -628,7 +628,7 @@ const VideoChatRoom = () => {
     const profileId = (target as any)?.id || currentUser?.id;
     // Use @displayName if available, otherwise fall back to UUID
     const slug = displayName ? encodeURIComponent(displayName) : profileId;
-    const url = slug ? `${window.location.origin}/@${slug}` : window.location.origin;
+    const url = slug ? `${window.location.origin}/profile/${slug}` : window.location.origin;
     if (navigator.share) {
       navigator.share({ title: displayName || "Meu Perfil", text: "Confira meu perfil e me siga!", url });
     } else {
