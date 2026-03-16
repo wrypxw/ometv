@@ -415,10 +415,10 @@ const VideoChatRoom = () => {
     rtc.onConnected = () => {
       setStatus("connected");
       setPendingCoinCost(0);
-      // Send our instagram handle to the stranger
-      const igHandle = userInstagram || "";
+      // Send our instagram handle and location to the stranger
       setTimeout(() => {
-        rtc.sendChatMessage(`__SYS_IG__:${igHandle}`);
+        rtc.sendChatMessage(`__SYS_IG__:${userInstagram || ""}`);
+        rtc.sendChatMessage(`__SYS_LOC__:${userLocation || ""}`);
       }, 500);
     };
 
