@@ -585,7 +585,40 @@ const AdminPanel = () => {
     fetchGenders();
   };
 
-  const filteredRegions = regions.filter(r =>
+  // Gift functions
+  const fetchGifts = useCallback(async () => {
+    setGiftsLoading(true);
+    const { data } = await supabase.from("gifts").select("*").order("sort_order");
+    if (data) setGiftItems(data as GiftItem[]);
+    setGiftsLoading(false);
+  }, []);
+
+  const saveGift = async () => {
+    try {
+      const payload = { emoji: giftForm.emoji, name: giftForm.name, coin_cost: giftForm.coin_cost, sort_order: giftForm.sort_order, updated_at: new Date().toISOString() };
+      if (editingGift?.id) {
+        await supabase.from("gifts").update(payload).eq("id", editingGift.id);
+      } else {
+        await supabase.from("gifts").insert(payload);
+      }
+      toast({ title: "Presente salvo!" });
+      setEditingGift(null);
+      fetchGifts();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleGiftActive = async (g: GiftItem) => {
+    await supabase.from("gifts").update({ active: !g.active }).eq("id", g.id);
+    fetchGifts();
+  };
+
+  const deleteGift = async (id: string) => {
+    await supabase.from("gifts").delete().eq("id", id);
+    fetchGifts();
+  };
+
     r.region_name.toLowerCase().includes(regionSearch.toLowerCase()) ||
     r.region_code.toLowerCase().includes(regionSearch.toLowerCase())
   );
