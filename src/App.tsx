@@ -22,7 +22,6 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/:id" element={<Profile />} />
           {/* OAuth callback - redirect to home so auth tokens in hash are processed */}
           <Route path="/~oauth" element={<Navigate to="/" replace />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
