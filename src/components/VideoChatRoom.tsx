@@ -35,7 +35,7 @@ interface Message {
 }
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  "Worldwide": "🌍", "Afghanistan": "🇦🇫", "Albania": "🇦🇱", "Algeria": "🇩🇿", "Andorra": "🇦🇩",
+  "Mundial": "🌍", "Afghanistan": "🇦🇫", "Albania": "🇦🇱", "Algeria": "🇩🇿", "Andorra": "🇦🇩",
   "Angola": "🇦🇴", "Antigua and Barbuda": "🇦🇬", "Argentina": "🇦🇷", "Armenia": "🇦🇲",
   "Australia": "🇦🇺", "Austria": "🇦🇹", "Azerbaijan": "🇦🇿", "Bahamas": "🇧🇸", "Bahrain": "🇧🇭",
   "Bangladesh": "🇧🇩", "Barbados": "🇧🇧", "Belarus": "🇧🇾", "Belgium": "🇧🇪", "Belize": "🇧🇿",
@@ -102,13 +102,13 @@ const VideoChatRoom = () => {
   const [isMicOn, setIsMicOn] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMsg, setInputMsg] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("Worldwide");
+  const [selectedCountry, setSelectedCountry] = useState("Mundial");
   const [selectedGender, setSelectedGender] = useState("Gênero");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showRegion, setShowRegion] = useState(false);
-  const [tempRegion, setTempRegion] = useState("Worldwide");
+  const [tempRegion, setTempRegion] = useState("Mundial");
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [tempGender, setTempGender] = useState("Both");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -469,7 +469,7 @@ const VideoChatRoom = () => {
       }
       setShowCoinConfirm({
         cost,
-        label: `${selectedCountry !== "Worldwide" ? selectedCountry : ""}${selectedCountry !== "Worldwide" && selectedGender !== "Gênero" ? " + " : ""}${selectedGender !== "Gênero" ? ({ "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender) : ""}`.trim() || "filtros",
+        label: `${selectedCountry !== "Mundial" ? selectedCountry : ""}${selectedCountry !== "Mundial" && selectedGender !== "Gênero" ? " + " : ""}${selectedGender !== "Gênero" ? ({ "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender) : ""}`.trim() || "filtros",
         onConfirm: async () => {
           setShowCoinConfirm(null);
           const ok = await deductCoins(cost);
@@ -651,7 +651,7 @@ const VideoChatRoom = () => {
             }}
           >
             <Heart className="w-3.5 h-3.5 md:w-4 md:h-4 fill-current" />
-            Shop
+            Loja
           </button>
 
           {/* User icon */}

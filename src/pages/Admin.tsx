@@ -55,9 +55,9 @@ const SETTING_LABELS: Record<string, { label: string; placeholder: string; type?
   twitter_url: { label: "Twitter / X", placeholder: "https://x.com/..." },
   instagram_url: { label: "Instagram", placeholder: "https://instagram.com/..." },
   tiktok_url: { label: "TikTok", placeholder: "https://tiktok.com/@..." },
-  shop_enabled: { label: "Shop Ativo", placeholder: "true" },
-  shop_title: { label: "Título Shop", placeholder: "Shop" },
-  shop_description: { label: "Descrição Shop", placeholder: "Higher tiers..." },
+  shop_enabled: { label: "Loja Ativa", placeholder: "true" },
+  shop_title: { label: "Título Loja", placeholder: "Loja" },
+  shop_description: { label: "Descrição Loja", placeholder: "Pacotes maiores dão mais coins bônus!" },
 };
 
 interface RegionCoinPrice {
@@ -81,7 +81,7 @@ interface GenderCoinPrice {
 const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
-  { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
+  { id: "shop" as const, label: "Loja / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons & Promos", icon: Tag },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
@@ -629,7 +629,7 @@ const AdminPanel = () => {
           <h1 className="text-base md:text-lg font-bold text-white">
             {activeTab === "users" && "Usuários"}
             {activeTab === "settings" && "Configurações"}
-            {activeTab === "shop" && "Shop / Planos"}
+            {activeTab === "shop" && "Loja / Planos"}
             {activeTab === "coupons" && "Cupons & Promos"}
             {activeTab === "payments" && "Pagamentos"}
             {activeTab === "regions" && "Preço por Região"}
@@ -711,7 +711,7 @@ const AdminPanel = () => {
                   <SettingsSection title="🏷️ Identidade" keys={["site_name", "site_suffix"]} getValue={getSettingValue} onChange={updateSettingLocal} />
                   <SettingsSection title="🖼️ Imagens" keys={["logo_url", "favicon_url"]} getValue={getSettingValue} onChange={updateSettingLocal} onUpload={handleImageUpload} uploadingKey={uploadingKey} />
                   <SettingsSection title="🌐 Redes Sociais" keys={["facebook_url", "discord_url", "twitter_url", "instagram_url", "tiktok_url"]} getValue={getSettingValue} onChange={updateSettingLocal} />
-                  <SettingsSection title="🛒 Shop" keys={["shop_enabled", "shop_title", "shop_description"]} getValue={getSettingValue} onChange={updateSettingLocal} />
+                  <SettingsSection title="🛒 Loja" keys={["shop_enabled", "shop_title", "shop_description"]} getValue={getSettingValue} onChange={updateSettingLocal} />
 
                   {/* Mercado Pago Config */}
                   <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
@@ -755,7 +755,7 @@ const AdminPanel = () => {
           {activeTab === "shop" && (
             <>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Gerencie os pacotes de moedas que aparecem no shop.</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Gerencie os pacotes de moedas que aparecem na loja.</p>
                 <button onClick={() => { setEditingPkg({} as ShopPackage); setPkgForm({ coins: 500, bonus: 0, price_cents: 399, sort_order: packages.length + 1 }); }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
