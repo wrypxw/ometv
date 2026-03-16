@@ -869,8 +869,10 @@ const VideoChatRoom = () => {
                       { icon: <User className="w-4 h-4" />, label: "Perfil", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" />, action: () => {
                         setShowProfileMenu(false);
                         if (currentUser) {
-                          const slug = userDisplayName ? encodeURIComponent(userDisplayName) : currentUser.id;
-                          navigate(`/profile/${slug}`);
+                          // Open profile as popup overlay instead of navigating away
+                          supabase.from("profiles").select("*").eq("id", currentUser.id).single().then(({ data }) => {
+                            if (data) openProfileModal({ ...data });
+                          });
                         }
                       }},
                       { icon: <Heart className="w-4 h-4" />, label: "Amizades", action: () => { setShowProfileMenu(false); fetchFriends(); setShowFriendsModal(true); } },
