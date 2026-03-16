@@ -269,14 +269,25 @@ const VideoChatRoom = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Realtime coin updates - instant balance sync
   useEffect(() => {
     if (!currentUser?.id) return;
-    const interval = window.setInterval(() => {
-      refreshOwnCoins();
-    }, status === "connected" ? 1500 : 5000);
+    const channel = supabase
+      .channel(`my-coins-${currentUser.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${currentUser.id}`,
+      }, (payload: any) => {
+        if (payload.new?.coins !== undefined) {
+          setUserCoins(payload.new.coins);
+        }
+      })
+      .subscribe();
 
-    return () => window.clearInterval(interval);
-  }, [currentUser, status, refreshOwnCoins]);
+    return () => { supabase.removeChannel(channel); };
+  }, [currentUser]);
 
   // Fetch user location by IP - state/region only
   useEffect(() => {
