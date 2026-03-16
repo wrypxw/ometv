@@ -508,6 +508,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      transfer_gift_coins: {
+        Args: { _amount: number; _receiver_id: string; _sender_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
