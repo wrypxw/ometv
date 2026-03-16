@@ -211,6 +211,8 @@ export class WebRTCConnection {
   private signalingChannel: ReturnType<typeof supabase.channel> | null = null;
   private dataChannel: RTCDataChannel | null = null;
   private remoteStream: MediaStream | null = null;
+  private suppressDisconnectCallback = false;
+  private isDestroyed = false;
   public onRemoteStream: ((stream: MediaStream) => void) | null = null;
   public onDisconnected: (() => void) | null = null;
   public onMessage: ((text: string) => void) | null = null;
@@ -245,9 +247,11 @@ export class WebRTCConnection {
         this.onConnected?.();
       }
       if (
-        this.pc.iceConnectionState === "disconnected" ||
-        this.pc.iceConnectionState === "failed" ||
-        this.pc.iceConnectionState === "closed"
+        (this.pc.iceConnectionState === "disconnected" ||
+          this.pc.iceConnectionState === "failed" ||
+          this.pc.iceConnectionState === "closed") &&
+        !this.suppressDisconnectCallback &&
+        !this.isDestroyed
       ) {
         this.onDisconnected?.();
       }
@@ -298,7 +302,7 @@ export class WebRTCConnection {
         },
         async (payload) => {
           const signal = payload.new as any;
-          if (signal.sender_id === this.sessionId) return;
+          if (signal.sender_id === this.sessionId || this.isDestroyed) return;
 
           try {
             if (signal.type === "offer") {
@@ -326,6 +330,8 @@ export class WebRTCConnection {
   }
 
   private async sendSignal(type: string, payload: any) {
+    if (this.isDestroyed) return;
+
     await supabase.from("signaling").insert({
       room_id: this.roomId,
       sender_id: this.sessionId,
@@ -334,15 +340,19 @@ export class WebRTCConnection {
     });
   }
 
-  destroy() {
+  destroy(suppressDisconnectCallback: boolean = true) {
+    if (this.isDestroyed) return;
+
+    this.suppressDisconnectCallback = suppressDisconnectCallback;
+    this.isDestroyed = true;
+
     if (this.signalingChannel) {
       supabase.removeChannel(this.signalingChannel);
+      this.signalingChannel = null;
     }
+
+    this.dataChannel?.close();
     this.pc.close();
-    supabase
-      .from("signaling")
-      .delete()
-      .eq("room_id", this.roomId)
-      .then(() => {});
+    void supabase.from("signaling").delete().eq("room_id", this.roomId);
   }
 }

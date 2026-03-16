@@ -785,11 +785,14 @@ const VideoChatRoom = () => {
   const nextPerson = useCallback(async () => {
     // No refund on next — coins already consumed for this session
     setPendingCoinCost(0);
-    // Signal the other person to skip too
-    webrtcRef.current?.sendChatMessage("__SYS_SKIP__");
-    // Small delay to ensure message is sent before destroying
-    await new Promise(r => setTimeout(r, 100));
-    webrtcRef.current?.destroy();
+
+    const rtc = webrtcRef.current;
+    if (rtc) {
+      rtc.sendChatMessage("__SYS_SKIP__");
+      await new Promise((r) => setTimeout(r, 180));
+      rtc.destroy(true);
+    }
+
     webrtcRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
     setMessages([]);
@@ -798,7 +801,7 @@ const VideoChatRoom = () => {
     setStrangerUserId(null);
     setStrangerFollowed(false);
 
-    // Quick search with 10s timeout — if nobody found, go back to idle
+    // Quick search with 3s timeout — if nobody found, stop.
     if (!localStreamRef.current) {
       await startLocalCamera();
     }
@@ -810,8 +813,7 @@ const VideoChatRoom = () => {
     const matchmaker = new Matchmaker();
     matchmakerRef.current = matchmaker;
 
-    // 10s timeout for "next" — short wait, then stop
-    searchTimerRef.current = setTimeout(async () => {
+    searchTimerRef.current = setTimeout(() => {
       if (matchmakerRef.current === matchmaker) {
         matchmaker.destroy();
         matchmakerRef.current = null;
