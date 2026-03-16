@@ -98,6 +98,39 @@ export type Database = {
         }
         Relationships: []
       }
+      gifts: {
+        Row: {
+          active: boolean
+          coin_cost: number
+          created_at: string
+          emoji: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          coin_cost?: number
+          created_at?: string
+          emoji?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          coin_cost?: number
+          created_at?: string
+          emoji?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       match_queue: {
         Row: {
           created_at: string

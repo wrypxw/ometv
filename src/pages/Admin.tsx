@@ -86,9 +86,19 @@ const NAV_ITEMS = [
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
   { id: "genders" as const, label: "Gênero", icon: UserCheck },
+  { id: "gifts" as const, label: "Presentes", icon: Gift },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders" | "gifts";
+
+interface GiftItem {
+  id: string;
+  emoji: string;
+  name: string;
+  coin_cost: number;
+  sort_order: number;
+  active: boolean;
+}
 
 interface PromoCode {
   id: string;
@@ -159,6 +169,10 @@ const AdminPanel = () => {
   const [promosLoading, setPromosLoading] = useState(false);
   const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
   const [promoForm, setPromoForm] = useState({ code: "", coins_reward: 100, max_uses: "", expires_at: "" });
+  const [giftItems, setGiftItems] = useState<GiftItem[]>([]);
+  const [giftsLoading, setGiftsLoading] = useState(false);
+  const [editingGift, setEditingGift] = useState<GiftItem | null>(null);
+  const [giftForm, setGiftForm] = useState({ emoji: "🎁", name: "", coin_cost: 10, sort_order: 0 });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -248,9 +262,16 @@ const AdminPanel = () => {
     setPromosLoading(false);
   }, []);
 
+  const fetchGifts = useCallback(async () => {
+    setGiftsLoading(true);
+    const { data } = await supabase.from("gifts").select("*").order("sort_order");
+    if (data) setGiftItems(data as GiftItem[]);
+    setGiftsLoading(false);
+  }, []);
+
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); fetchGifts(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos, fetchGifts]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
@@ -571,6 +592,34 @@ const AdminPanel = () => {
     fetchGenders();
   };
 
+  // Gift functions
+
+  const saveGift = async () => {
+    try {
+      const payload = { emoji: giftForm.emoji, name: giftForm.name, coin_cost: giftForm.coin_cost, sort_order: giftForm.sort_order, updated_at: new Date().toISOString() };
+      if (editingGift?.id) {
+        await supabase.from("gifts").update(payload).eq("id", editingGift.id);
+      } else {
+        await supabase.from("gifts").insert(payload);
+      }
+      toast({ title: "Presente salvo!" });
+      setEditingGift(null);
+      fetchGifts();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleGiftActive = async (g: GiftItem) => {
+    await supabase.from("gifts").update({ active: !g.active }).eq("id", g.id);
+    fetchGifts();
+  };
+
+  const deleteGift = async (id: string) => {
+    await supabase.from("gifts").delete().eq("id", id);
+    fetchGifts();
+  };
+
   const filteredRegions = regions.filter(r =>
     r.region_name.toLowerCase().includes(regionSearch.toLowerCase()) ||
     r.region_code.toLowerCase().includes(regionSearch.toLowerCase())
@@ -656,6 +705,7 @@ const AdminPanel = () => {
             {activeTab === "payments" && "Pagamentos"}
             {activeTab === "regions" && "Preço por Região"}
             {activeTab === "genders" && "Preço por Gênero"}
+            {activeTab === "gifts" && "Presentes"}
           </h1>
           {activeTab === "users" && (
             <span className="ml-auto text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#a78bfa" }}>
@@ -1235,7 +1285,62 @@ const AdminPanel = () => {
             </>
           )}
 
+          {/* =================== GIFTS TAB =================== */}
+          {activeTab === "gifts" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Configure os presentes que usuários podem enviar durante chamadas.</p>
+                <button onClick={() => {
+                  setEditingGift({} as GiftItem);
+                  setGiftForm({ emoji: "🎁", name: "", coin_cost: 10, sort_order: 0 });
+                }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
+                  <Plus className="w-3.5 h-3.5" /> Novo Presente
+                </button>
+              </div>
 
+              {giftsLoading ? <Spinner /> : giftItems.length === 0 ? (
+                <EmptyState icon={Gift} text="Nenhum presente configurado" />
+              ) : (
+                <div className="space-y-2">
+                  {giftItems.map(g => (
+                    <div key={g.id}
+                      className={`rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all ${g.active ? "" : "opacity-50"}`}
+                      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-2xl"
+                          style={{ background: "rgba(234,179,8,0.1)" }}>
+                          {g.emoji}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-sm font-medium text-white">{g.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold" style={{ color: "#eab308" }}>🪙 {g.coin_cost} coins</span>
+                            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>ordem: {g.sort_order}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => toggleGiftActive(g)} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          {g.active ? <ToggleRight className="w-4 h-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        </button>
+                        <button onClick={() => {
+                          setEditingGift(g);
+                          setGiftForm({ emoji: g.emoji, name: g.name, coin_cost: g.coin_cost, sort_order: g.sort_order });
+                        }} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                          <Edit2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
+                        </button>
+                        <button onClick={() => deleteGift(g.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: "#ef4444" }} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
 
         </div>
       </main>
@@ -1465,6 +1570,32 @@ const AdminPanel = () => {
               setEditingPromo(null);
               fetchPromos();
             }} text="💾 Salvar Código" />
+          </div>
+        </Modal>
+      )}
+
+      {/* =================== GIFT EDIT MODAL =================== */}
+      {editingGift && (
+        <Modal onClose={() => setEditingGift(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingGift.id ? "Editar Presente" : "Novo Presente"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Emoji / Ícone</label>
+              <AdminInput value={giftForm.emoji} onChange={v => setGiftForm(p => ({ ...p, emoji: v }))} placeholder="🎁" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Nome</label>
+              <AdminInput value={giftForm.name} onChange={v => setGiftForm(p => ({ ...p, name: v }))} placeholder="Rosa" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Custo em Coins</label>
+              <AdminInput value={String(giftForm.coin_cost)} onChange={v => setGiftForm(p => ({ ...p, coin_cost: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="10" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Ordem</label>
+              <AdminInput value={String(giftForm.sort_order)} onChange={v => setGiftForm(p => ({ ...p, sort_order: parseInt(v) || 0 }))} type="number" placeholder="0" />
+            </div>
+            <PrimaryBtn onClick={saveGift} disabled={!giftForm.name.trim() || !giftForm.emoji.trim()} text="💾 Salvar Presente" />
           </div>
         </Modal>
       )}
