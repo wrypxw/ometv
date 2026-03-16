@@ -194,7 +194,29 @@ const AdminPanel = () => {
   const fetchCoupons = useCallback(async () => {
     setCouponsLoading(true);
     const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
-    if (data) setCoupons(data as Coupon[]);
+    if (data) {
+      // Count actual approved transactions per coupon code for accurate usage
+      const { data: txData } = await supabase
+        .from("payment_transactions")
+        .select("coupon_code")
+        .eq("status", "approved")
+        .not("coupon_code", "is", null);
+      
+      const usageCounts: Record<string, number> = {};
+      if (txData) {
+        txData.forEach((tx: any) => {
+          if (tx.coupon_code) {
+            usageCounts[tx.coupon_code] = (usageCounts[tx.coupon_code] || 0) + 1;
+          }
+        });
+      }
+      
+      const couponsWithRealCount = data.map((c: any) => ({
+        ...c,
+        used_count: usageCounts[c.code] || c.used_count || 0,
+      }));
+      setCoupons(couponsWithRealCount as Coupon[]);
+    }
     setCouponsLoading(false);
   }, []);
 
