@@ -521,6 +521,11 @@ const VideoChatRoom = () => {
     };
 
     rtc.onMessage = (text) => {
+      // Handle skip signal — other person clicked "next"
+      if (text === "__SYS_SKIP__") {
+        rtc.onDisconnected?.();
+        return;
+      }
       // Handle system messages
       if (text.startsWith("__SYS_IG__:")) {
         const ig = text.replace("__SYS_IG__:", "").trim();
