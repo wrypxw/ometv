@@ -94,10 +94,18 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const { error } = await supabaseAdmin.rpc("admin_update_coins", {
-          _user_id: userId,
-          _amount: amount,
-        });
+        // Get current coins first, then add the amount
+        const { data: profile, error: fetchError } = await supabaseAdmin
+          .from("profiles")
+          .select("coins")
+          .eq("id", userId)
+          .single();
+        if (fetchError) throw fetchError;
+        const newCoins = Math.max(0, (profile.coins || 0) + amount);
+        const { error } = await supabaseAdmin
+          .from("profiles")
+          .update({ coins: newCoins, updated_at: new Date().toISOString() })
+          .eq("id", userId);
         if (error) throw error;
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
