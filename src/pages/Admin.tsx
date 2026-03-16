@@ -169,6 +169,10 @@ const AdminPanel = () => {
   const [promosLoading, setPromosLoading] = useState(false);
   const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
   const [promoForm, setPromoForm] = useState({ code: "", coins_reward: 100, max_uses: "", expires_at: "" });
+  const [giftItems, setGiftItems] = useState<GiftItem[]>([]);
+  const [giftsLoading, setGiftsLoading] = useState(false);
+  const [editingGift, setEditingGift] = useState<GiftItem | null>(null);
+  const [giftForm, setGiftForm] = useState({ emoji: "🎁", name: "", coin_cost: 10, sort_order: 0 });
   const navigate = useNavigate();
   const { toast } = useToast();
 
