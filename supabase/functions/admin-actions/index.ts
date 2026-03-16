@@ -94,10 +94,11 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const { error } = await supabaseAdmin.rpc("admin_update_coins", {
-          _user_id: userId,
-          _amount: amount,
-        });
+        // Use direct SQL update instead of RPC to avoid auth.uid() being null with service role
+        const { error } = await supabaseAdmin
+          .from("profiles")
+          .update({ coins: amount, updated_at: new Date().toISOString() })
+          .eq("id", userId);
         if (error) throw error;
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
