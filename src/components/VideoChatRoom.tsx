@@ -146,6 +146,8 @@ const VideoChatRoom = () => {
   const [strangerFollowed, setStrangerFollowed] = useState(false);
   const [strangerInstagram, setStrangerInstagram] = useState<string | null>(null);
   const [userInstagram, setUserInstagram] = useState<string | null>(null);
+  const [strangerLocation, setStrangerLocation] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<string>("");
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
