@@ -418,6 +418,7 @@ const VideoChatRoom = () => {
       setStatus("disconnected");
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setMessages([]);
+      setStrangerInstagram(null);
     };
 
     rtc.onMessage = (text) => {
