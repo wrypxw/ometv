@@ -1163,6 +1163,33 @@ const VideoChatRoom = () => {
         </div>
         )}
 
+        {/* Stop/Next buttons - mobile only, pinned to bottom of this panel */}
+        {(status === "connected" || status === "searching") && (
+          <div className="md:hidden absolute bottom-0 left-0 right-0 z-20 px-3 pb-3 pt-1" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+            <div className="flex items-center gap-2 justify-center">
+              <button
+                onClick={stopChat}
+                className="flex-1 px-6 py-3 rounded-2xl font-semibold text-white text-xs transition-all hover:scale-105 active:scale-95"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                 Parar
+              </button>
+              <button
+                onClick={nextPerson}
+                className="flex-1 px-6 py-3 rounded-2xl font-semibold text-white text-xs flex items-center justify-center gap-1.5 transition-all hover:scale-105 active:scale-95"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+              >
+                <SkipForward className="w-3.5 h-3.5" />
+                 Próximo
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Shop Modal */}
