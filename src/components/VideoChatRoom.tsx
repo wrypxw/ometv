@@ -92,8 +92,8 @@ const BRAZIL_STATES = [
 ];
 
 const STRANGER_MESSAGES = [
-  "Hey! Where are you from?", "Hi there! 😊", "Hello!",
-  "Hey, how's it going?", "Oi, tudo bem?", "Hola!",
+  "Oi! De onde você é?", "Olá! 😊", "E aí!",
+  "Oi, tudo bem?", "Bora conversar?", "Salve!",
 ];
 
 const VideoChatRoom = () => {
@@ -528,7 +528,7 @@ const VideoChatRoom = () => {
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), text, sender: "me" }]);
     setInputMsg("");
     if (Math.random() > 0.3) {
-      const replies = ["That's cool!", "Haha!", "Really?", "Awesome 😄", "Interesting!", "Same!"];
+      const replies = ["Que legal!", "Haha!", "Sério?", "Massa 😄", "Interessante!", "Também!"];
       setTimeout(() => {
         setMessages((prev) => [
           ...prev,
@@ -685,7 +685,7 @@ const VideoChatRoom = () => {
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-white block">{userDisplayName || currentUser?.email?.split("@")[0] || "You"}</span>
+                        <span className="text-sm font-semibold text-white block">{userDisplayName || currentUser?.email?.split("@")[0] || "Você"}</span>
                         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Online</span>
                       </div>
                     </div>
@@ -713,7 +713,7 @@ const VideoChatRoom = () => {
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-red-500/10"
                       style={{ color: "#f87171" }}
                     >
-                      <LogOut className="w-4 h-4" /><span>Logout</span>
+                      <LogOut className="w-4 h-4" /><span>Sair</span>
                     </button>
                   </div>
                 </>
@@ -1127,7 +1127,7 @@ const VideoChatRoom = () => {
 
             {/* Header */}
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h2 className="text-lg md:text-xl font-bold text-white">{siteSettings.shop_title || "Shop"}</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">{siteSettings.shop_title || "Loja"}</h2>
               <div className="flex items-center gap-1.5 text-sm" style={{ color: "#eab308" }}>
                 <span className="text-base">🪙</span>
                 <span className="text-white font-medium">{userCoins}</span>
@@ -1805,7 +1805,7 @@ const VideoChatRoom = () => {
             {/* Profile info */}
             <div className="text-center px-6 pt-3 pb-2">
               <h3 className="text-xl font-bold text-white">
-                {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Stranger"}
+                {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Desconhecido"}
               </h3>
               {profileTarget?.age && (
                 <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>

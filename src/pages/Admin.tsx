@@ -578,7 +578,7 @@ const AdminPanel = () => {
           {sidebarOpen && (
             <>
               <Shield className="w-5 h-5 shrink-0" style={{ color: "#7c3aed" }} />
-              <span className="text-sm font-bold text-white whitespace-nowrap">Admin Panel</span>
+              <span className="text-sm font-bold text-white whitespace-nowrap">Painel Admin</span>
             </>
           )}
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="ml-auto p-1.5 rounded-lg hover:bg-white/5 transition-colors">
@@ -1110,7 +1110,7 @@ const AdminPanel = () => {
                           </div>
                           <div className="flex items-center gap-3 mt-0.5">
                             <span className="text-xs font-semibold" style={{ color: region.coin_cost === 0 ? "#4ade80" : "#eab308" }}>
-                              {region.coin_cost === 0 ? "🆓 FREE" : `🪙 ${region.coin_cost} coins`}
+                              {region.coin_cost === 0 ? "🆓 GRÁTIS" : `🪙 ${region.coin_cost} coins`}
                             </span>
                             {region.parent_code && (
                               <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
@@ -1187,7 +1187,7 @@ const AdminPanel = () => {
                               </span>
                             </div>
                             <span className="text-xs font-semibold" style={{ color: g.coin_cost === 0 ? "#22c55e" : "#eab308" }}>
-                              {g.coin_cost === 0 ? "FREE" : `🪙 ${g.coin_cost} coins`}
+                              {g.coin_cost === 0 ? "GRÁTIS" : `🪙 ${g.coin_cost} coins`}
                             </span>
                           </div>
                         </div>
@@ -1256,13 +1256,13 @@ const AdminPanel = () => {
                   disabled={actionLoading || !editValue || parseInt(editValue) === 0}
                   className="flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all hover:scale-[1.02]"
                   style={{ background: "#22c55e" }}>
-                  <Plus className="w-4 h-4" /> Add
+                  <Plus className="w-4 h-4" /> Adicionar
                 </button>
                 <button onClick={() => handleAction("update_coins", { userId: selectedUser.id, amount: -(parseInt(editValue) || 0) })}
                   disabled={actionLoading || !editValue || parseInt(editValue) === 0}
                   className="flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all hover:scale-[1.02]"
                   style={{ background: "#ef4444" }}>
-                  <Minus className="w-4 h-4" /> Remove
+                  <Minus className="w-4 h-4" /> Remover
                 </button>
               </div>
             </div>
