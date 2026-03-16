@@ -515,7 +515,20 @@ const VideoChatRoom = () => {
     setPendingCoinCost(0);
   }, [currentUser]);
 
-  const doStartSearch = useCallback(async () => {
+  const sendGift = useCallback(async (gift: { id: string; emoji: string; name: string; coin_cost: number }) => {
+    if (!currentUser) { setShowLoginModal(true); return; }
+    if (status !== "connected" || !webrtcRef.current) return;
+    setSendingGift(gift.id);
+    const ok = await deductCoins(gift.coin_cost);
+    if (!ok) {
+      setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
+      setSendingGift(null);
+      return;
+    }
+    webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name })}`);
+    setSendingGift(null);
+  }, [currentUser, status, deductCoins]);
+
     // Try to get camera if we don't have it yet, but don't block if denied
     if (!localStreamRef.current) {
       await startLocalCamera();
