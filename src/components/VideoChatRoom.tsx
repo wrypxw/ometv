@@ -443,7 +443,7 @@ const VideoChatRoom = () => {
     if (isInitiator) {
       await rtc.createOffer();
     }
-  }, []);
+  }, [userInstagram]);
 
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
