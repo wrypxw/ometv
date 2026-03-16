@@ -2486,9 +2486,11 @@ const VideoChatRoom = () => {
               <h3 className="text-xl font-bold text-white">
                 {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Desconhecido"}
               </h3>
-              {profileTarget?.age && (
+              {(profileTarget?.age || profileTarget?.gender) && (
                 <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                  {profileTarget.age} anos
+                  {profileTarget.gender === "male" ? "♂ Homem" : profileTarget.gender === "female" ? "♀ Mulher" : profileTarget.gender === "other" ? "⚧ Outro" : ""}
+                  {profileTarget.age && profileTarget.gender ? " · " : ""}
+                  {profileTarget.age ? `${profileTarget.age} anos` : ""}
                 </p>
               )}
               {profileTarget?.bio && (
