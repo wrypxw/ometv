@@ -25,15 +25,4 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("selectstart", (e) => e.preventDefault());
 document.addEventListener("dragstart", (e) => e.preventDefault());
 
-const rootElement = document.getElementById("root");
-
-if (!rootElement) {
-  throw new Error("Root element not found");
-}
-
-createRoot(rootElement).render(<App />);
-
-window.requestAnimationFrame(() => {
-  document.documentElement.dataset.appReady = "true";
-  document.getElementById("app-loading-fallback")?.remove();
-});
+createRoot(document.getElementById("root")!).render(<App />);

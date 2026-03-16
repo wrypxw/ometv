@@ -163,7 +163,21 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Coupon used_count is already incremented at payment creation time
+      // Increment coupon usage if applicable
+      if (transaction.coupon_code) {
+        const { data: coupon } = await supabaseAdmin
+          .from("coupons")
+          .select("used_count")
+          .eq("code", transaction.coupon_code)
+          .single();
+
+        if (coupon) {
+          await supabaseAdmin
+            .from("coupons")
+            .update({ used_count: coupon.used_count + 1 })
+            .eq("code", transaction.coupon_code);
+        }
+      }
     }
 
     return new Response(JSON.stringify({ received: true, status }), {

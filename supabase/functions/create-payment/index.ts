@@ -135,22 +135,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Increment coupon used_count immediately when applied to a purchase
-    if (appliedCoupon) {
-      const { data: coupon } = await supabaseAdmin
-        .from("coupons")
-        .select("used_count")
-        .eq("code", appliedCoupon)
-        .single();
-
-      if (coupon) {
-        await supabaseAdmin
-          .from("coupons")
-          .update({ used_count: coupon.used_count + 1 })
-          .eq("code", appliedCoupon);
-      }
-    }
-
     // Create Mercado Pago preference
     const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
