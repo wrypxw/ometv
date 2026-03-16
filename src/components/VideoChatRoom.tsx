@@ -461,6 +461,12 @@ const VideoChatRoom = () => {
           const gift = JSON.parse(text.replace("__SYS_GIFT__:", ""));
           setReceivedGift({ emoji: gift.emoji, name: gift.name });
           setTimeout(() => setReceivedGift(null), 3000);
+          // Add gift message to chat
+          const senderName = gift.senderName || "Anônimo";
+          setMessages((prev) => [
+            ...prev,
+            { id: crypto.randomUUID(), text: `${gift.emoji} ${senderName} enviou ${gift.name} para você no valor de ${gift.cost} moedas`, sender: "stranger" },
+          ]);
         } catch {}
         return;
       }
@@ -525,9 +531,15 @@ const VideoChatRoom = () => {
       setSendingGift(null);
       return;
     }
-    webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name })}`);
+    const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
+    webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name, senderName, cost: gift.coin_cost })}`);
+    // Add gift message to own chat
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), text: `${gift.emoji} Você enviou ${gift.name} no valor de ${gift.coin_cost} moedas`, sender: "me" },
+    ]);
     setSendingGift(null);
-  }, [currentUser, status, deductCoins]);
+  }, [currentUser, status, deductCoins, userDisplayName]);
 
   const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
@@ -1018,7 +1030,7 @@ const VideoChatRoom = () => {
 
         {/* Chat messages overlay */}
         {(status === "connected" || messages.length > 0) && (
-          <div className="absolute bottom-[68px] left-0 right-0 z-20 flex flex-col">
+          <div className="absolute bottom-1 left-0 right-0 z-20 flex flex-col">
             {messages.length > 0 && (
               <div className="max-h-20 md:max-h-32 overflow-y-auto px-3 md:px-5 pb-1.5 space-y-1">
                 {messages.map((msg) => (
@@ -1294,8 +1306,8 @@ const VideoChatRoom = () => {
       {receivedGift && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
           <div className="animate-bounce text-center">
-            <span className="text-7xl md:text-8xl drop-shadow-2xl">{receivedGift.emoji}</span>
-            <p className="text-white text-sm md:text-base font-bold mt-2 drop-shadow-lg" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>
+            <span className="text-[120px] md:text-[160px] drop-shadow-2xl">{receivedGift.emoji}</span>
+            <p className="text-white text-lg md:text-2xl font-extrabold mt-2 drop-shadow-lg" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>
               Você recebeu: {receivedGift.name}!
             </p>
           </div>
