@@ -437,6 +437,7 @@ const VideoChatRoom = () => {
       setTimeout(() => {
         rtc.sendChatMessage(`__SYS_IG__:${userInstagram || ""}`);
         rtc.sendChatMessage(`__SYS_LOC__:${userLocation || ""}`);
+        if (currentUser?.id) rtc.sendChatMessage(`__SYS_UID__:${currentUser.id}`);
       }, 500);
     };
 
