@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserPlus, UserMinus, ArrowLeft, ExternalLink } from "lucide-react";
 
 const Profile = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: rawId } = useParams<{ id: string }>();
+  const [resolvedId, setResolvedId] = useState<string | null>(null);
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
