@@ -228,6 +228,7 @@ const VideoChatRoom = () => {
       } else {
         setUserCoins(0);
         setUserDisplayName(null);
+        setShowLoginModal(true);
       }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
