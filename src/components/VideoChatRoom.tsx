@@ -2539,6 +2539,22 @@ const VideoChatRoom = () => {
                   className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
                 />
+                <div className="flex gap-2">
+                  {[{ key: "male", label: "♂ Homem" }, { key: "female", label: "♀ Mulher" }, { key: "other", label: "⚧ Outro" }].map(g => (
+                    <button key={g.key} onClick={async () => {
+                      await supabase.from("profiles").update({ gender: g.key, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+                      setProfileTarget((p: any) => ({ ...p, gender: g.key }));
+                    }}
+                      className="flex-1 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all"
+                      style={{
+                        background: profileTarget?.gender === g.key ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.06)",
+                        border: profileTarget?.gender === g.key ? "1px solid rgba(168,85,247,0.5)" : "1px solid rgba(255,255,255,0.08)",
+                        color: profileTarget?.gender === g.key ? "#c084fc" : "rgba(255,255,255,0.5)",
+                      }}>
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
                 <div className="flex items-center rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <span className="pl-3 text-sm select-none whitespace-nowrap" style={{ color: "rgba(255,255,255,0.4)" }}>instagram.com/</span>
                   <input
