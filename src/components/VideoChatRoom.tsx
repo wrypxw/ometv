@@ -144,6 +144,8 @@ const VideoChatRoom = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [strangerFollowed, setStrangerFollowed] = useState(false);
+  const [strangerInstagram, setStrangerInstagram] = useState<string | null>(null);
+  const [userInstagram, setUserInstagram] = useState<string | null>(null);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
@@ -214,8 +216,8 @@ const VideoChatRoom = () => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
       if (session?.user) {
-        supabase.from("profiles").select("coins, display_name").eq("id", session.user.id).single().then(({ data }) => {
-          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); }
+        supabase.from("profiles").select("coins, display_name, instagram").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); setUserInstagram(data.instagram || null); }
         });
       } else {
         setUserCoins(0);
@@ -226,8 +228,8 @@ const VideoChatRoom = () => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
       if (session?.user) {
-        supabase.from("profiles").select("coins, display_name").eq("id", session.user.id).single().then(({ data }) => {
-          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); }
+        supabase.from("profiles").select("coins, display_name, instagram").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); setUserInstagram(data.instagram || null); }
         });
       }
     });
@@ -399,6 +401,11 @@ const VideoChatRoom = () => {
     rtc.onConnected = () => {
       setStatus("connected");
       setPendingCoinCost(0);
+      // Send our instagram handle to the stranger
+      const igHandle = userInstagram || "";
+      setTimeout(() => {
+        rtc.sendChatMessage(`__SYS_IG__:${igHandle}`);
+      }, 500);
     };
 
     rtc.onRemoteStream = (stream) => {
@@ -411,9 +418,16 @@ const VideoChatRoom = () => {
       setStatus("disconnected");
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setMessages([]);
+      setStrangerInstagram(null);
     };
 
     rtc.onMessage = (text) => {
+      // Handle system messages (instagram handle exchange)
+      if (text.startsWith("__SYS_IG__:")) {
+        const ig = text.replace("__SYS_IG__:", "").trim();
+        setStrangerInstagram(ig || null);
+        return;
+      }
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), text, sender: "stranger" },
@@ -429,7 +443,7 @@ const VideoChatRoom = () => {
     if (isInitiator) {
       await rtc.createOffer();
     }
-  }, []);
+  }, [userInstagram]);
 
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
@@ -717,9 +731,13 @@ const VideoChatRoom = () => {
             Loja
           </button>
 
-          {/* Display name centered absolutely */}
+          {/* Display stranger's instagram when connected, otherwise nothing */}
           <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs md:text-sm font-semibold truncate max-w-[120px] md:max-w-[180px] pointer-events-none" style={{ color: "rgba(255,255,255,0.6)" }}>
-            {isLoggedIn && userDisplayName ? `@${userDisplayName}` : "Anônimo"}
+            {status === "connected"
+              ? strangerInstagram
+                ? `@${strangerInstagram.replace("@", "").replace("https://instagram.com/", "").replace("https://www.instagram.com/", "")}`
+                : "Anônimo"
+              : ""}
           </span>
 
           {/* User icon */}
