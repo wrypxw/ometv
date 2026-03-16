@@ -194,6 +194,22 @@ const VideoChatRoom = () => {
       return;
     }
     setBuyingPkg(pkgId);
+    const pkg = shopPackages.find(p => p.id === pkgId);
+    const finalPrice = appliedCoupon 
+      ? ((pkg?.price_cents || 0) * (100 - appliedCoupon.discount_percent) / 100 / 100)
+      : ((pkg?.price_cents || 0) / 100);
+
+    // Show loading modal immediately
+    setPixLoading(true);
+    setPixModal({
+      qr_code: "",
+      qr_code_base64: "",
+      transaction_id: "",
+      amount: `R$${finalPrice.toFixed(2).replace('.', ',')}`,
+      coins: `${(pkg?.coins || 0) + (pkg?.bonus || 0)}`,
+    });
+    setShowShop(false);
+    setPixCopied(false);
     
     try {
       const { data, error } = await supabase.functions.invoke("create-payment", {
@@ -201,10 +217,6 @@ const VideoChatRoom = () => {
       });
       if (error) throw error;
       if (data?.qr_code) {
-        const pkg = shopPackages.find(p => p.id === pkgId);
-        const finalPrice = appliedCoupon 
-          ? ((pkg?.price_cents || 0) * (100 - appliedCoupon.discount_percent) / 100 / 100)
-          : ((pkg?.price_cents || 0) / 100);
         setPixModal({
           qr_code: data.qr_code,
           qr_code_base64: data.qr_code_base64,
@@ -212,8 +224,7 @@ const VideoChatRoom = () => {
           amount: `R$${finalPrice.toFixed(2).replace('.', ',')}`,
           coins: `${(pkg?.coins || 0) + (pkg?.bonus || 0)}`,
         });
-        setShowShop(false);
-        setPixCopied(false);
+        setPixLoading(false);
         // Poll for payment approval
         if (pixPollRef.current) clearInterval(pixPollRef.current);
         pixPollRef.current = setInterval(async () => {
@@ -226,15 +237,20 @@ const VideoChatRoom = () => {
             clearInterval(pixPollRef.current!);
             pixPollRef.current = null;
             setPixModal(null);
+            setPixLoading(false);
             refreshOwnCoins();
             alert("✅ Pagamento aprovado! Suas coins foram creditadas.");
           }
         }, 4000);
       } else {
+        setPixModal(null);
+        setPixLoading(false);
         alert("Erro ao gerar PIX. Tente novamente.");
       }
     } catch (err: any) {
       console.error("Purchase error:", err);
+      setPixModal(null);
+      setPixLoading(false);
       alert("Erro ao iniciar pagamento. Tente novamente.");
     } finally {
       setBuyingPkg(null);
