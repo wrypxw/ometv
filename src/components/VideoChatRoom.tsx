@@ -323,6 +323,7 @@ const VideoChatRoom = () => {
     }
   };
 
+  const handleGoogleAuth = async () => {
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
