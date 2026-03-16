@@ -247,7 +247,7 @@ const Profile = () => {
           <button onClick={handleShare}
             className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}>
-            <Share2 className="w-4 h-4" /> Compartilhar
+            <Share2 className="w-4 h-4" /> {copied ? "Link copiado! ✓" : "Compartilhar"}
           </button>
         </div>
       </div>
