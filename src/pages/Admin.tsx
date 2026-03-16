@@ -269,6 +269,7 @@ const AdminPanel = () => {
     setGiftsLoading(false);
   }, []);
 
+  useEffect(() => {
     checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); fetchGifts(); });
   }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos, fetchGifts]);
 
