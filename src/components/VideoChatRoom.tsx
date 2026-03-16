@@ -1849,6 +1849,7 @@ const VideoChatRoom = () => {
                     if (v && v !== profileTarget?.display_name) {
                       await supabase.from("profiles").update({ display_name: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
                       setProfileTarget((p: any) => ({ ...p, display_name: v }));
+                      setUserDisplayName(v);
                     }
                   }}
                   className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
