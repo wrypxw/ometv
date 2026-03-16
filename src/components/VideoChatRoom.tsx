@@ -456,6 +456,14 @@ const VideoChatRoom = () => {
         setStrangerLocation(loc || null);
         return;
       }
+      if (text.startsWith("__SYS_GIFT__:")) {
+        try {
+          const gift = JSON.parse(text.replace("__SYS_GIFT__:", ""));
+          setReceivedGift({ emoji: gift.emoji, name: gift.name });
+          setTimeout(() => setReceivedGift(null), 3000);
+        } catch {}
+        return;
+      }
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), text, sender: "stranger" },
