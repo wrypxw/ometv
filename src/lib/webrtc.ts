@@ -161,6 +161,7 @@ export class WebRTCConnection {
   private sessionId: string;
   private signalingChannel: ReturnType<typeof supabase.channel> | null = null;
   private dataChannel: RTCDataChannel | null = null;
+  private remoteStream: MediaStream | null = null;
   public onRemoteStream: ((stream: MediaStream) => void) | null = null;
   public onDisconnected: (() => void) | null = null;
   public onMessage: ((text: string) => void) | null = null;
