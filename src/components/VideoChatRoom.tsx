@@ -149,6 +149,7 @@ const VideoChatRoom = () => {
   const [userInstagram, setUserInstagram] = useState<string | null>(null);
   const [strangerLocation, setStrangerLocation] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<string>("");
+  const [strangerUserId, setStrangerUserId] = useState<string | null>(null);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
@@ -161,6 +162,12 @@ const VideoChatRoom = () => {
   const [pendingCoinCost, _setPendingCoinCost] = useState(0);
   const pendingCoinCostRef = useRef(0);
   const setPendingCoinCost = useCallback((v: number) => { _setPendingCoinCost(v); pendingCoinCostRef.current = v; }, []);
+  const [showPrivateChat, setShowPrivateChat] = useState(false);
+  const [privateChatTarget, setPrivateChatTarget] = useState<any>(null);
+  const [privateMessages, setPrivateMessages] = useState<any[]>([]);
+  const [privateMsgInput, setPrivateMsgInput] = useState("");
+  const [privateMsgLoading, setPrivateMsgLoading] = useState(false);
+  const privateChatEndRef = useRef<HTMLDivElement>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -245,14 +252,14 @@ const VideoChatRoom = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch user location by IP
+  // Fetch user location by IP - state/region only
   useEffect(() => {
     fetch("https://ipapi.co/json/")
       .then(r => r.json())
       .then(data => {
         const parts = [];
         if (data.country_name) parts.push(data.country_name);
-        if (data.city) parts.push(data.city);
+        if (data.region_code) parts.push(data.region_code);
         setUserLocation(parts.join(" • ") || "");
       })
       .catch(() => setUserLocation(""));
@@ -430,6 +437,7 @@ const VideoChatRoom = () => {
       setTimeout(() => {
         rtc.sendChatMessage(`__SYS_IG__:${userInstagram || ""}`);
         rtc.sendChatMessage(`__SYS_LOC__:${userLocation || ""}`);
+        if (currentUser?.id) rtc.sendChatMessage(`__SYS_UID__:${currentUser.id}`);
       }, 500);
     };
 
@@ -445,6 +453,8 @@ const VideoChatRoom = () => {
       setMessages([]);
       setStrangerInstagram(null);
       setStrangerLocation(null);
+      setStrangerUserId(null);
+      setStrangerFollowed(false);
     };
 
     rtc.onMessage = (text) => {
@@ -457,6 +467,11 @@ const VideoChatRoom = () => {
       if (text.startsWith("__SYS_LOC__:")) {
         const loc = text.replace("__SYS_LOC__:", "").trim();
         setStrangerLocation(loc || null);
+        return;
+      }
+      if (text.startsWith("__SYS_UID__:")) {
+        const uid = text.replace("__SYS_UID__:", "").trim();
+        setStrangerUserId(uid || null);
         return;
       }
       if (text.startsWith("__SYS_GIFT__:")) {
@@ -488,7 +503,7 @@ const VideoChatRoom = () => {
     if (isInitiator) {
       await rtc.createOffer();
     }
-  }, [userInstagram, userLocation]);
+  }, [userInstagram, userLocation, currentUser]);
 
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
@@ -774,6 +789,65 @@ const VideoChatRoom = () => {
     }
   }, [profileTarget, currentUser]);
 
+  const openPrivateChat = useCallback(async (target: any) => {
+    if (!currentUser || !target?.id) return;
+    setPrivateChatTarget(target);
+    setShowPrivateChat(true);
+    setShowProfileModal(false);
+    setShowFriendsModal(false);
+    setPrivateMsgLoading(true);
+    const { data } = await supabase
+      .from("private_messages")
+      .select("*")
+      .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${target.id}),and(sender_id.eq.${target.id},receiver_id.eq.${currentUser.id})`)
+      .order("created_at", { ascending: true })
+      .limit(100);
+    setPrivateMessages(data || []);
+    setPrivateMsgLoading(false);
+    // Mark unread as read
+    await supabase.from("private_messages").update({ read: true }).eq("receiver_id", currentUser.id).eq("sender_id", target.id).eq("read", false);
+  }, [currentUser]);
+
+  const sendPrivateMessage = useCallback(async () => {
+    if (!currentUser || !privateChatTarget?.id || !privateMsgInput.trim()) return;
+    const msg = privateMsgInput.trim().slice(0, 500);
+    setPrivateMsgInput("");
+    const { data } = await supabase.from("private_messages").insert({
+      sender_id: currentUser.id,
+      receiver_id: privateChatTarget.id,
+      message: msg,
+    }).select().single();
+    if (data) setPrivateMessages(prev => [...prev, data]);
+  }, [currentUser, privateChatTarget, privateMsgInput]);
+
+  // Realtime subscription for private chat
+  useEffect(() => {
+    if (!showPrivateChat || !currentUser || !privateChatTarget?.id) return;
+    const channel = supabase.channel(`pm-${currentUser.id}-${privateChatTarget.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'private_messages',
+        filter: `receiver_id=eq.${currentUser.id}`,
+      }, (payload) => {
+        const msg = payload.new as any;
+        if (msg.sender_id === privateChatTarget.id) {
+          setPrivateMessages(prev => {
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+          // Mark as read
+          supabase.from("private_messages").update({ read: true }).eq("id", msg.id);
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [showPrivateChat, currentUser, privateChatTarget]);
+
+  useEffect(() => {
+    privateChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [privateMessages]);
+
   return (
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
@@ -854,8 +928,10 @@ const VideoChatRoom = () => {
                       { icon: <User className="w-4 h-4" />, label: "Perfil", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" />, action: () => {
                         setShowProfileMenu(false);
                         if (currentUser) {
-                          const slug = userDisplayName ? encodeURIComponent(userDisplayName) : currentUser.id;
-                          navigate(`/profile/${slug}`);
+                          // Open profile as popup overlay instead of navigating away
+                          supabase.from("profiles").select("*").eq("id", currentUser.id).single().then(({ data }) => {
+                            if (data) openProfileModal({ ...data });
+                          });
                         }
                       }},
                       { icon: <Heart className="w-4 h-4" />, label: "Amizades", action: () => { setShowProfileMenu(false); fetchFriends(); setShowFriendsModal(true); } },
@@ -984,16 +1060,14 @@ const VideoChatRoom = () => {
         )}
 
         {/* Follow button during call */}
-        {status === "connected" && isLoggedIn && (
+        {status === "connected" && isLoggedIn && strangerUserId && strangerUserId !== currentUser?.id && (
           <div className="absolute top-16 md:top-20 left-3 md:left-5 z-20">
             <button
               onClick={() => {
                 if (strangerFollowed) return;
-                // In a real scenario, you'd have the stranger's user ID from matchmaking
-                // For now, show the profile modal
-                setStrangerFollowed(!strangerFollowed);
+                handleFollow(strangerUserId);
               }}
-              disabled={followLoading}
+              disabled={followLoading || strangerFollowed}
               className="flex items-center gap-2 rounded-full px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
               style={{
                 background: strangerFollowed
@@ -2233,6 +2307,7 @@ const VideoChatRoom = () => {
               {/* Private Chat - only for other users */}
               {!isOwnProfile && (
                 <button
+                  onClick={() => openPrivateChat(profileTarget)}
                   className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: "rgba(59,130,246,0.1)",
@@ -2318,6 +2393,14 @@ const VideoChatRoom = () => {
                       <UserMinus className="w-4 h-4" />
                     </button>
                     <button
+                      onClick={() => openPrivateChat({ id: friend.following_id, display_name: friend.display_name, email: friend.email })}
+                      className="p-2 rounded-xl hover:bg-blue-500/20 transition-all"
+                      title="Chat Privado"
+                      style={{ color: "#60a5fa" }}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => {
                         setShowFriendsModal(false);
                         openProfileModal({ id: friend.following_id, display_name: friend.display_name, email: friend.email });
@@ -2331,6 +2414,99 @@ const VideoChatRoom = () => {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Private Chat Modal */}
+      {showPrivateChat && privateChatTarget && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowPrivateChat(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
+          <div
+            className="relative w-full md:max-w-md md:mx-4 rounded-t-3xl md:rounded-2xl overflow-hidden flex flex-col"
+            style={{ background: "linear-gradient(180deg, #1a1040, #0f0a2e)", border: "1px solid rgba(139,92,246,0.15)", maxHeight: "85dvh" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex md:hidden justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(139,92,246,0.4)" }} />
+            </div>
+
+            {/* Chat header */}
+            <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
+                {(privateChatTarget.display_name || privateChatTarget.email || "?")[0].toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">
+                  {privateChatTarget.display_name || privateChatTarget.email?.split("@")[0] || "Usuário"}
+                </p>
+                <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>Chat Privado</p>
+              </div>
+              <button onClick={() => setShowPrivateChat(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                ✕
+              </button>
+            </div>
+
+            {/* Messages area */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2" style={{ minHeight: "200px", maxHeight: "50dvh" }}>
+              {privateMsgLoading ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: "rgba(139,92,246,0.2)", borderTopColor: "#a855f7" }} />
+                </div>
+              ) : privateMessages.length === 0 ? (
+                <div className="text-center py-10">
+                  <MessageSquare className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Nenhuma mensagem ainda. Diga oi! 👋</p>
+                </div>
+              ) : (
+                privateMessages.map((msg) => (
+                  <div key={msg.id} className={`flex ${msg.sender_id === currentUser?.id ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className="max-w-[75%] px-3.5 py-2 rounded-2xl text-sm"
+                      style={{
+                        background: msg.sender_id === currentUser?.id
+                          ? "linear-gradient(135deg, #7c3aed, #a855f7)"
+                          : "rgba(255,255,255,0.08)",
+                        color: "white",
+                      }}
+                    >
+                      <p className="break-words">{msg.message}</p>
+                      <p className="text-[9px] mt-0.5 opacity-50 text-right">
+                        {new Date(msg.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+              <div ref={privateChatEndRef} />
+            </div>
+
+            {/* Message input */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); sendPrivateMessage(); }}
+              className="flex items-center gap-2 px-4 py-3"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <input
+                type="text"
+                value={privateMsgInput}
+                onChange={(e) => setPrivateMsgInput(e.target.value)}
+                placeholder="Digite uma mensagem..."
+                maxLength={500}
+                className="flex-1 py-2.5 px-4 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+              />
+              <button
+                type="submit"
+                disabled={!privateMsgInput.trim()}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-30"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                <Send className="w-4 h-4 text-white" />
+              </button>
+            </form>
           </div>
         </div>
       )}
