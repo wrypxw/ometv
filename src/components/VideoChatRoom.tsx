@@ -521,6 +521,11 @@ const VideoChatRoom = () => {
     };
 
     rtc.onMessage = (text) => {
+      // Handle skip signal — other person clicked "next"
+      if (text === "__SYS_SKIP__") {
+        rtc.onDisconnected?.();
+        return;
+      }
       // Handle system messages
       if (text.startsWith("__SYS_IG__:")) {
         const ig = text.replace("__SYS_IG__:", "").trim();
@@ -729,6 +734,10 @@ const VideoChatRoom = () => {
   const nextPerson = useCallback(async () => {
     // No refund on next — coins already consumed for this session
     setPendingCoinCost(0);
+    // Signal the other person to skip too
+    webrtcRef.current?.sendChatMessage("__SYS_SKIP__");
+    // Small delay to ensure message is sent before destroying
+    await new Promise(r => setTimeout(r, 100));
     webrtcRef.current?.destroy();
     webrtcRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
