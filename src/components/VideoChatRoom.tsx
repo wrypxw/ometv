@@ -461,6 +461,12 @@ const VideoChatRoom = () => {
           const gift = JSON.parse(text.replace("__SYS_GIFT__:", ""));
           setReceivedGift({ emoji: gift.emoji, name: gift.name });
           setTimeout(() => setReceivedGift(null), 3000);
+          // Add gift message to chat
+          const senderName = gift.senderName || "Anônimo";
+          setMessages((prev) => [
+            ...prev,
+            { id: crypto.randomUUID(), text: `${gift.emoji} ${senderName} enviou ${gift.name} para você no valor de ${gift.cost} moedas`, sender: "stranger" },
+          ]);
         } catch {}
         return;
       }
