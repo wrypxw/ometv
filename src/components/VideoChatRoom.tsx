@@ -1805,7 +1805,7 @@ const VideoChatRoom = () => {
             {/* Profile info */}
             <div className="text-center px-6 pt-3 pb-2">
               <h3 className="text-xl font-bold text-white">
-                {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Stranger"}
+                {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Desconhecido"}
               </h3>
               {profileTarget?.age && (
                 <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>

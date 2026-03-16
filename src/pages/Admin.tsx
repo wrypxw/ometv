@@ -1262,7 +1262,7 @@ const AdminPanel = () => {
                   disabled={actionLoading || !editValue || parseInt(editValue) === 0}
                   className="flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all hover:scale-[1.02]"
                   style={{ background: "#ef4444" }}>
-                  <Minus className="w-4 h-4" /> Remove
+                  <Minus className="w-4 h-4" /> Remover
                 </button>
               </div>
             </div>
