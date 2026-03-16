@@ -1033,7 +1033,13 @@ const VideoChatRoom = () => {
 
         {/* Stop/Next buttons - pinned to very bottom (desktop only, mobile moved to bottom panel) */}
         {(status === "connected" || status === "searching") && (
-          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-4 pt-1" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-4 pt-6" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+            {strangerLocation && status === "connected" && (
+              <div className="flex items-center gap-1.5 mb-2 ml-1">
+                <MapPin className="w-3.5 h-3.5" style={{ color: "#22c55e" }} />
+                <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>{strangerLocation}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 md:gap-3 justify-center">
               <button
                 onClick={stopChat}
