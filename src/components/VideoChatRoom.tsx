@@ -673,7 +673,15 @@ const VideoChatRoom = () => {
     if (!currentUser) { setShowLoginModal(true); return; }
     setFollowLoading(true);
     try {
-      if (isFollowing) {
+      // Always check current state from DB to avoid stale state issues
+      const { data: existing } = await supabase
+        .from("follows")
+        .select("id")
+        .eq("follower_id", currentUser.id)
+        .eq("following_id", targetUserId)
+        .maybeSingle();
+      
+      if (existing) {
         await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", targetUserId);
         setIsFollowing(false);
         setStrangerFollowed(false);
@@ -682,12 +690,14 @@ const VideoChatRoom = () => {
         setIsFollowing(true);
         setStrangerFollowed(true);
       }
+      // Refresh friends list after follow/unfollow
+      fetchFriends();
     } catch (err) {
       console.error("Follow error:", err);
     } finally {
       setFollowLoading(false);
     }
-  }, [currentUser, isFollowing]);
+  }, [currentUser, fetchFriends]);
 
   const openProfileModal = useCallback(async (targetUser: any) => {
     setProfileTarget(targetUser);
