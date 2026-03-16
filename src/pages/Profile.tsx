@@ -87,7 +87,7 @@ const Profile = () => {
     );
   }
 
-  const isOwnProfile = currentUser?.id === id;
+  const isOwnProfile = currentUser?.id === resolvedId;
   const instagramUrl = profile.instagram ? (profile.instagram.startsWith("http") ? profile.instagram : `https://instagram.com/${profile.instagram.replace("@", "")}`) : null;
 
   return (
