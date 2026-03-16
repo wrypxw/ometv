@@ -742,7 +742,7 @@ const VideoChatRoom = () => {
                         setShowProfileMenu(false);
                         if (currentUser) {
                           const slug = userDisplayName ? encodeURIComponent(userDisplayName) : currentUser.id;
-                          navigate(`/@${slug}`);
+                          navigate(`/profile/${slug}`);
                         }
                       }},
                       { icon: <Heart className="w-4 h-4" />, label: "Amizades", action: () => { setShowProfileMenu(false); fetchFriends(); setShowFriendsModal(true); } },
