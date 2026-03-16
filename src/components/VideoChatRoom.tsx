@@ -1219,6 +1219,28 @@ const VideoChatRoom = () => {
         </div>
         )}
 
+        {/* Gift buttons - mobile only, right side during call */}
+        {status === "connected" && giftsList.length > 0 && (
+          <div className="md:hidden absolute right-2 bottom-16 z-20 flex flex-col gap-1.5">
+            {giftsList.map(g => (
+              <button
+                key={g.id}
+                onClick={() => sendGift(g)}
+                disabled={sendingGift === g.id}
+                className="w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all hover:scale-110 active:scale-90"
+                style={{
+                  background: "rgba(0,0,0,0.5)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <span className="text-lg leading-none">{g.emoji}</span>
+                <span className="text-[7px] font-bold leading-none mt-0.5" style={{ color: "#fbbf24" }}>{g.coin_cost}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Stop/Next buttons - mobile only, pinned to bottom of this panel */}
         {(status === "connected" || status === "searching") && (
           <div className="md:hidden absolute bottom-0 left-0 right-0 z-20 px-3 pb-3 pt-4" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
@@ -1253,6 +1275,18 @@ const VideoChatRoom = () => {
         )}
 
       </div>
+
+      {/* Received gift animation overlay */}
+      {receivedGift && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
+          <div className="animate-bounce text-center">
+            <span className="text-7xl md:text-8xl drop-shadow-2xl">{receivedGift.emoji}</span>
+            <p className="text-white text-sm md:text-base font-bold mt-2 drop-shadow-lg" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>
+              Você recebeu: {receivedGift.name}!
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Shop Modal */}
       {showShop && (
