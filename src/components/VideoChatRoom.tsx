@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Matchmaker, WebRTCConnection } from "@/lib/webrtc";
@@ -97,6 +98,7 @@ const STRANGER_MESSAGES = [
 ];
 
 const VideoChatRoom = () => {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [isCamOn, setIsCamOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
@@ -718,15 +720,11 @@ const VideoChatRoom = () => {
                       </div>
                     </div>
                     {[
-                      { icon: <User className="w-4 h-4" />, label: "Perfil", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" />, action: async () => {
+                      { icon: <User className="w-4 h-4" />, label: "Perfil", extra: <ChevronRight className="w-4 h-4 ml-auto opacity-30" />, action: () => {
                         setShowProfileMenu(false);
                         if (currentUser) {
-                          const { data: profile } = await supabase.from("profiles").select("id, display_name, email, coins, age, bio, instagram").eq("id", currentUser.id).single();
-                          if (profile) {
-                            openProfileModal(profile);
-                          } else {
-                            openProfileModal({ id: currentUser.id, email: currentUser.email, display_name: currentUser.email?.split("@")[0] });
-                          }
+                          const slug = userDisplayName ? encodeURIComponent(userDisplayName) : currentUser.id;
+                          navigate(`/@${slug}`);
                         }
                       }},
                       { icon: <Heart className="w-4 h-4" />, label: "Amizades", action: () => { setShowProfileMenu(false); fetchFriends(); setShowFriendsModal(true); } },
