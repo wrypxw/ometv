@@ -629,7 +629,7 @@ const AdminPanel = () => {
           <h1 className="text-base md:text-lg font-bold text-white">
             {activeTab === "users" && "Usuários"}
             {activeTab === "settings" && "Configurações"}
-            {activeTab === "shop" && "Shop / Planos"}
+            {activeTab === "shop" && "Loja / Planos"}
             {activeTab === "coupons" && "Cupons & Promos"}
             {activeTab === "payments" && "Pagamentos"}
             {activeTab === "regions" && "Preço por Região"}
