@@ -578,7 +578,7 @@ const AdminPanel = () => {
           {sidebarOpen && (
             <>
               <Shield className="w-5 h-5 shrink-0" style={{ color: "#7c3aed" }} />
-              <span className="text-sm font-bold text-white whitespace-nowrap">Admin Panel</span>
+              <span className="text-sm font-bold text-white whitespace-nowrap">Painel Admin</span>
             </>
           )}
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="ml-auto p-1.5 rounded-lg hover:bg-white/5 transition-colors">
