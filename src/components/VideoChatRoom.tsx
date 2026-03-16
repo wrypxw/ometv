@@ -1929,7 +1929,7 @@ const VideoChatRoom = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => { setShowLoginModal(false); setAuthError(""); }}>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => { if (isLoggedIn) { setShowLoginModal(false); setAuthError(""); } }}>
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} />
           <div
             className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-2xl p-6 md:p-8 text-center"
