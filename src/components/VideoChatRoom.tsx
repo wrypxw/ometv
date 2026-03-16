@@ -574,6 +574,9 @@ const VideoChatRoom = () => {
     }
   }, [userInstagram, userLocation, currentUser, refreshOwnCoins]);
 
+  // Keep ref in sync so onDisconnected can call latest version
+  connectToPartnerRef.current = connectToPartner;
+
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
     let cost = 0;
