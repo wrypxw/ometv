@@ -228,8 +228,8 @@ const VideoChatRoom = () => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
       if (session?.user) {
-        supabase.from("profiles").select("coins, display_name").eq("id", session.user.id).single().then(({ data }) => {
-          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); }
+        supabase.from("profiles").select("coins, display_name, instagram").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); setUserInstagram(data.instagram || null); }
         });
       }
     });
