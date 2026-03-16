@@ -2409,6 +2409,99 @@ const VideoChatRoom = () => {
           </div>
         </div>
       )}
+
+      {/* Private Chat Modal */}
+      {showPrivateChat && privateChatTarget && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowPrivateChat(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
+          <div
+            className="relative w-full md:max-w-md md:mx-4 rounded-t-3xl md:rounded-2xl overflow-hidden flex flex-col"
+            style={{ background: "linear-gradient(180deg, #1a1040, #0f0a2e)", border: "1px solid rgba(139,92,246,0.15)", maxHeight: "85dvh" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex md:hidden justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(139,92,246,0.4)" }} />
+            </div>
+
+            {/* Chat header */}
+            <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
+                {(privateChatTarget.display_name || privateChatTarget.email || "?")[0].toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">
+                  {privateChatTarget.display_name || privateChatTarget.email?.split("@")[0] || "Usuário"}
+                </p>
+                <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>Chat Privado</p>
+              </div>
+              <button onClick={() => setShowPrivateChat(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                ✕
+              </button>
+            </div>
+
+            {/* Messages area */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2" style={{ minHeight: "200px", maxHeight: "50dvh" }}>
+              {privateMsgLoading ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: "rgba(139,92,246,0.2)", borderTopColor: "#a855f7" }} />
+                </div>
+              ) : privateMessages.length === 0 ? (
+                <div className="text-center py-10">
+                  <MessageSquare className="w-8 h-8 mx-auto mb-2" style={{ color: "rgba(255,255,255,0.15)" }} />
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Nenhuma mensagem ainda. Diga oi! 👋</p>
+                </div>
+              ) : (
+                privateMessages.map((msg) => (
+                  <div key={msg.id} className={`flex ${msg.sender_id === currentUser?.id ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className="max-w-[75%] px-3.5 py-2 rounded-2xl text-sm"
+                      style={{
+                        background: msg.sender_id === currentUser?.id
+                          ? "linear-gradient(135deg, #7c3aed, #a855f7)"
+                          : "rgba(255,255,255,0.08)",
+                        color: "white",
+                      }}
+                    >
+                      <p className="break-words">{msg.message}</p>
+                      <p className="text-[9px] mt-0.5 opacity-50 text-right">
+                        {new Date(msg.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+              <div ref={privateChatEndRef} />
+            </div>
+
+            {/* Message input */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); sendPrivateMessage(); }}
+              className="flex items-center gap-2 px-4 py-3"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <input
+                type="text"
+                value={privateMsgInput}
+                onChange={(e) => setPrivateMsgInput(e.target.value)}
+                placeholder="Digite uma mensagem..."
+                maxLength={500}
+                className="flex-1 py-2.5 px-4 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+              />
+              <button
+                type="submit"
+                disabled={!privateMsgInput.trim()}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-30"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                <Send className="w-4 h-4 text-white" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
