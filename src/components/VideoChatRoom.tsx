@@ -622,17 +622,37 @@ const VideoChatRoom = () => {
     setShowProfileModal(true);
   }, [currentUser, checkIfFollowing]);
 
-  const handleShareProfile = useCallback(() => {
+  const handleShareProfile = useCallback(async () => {
     const target = profileTarget || currentUser;
     const displayName = (target as any)?.display_name || (target as any)?.user_metadata?.full_name;
     const profileId = (target as any)?.id || currentUser?.id;
-    // Use @displayName if available, otherwise fall back to UUID
     const slug = displayName ? encodeURIComponent(displayName) : profileId;
     const url = slug ? `${window.location.origin}/profile/${slug}` : window.location.origin;
-    if (navigator.share) {
-      navigator.share({ title: displayName || "Meu Perfil", text: "Confira meu perfil e me siga!", url });
-    } else {
-      navigator.clipboard.writeText(url);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: displayName || "Meu Perfil", text: "Confira meu perfil e me siga!", url });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        alert("Link copiado!");
+      } else {
+        const input = document.createElement("input");
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        alert("Link copiado!");
+      }
+    } catch {
+      try {
+        const input = document.createElement("input");
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        alert("Link copiado!");
+      } catch { /* ignore */ }
     }
   }, [profileTarget, currentUser]);
 
