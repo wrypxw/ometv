@@ -113,6 +113,7 @@ const VideoChatRoom = () => {
   const [tempGender, setTempGender] = useState("Both");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [cameraAllowed, setCameraAllowed] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -211,19 +212,20 @@ const VideoChatRoom = () => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
       if (session?.user) {
-        supabase.from("profiles").select("coins").eq("id", session.user.id).single().then(({ data }) => {
-          if (data) setUserCoins(data.coins);
+        supabase.from("profiles").select("coins, display_name").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); }
         });
       } else {
         setUserCoins(0);
+        setUserDisplayName(null);
       }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session?.user);
       setCurrentUser(session?.user ?? null);
       if (session?.user) {
-        supabase.from("profiles").select("coins").eq("id", session.user.id).single().then(({ data }) => {
-          if (data) setUserCoins(data.coins);
+        supabase.from("profiles").select("coins, display_name").eq("id", session.user.id).single().then(({ data }) => {
+          if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); }
         });
       }
     });
@@ -683,7 +685,7 @@ const VideoChatRoom = () => {
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-white block">{currentUser?.email?.split("@")[0] || "You"}</span>
+                        <span className="text-sm font-semibold text-white block">{userDisplayName || currentUser?.email?.split("@")[0] || "You"}</span>
                         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Online</span>
                       </div>
                     </div>
@@ -1847,6 +1849,7 @@ const VideoChatRoom = () => {
                     if (v && v !== profileTarget?.display_name) {
                       await supabase.from("profiles").update({ display_name: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
                       setProfileTarget((p: any) => ({ ...p, display_name: v }));
+                      setUserDisplayName(v);
                     }
                   }}
                   className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
