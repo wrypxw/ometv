@@ -1030,7 +1030,7 @@ const VideoChatRoom = () => {
 
         {/* Chat messages overlay */}
         {(status === "connected" || messages.length > 0) && (
-          <div className="absolute bottom-[68px] left-0 right-0 z-20 flex flex-col">
+          <div className="absolute bottom-1 left-0 right-0 z-20 flex flex-col">
             {messages.length > 0 && (
               <div className="max-h-20 md:max-h-32 overflow-y-auto px-3 md:px-5 pb-1.5 space-y-1">
                 {messages.map((msg) => (
