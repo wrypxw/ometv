@@ -516,12 +516,15 @@ const VideoChatRoom = () => {
     rtc.onConnected = () => {
       setStatus("connected");
       setPendingCoinCost(0);
-      // Send our instagram handle and location to the stranger
-      setTimeout(() => {
+      // Send our info immediately and retry to ensure delivery
+      const sendInfo = () => {
         rtc.sendChatMessage(`__SYS_IG__:${userInstagram || ""}`);
         rtc.sendChatMessage(`__SYS_LOC__:${userLocation || ""}`);
         if (currentUser?.id) rtc.sendChatMessage(`__SYS_UID__:${currentUser.id}`);
-      }, 500);
+      };
+      sendInfo();
+      setTimeout(sendInfo, 800);
+      setTimeout(sendInfo, 2000);
     };
 
     rtc.onRemoteStream = (stream) => {
