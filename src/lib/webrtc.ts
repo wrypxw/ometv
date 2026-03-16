@@ -115,7 +115,7 @@ export class Matchmaker {
 
     const { data: selfEntry } = await supabase
       .from("match_queue")
-      .select("id, status")
+      .select("id, status, created_at")
       .eq("session_id", this.sessionId)
       .maybeSingle();
 
@@ -123,33 +123,25 @@ export class Matchmaker {
       return false;
     }
 
-    const { data: waiting } = await supabase
+    const { data: waitingCandidates } = await supabase
       .from("match_queue")
-      .select("id, session_id")
+      .select("id, session_id, created_at")
       .eq("status", "waiting")
       .neq("session_id", this.sessionId)
       .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .limit(10);
+
+    const waiting = waitingCandidates?.find((candidate) => {
+      if (candidate.created_at < selfEntry.created_at) return true;
+      if (candidate.created_at > selfEntry.created_at) return false;
+      return candidate.session_id < this.sessionId;
+    });
 
     if (!waiting) {
       return false;
     }
 
-    // Reserve our own queue entry first so nobody else can match us mid-flow.
-    const { data: reservedSelf, error: reserveError } = await supabase
-      .from("match_queue")
-      .update({ status: "matching", matched_with: waiting.session_id })
-      .eq("id", selfEntry.id)
-      .eq("status", "waiting")
-      .select("id")
-      .maybeSingle();
-
-    if (reserveError || !reservedSelf || !this.isActive || this.hasMatched) {
-      return false;
-    }
-
-    // Then try to atomically claim the other waiting user.
+    // Only the newer queue entry claims the older one.
     const { data: updatedOther, error: otherError } = await supabase
       .from("match_queue")
       .update({ status: "matched", matched_with: this.sessionId })
@@ -158,12 +150,7 @@ export class Matchmaker {
       .select("session_id")
       .maybeSingle();
 
-    if (otherError || !updatedOther) {
-      await supabase
-        .from("match_queue")
-        .update({ status: "waiting", matched_with: null })
-        .eq("id", selfEntry.id)
-        .eq("status", "matching");
+    if (otherError || !updatedOther || !this.isActive || this.hasMatched) {
       return false;
     }
 
@@ -171,7 +158,7 @@ export class Matchmaker {
       .from("match_queue")
       .update({ status: "matched", matched_with: waiting.session_id })
       .eq("id", selfEntry.id)
-      .eq("status", "matching")
+      .eq("status", "waiting")
       .select("id")
       .maybeSingle();
 
