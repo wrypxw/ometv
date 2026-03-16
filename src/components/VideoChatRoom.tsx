@@ -1488,6 +1488,51 @@ const VideoChatRoom = () => {
         </div>
       )}
 
+      {/* Sent gift animation overlay */}
+      {sentGift && (
+        <div className="fixed inset-0 z-[60] pointer-events-none overflow-hidden">
+          {/* Upward floating emojis */}
+          {Array.from({ length: 18 }).map((_, i) => (
+            <span
+              key={i}
+              className="absolute text-2xl md:text-4xl"
+              style={{
+                left: `${20 + Math.random() * 60}%`,
+                bottom: `-40px`,
+                animation: `gift-rise ${1.2 + Math.random() * 1.5}s ease-out ${Math.random() * 0.8}s forwards`,
+                opacity: 0.6 + Math.random() * 0.4,
+                fontSize: `${20 + Math.random() * 30}px`,
+              }}
+            >
+              {sentGift.emoji}
+            </span>
+          ))}
+          {/* Center emoji */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center" style={{ animation: "gift-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}>
+              <span
+                className="text-[90px] md:text-[130px] inline-block"
+                style={{ animation: "gift-sent-fly 1.5s ease-in forwards", filter: "drop-shadow(0 0 30px rgba(168,85,247,0.5))" }}
+              >
+                {sentGift.emoji}
+              </span>
+              <p
+                className="text-white text-lg md:text-2xl font-bold mt-2 drop-shadow-lg px-5 py-1.5 rounded-2xl mx-auto inline-block"
+                style={{
+                  textShadow: "0 2px 16px rgba(0,0,0,0.8)",
+                  background: "linear-gradient(135deg, rgba(34,197,94,0.45), rgba(16,185,129,0.35))",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  animation: "gift-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both",
+                }}
+              >
+                ✨ Enviou {sentGift.name}!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Shop Modal */}
       {showShop && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowShop(false)}>
