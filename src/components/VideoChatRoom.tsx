@@ -2307,6 +2307,7 @@ const VideoChatRoom = () => {
               {/* Private Chat - only for other users */}
               {!isOwnProfile && (
                 <button
+                  onClick={() => openPrivateChat(profileTarget)}
                   className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: "rgba(59,130,246,0.1)",
