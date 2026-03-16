@@ -755,7 +755,7 @@ const AdminPanel = () => {
           {activeTab === "shop" && (
             <>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Gerencie os pacotes de moedas que aparecem no shop.</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Gerencie os pacotes de moedas que aparecem na loja.</p>
                 <button onClick={() => { setEditingPkg({} as ShopPackage); setPkgForm({ coins: 500, bonus: 0, price_cents: 399, sort_order: packages.length + 1 }); }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}>
