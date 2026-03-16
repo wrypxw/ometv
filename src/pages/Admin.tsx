@@ -55,9 +55,9 @@ const SETTING_LABELS: Record<string, { label: string; placeholder: string; type?
   twitter_url: { label: "Twitter / X", placeholder: "https://x.com/..." },
   instagram_url: { label: "Instagram", placeholder: "https://instagram.com/..." },
   tiktok_url: { label: "TikTok", placeholder: "https://tiktok.com/@..." },
-  shop_enabled: { label: "Shop Ativo", placeholder: "true" },
-  shop_title: { label: "Título Shop", placeholder: "Shop" },
-  shop_description: { label: "Descrição Shop", placeholder: "Higher tiers..." },
+  shop_enabled: { label: "Loja Ativa", placeholder: "true" },
+  shop_title: { label: "Título Loja", placeholder: "Loja" },
+  shop_description: { label: "Descrição Loja", placeholder: "Pacotes maiores dão mais coins bônus!" },
 };
 
 interface RegionCoinPrice {
