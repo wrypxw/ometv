@@ -57,11 +57,11 @@ export class Matchmaker {
         (payload) => {
           const updated = payload.new as any;
           if (updated.status === "matched" && updated.matched_with) {
-            // The other person matched us - they are the initiator
-            // Use THEIR session_id as room prefix for consistency
-            const roomId = updated.matched_with + "_" + this.sessionId;
+            const ids = [this.sessionId, updated.matched_with].sort();
+            const roomId = ids[0] + "_" + ids[1];
+            const isInitiator = this.sessionId === ids[0];
             this.stopPolling();
-            this.onMatch?.(roomId, false);
+            this.onMatch?.(roomId, isInitiator);
           }
         }
       )
