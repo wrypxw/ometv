@@ -1746,6 +1746,77 @@ const VideoChatRoom = () => {
         </div>
       )}
 
+      {/* PIX Payment Modal */}
+      {pixModal && (
+        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center" onClick={() => { setPixModal(null); if (pixPollRef.current) { clearInterval(pixPollRef.current); pixPollRef.current = null; } }}>
+          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }} />
+          <div
+            className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-2xl p-5 md:p-6 max-h-[90dvh] overflow-y-auto"
+            style={{ background: "linear-gradient(180deg, #1e1b4b, #0f0a2e)", border: "1px solid rgba(139,92,246,0.25)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex md:hidden justify-center mb-3">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(139,92,246,0.4)" }} />
+            </div>
+
+            <button onClick={() => { setPixModal(null); if (pixPollRef.current) { clearInterval(pixPollRef.current); pixPollRef.current = null; } }}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+              ✕
+            </button>
+
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
+                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", boxShadow: "0 8px 30px rgba(34,197,94,0.3)" }}>
+                <span className="text-2xl">💠</span>
+              </div>
+              <h2 className="text-xl font-bold text-white">Pagar com PIX</h2>
+              <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+                {pixModal.coins} Coins • <span className="font-bold" style={{ color: "#4ade80" }}>{pixModal.amount}</span>
+              </p>
+            </div>
+
+            {pixModal.qr_code_base64 && (
+              <div className="flex justify-center mb-4">
+                <div className="p-3 rounded-xl" style={{ background: "white" }}>
+                  <img src={`data:image/png;base64,${pixModal.qr_code_base64}`} alt="QR Code PIX" className="w-48 h-48 md:w-56 md:h-56" />
+                </div>
+              </div>
+            )}
+
+            <p className="text-center text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Escaneie o QR Code ou copie o código abaixo
+            </p>
+
+            <div className="rounded-xl p-3 mb-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <p className="text-[10px] font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>Código PIX (Copia e Cola)</p>
+              <p className="text-xs text-white/70 break-all font-mono leading-relaxed" style={{ maxHeight: "60px", overflow: "hidden" }}>
+                {pixModal.qr_code.length > 120 ? pixModal.qr_code.slice(0, 120) + "..." : pixModal.qr_code}
+              </p>
+            </div>
+
+            <button
+              onClick={() => { navigator.clipboard.writeText(pixModal.qr_code); setPixCopied(true); setTimeout(() => setPixCopied(false), 3000); }}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: pixCopied ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                boxShadow: pixCopied ? "0 4px 20px rgba(34,197,94,0.3)" : "0 4px 20px rgba(139,92,246,0.3)",
+              }}
+            >
+              {pixCopied ? "✓ Código Copiado!" : "📋 Copiar Código PIX"}
+            </button>
+
+            <div className="mt-4 flex items-center gap-2 justify-center">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#eab308" }} />
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Aguardando pagamento...</p>
+            </div>
+
+            <p className="text-center text-[10px] mt-3" style={{ color: "rgba(255,255,255,0.2)" }}>
+              Após o pagamento, suas coins serão creditadas automaticamente.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Coupon Modal */}
       {showCouponModal && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setShowCouponModal(false)}>
