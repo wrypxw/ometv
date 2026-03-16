@@ -1918,18 +1918,20 @@ const VideoChatRoom = () => {
                   className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
                 />
-                <input
-                  type="text"
-                  placeholder="@ do Instagram"
-                  defaultValue={profileTarget?.instagram || ""}
-                  onBlur={async (e) => {
-                    const v = e.target.value.trim().slice(0, 100);
-                    await supabase.from("profiles").update({ instagram: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
-                    setProfileTarget((p: any) => ({ ...p, instagram: v }));
-                  }}
-                  className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
-                />
+                <div className="flex items-center rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <span className="pl-3 text-sm select-none whitespace-nowrap" style={{ color: "rgba(255,255,255,0.4)" }}>instagram.com/</span>
+                  <input
+                    type="text"
+                    placeholder="seu.usuario"
+                    defaultValue={(profileTarget?.instagram || "").replace("@", "").replace("https://instagram.com/", "").replace("https://www.instagram.com/", "")}
+                    onBlur={async (e) => {
+                      const v = e.target.value.trim().replace("@", "").replace("https://instagram.com/", "").replace("https://www.instagram.com/", "").slice(0, 30);
+                      await supabase.from("profiles").update({ instagram: v, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+                      setProfileTarget((p: any) => ({ ...p, instagram: v }));
+                    }}
+                    className="flex-1 py-2.5 px-1 pr-3 text-sm text-white placeholder:text-white/25 outline-none bg-transparent"
+                  />
+                </div>
                 <textarea
                   placeholder="Bio (máx. 200 caracteres)"
                   maxLength={200}
