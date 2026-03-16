@@ -373,7 +373,7 @@ const VideoChatRoom = () => {
     const matchmaker = matchmakerRef.current;
     if (!matchmaker) return;
 
-    const rtc = new WebRTCConnection(roomId, matchmaker.getSessionId());
+    const rtc = new WebRTCConnection(roomId, matchmaker.getSessionId(), isInitiator);
     webrtcRef.current = rtc;
 
     rtc.onRemoteStream = (stream) => {
@@ -388,6 +388,13 @@ const VideoChatRoom = () => {
       setStatus("disconnected");
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setMessages([]);
+    };
+
+    rtc.onMessage = (text) => {
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), text, sender: "stranger" },
+      ]);
     };
 
     if (localStreamRef.current) {
