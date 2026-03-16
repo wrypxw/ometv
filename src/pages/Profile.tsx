@@ -67,14 +67,42 @@ const Profile = () => {
     setFollowLoading(false);
   }, [currentUser, resolvedId, isFollowing]);
 
-  const handleShare = useCallback(() => {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(async () => {
     const displayName = profile?.display_name;
     const slug = displayName ? encodeURIComponent(displayName) : resolvedId;
     const url = slug ? `${window.location.origin}/profile/${slug}` : window.location.origin;
-    if (navigator.share) {
-      navigator.share({ title: displayName || "Perfil", text: "Confira este perfil!", url });
-    } else {
-      navigator.clipboard.writeText(url);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: displayName || "Perfil", text: "Confira este perfil!", url });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        // Fallback for older browsers
+        const input = document.createElement("input");
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch {
+      // User cancelled share or copy failed - try fallback
+      try {
+        const input = document.createElement("input");
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch { /* ignore */ }
     }
   }, [profile, resolvedId]);
 
