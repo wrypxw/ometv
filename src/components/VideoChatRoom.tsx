@@ -25,6 +25,7 @@ import {
   MoreHorizontal,
   LogOut,
   ExternalLink,
+  MapPin,
 } from "lucide-react";
 
 type ChatStatus = "idle" | "searching" | "connected" | "disconnected";
