@@ -158,6 +158,11 @@ const VideoChatRoom = () => {
   const [giftsList, setGiftsList] = useState<{ id: string; emoji: string; name: string; coin_cost: number }[]>([]);
   const [receivedGift, setReceivedGift] = useState<{ emoji: string; name: string } | null>(null);
   const [sentGift, setSentGift] = useState<{ emoji: string; name: string } | null>(null);
+  const refreshOwnCoins = useCallback(async () => {
+    if (!currentUser?.id) return;
+    const { data } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
+    if (data) setUserCoins(data.coins);
+  }, [currentUser]);
   const [sendingGift, setSendingGift] = useState<string | null>(null);
   const [showCoinConfirm, setShowCoinConfirm] = useState<{ cost: number; label: string; onConfirm: () => void } | null>(null);
   const [pendingCoinCost, _setPendingCoinCost] = useState(0);
@@ -263,6 +268,15 @@ const VideoChatRoom = () => {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const interval = window.setInterval(() => {
+      refreshOwnCoins();
+    }, status === "connected" ? 1500 : 5000);
+
+    return () => window.clearInterval(interval);
+  }, [currentUser, status, refreshOwnCoins]);
 
   // Fetch user location by IP - state/region only
   useEffect(() => {
@@ -497,7 +511,7 @@ const VideoChatRoom = () => {
           const gift = JSON.parse(text.replace("__SYS_GIFT__:", ""));
           setReceivedGift({ emoji: gift.emoji, name: gift.name });
           setTimeout(() => setReceivedGift(null), 3000);
-          // Add gift message to chat
+          refreshOwnCoins();
           const senderName = gift.senderName || "Anônimo";
           setMessages((prev) => [
             ...prev,
@@ -521,7 +535,7 @@ const VideoChatRoom = () => {
     if (isInitiator) {
       await rtc.createOffer();
     }
-  }, [userInstagram, userLocation, currentUser]);
+  }, [userInstagram, userLocation, currentUser, refreshOwnCoins]);
 
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
@@ -563,29 +577,21 @@ const VideoChatRoom = () => {
     setSendingGift(gift.id);
 
     if (strangerUserId) {
-      // Use atomic RPC to transfer coins (deduct from sender, credit to receiver)
       const { data: success, error } = await supabase.rpc("transfer_gift_coins", {
         _sender_id: currentUser.id,
         _receiver_id: strangerUserId,
         _amount: gift.coin_cost,
       });
-      console.log("transfer_gift_coins result:", { success, error, sender: currentUser.id, receiver: strangerUserId, amount: gift.coin_cost });
       if (error || success === false) {
         setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
         setSendingGift(null);
         return;
       }
-      // Refresh actual coin balance from DB
-      const { data: updatedProfile } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
-      if (updatedProfile) setUserCoins(updatedProfile.coins);
+      await refreshOwnCoins();
     } else {
-      // No recipient known, just deduct
-      const ok = await deductCoins(gift.coin_cost);
-      if (!ok) {
-        setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
-        setSendingGift(null);
-        return;
-      }
+      setShowCoinConfirm({ cost: 0, label: "Aguarde conectar totalmente com a outra pessoa para enviar presentes.", onConfirm: () => setShowCoinConfirm(null) });
+      setSendingGift(null);
+      return;
     }
 
     const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
@@ -598,7 +604,7 @@ const VideoChatRoom = () => {
       { id: crypto.randomUUID(), text: `${gift.emoji} Você enviou ${gift.name} no valor de ${gift.coin_cost} moedas`, sender: "me" },
     ]);
     setSendingGift(null);
-  }, [currentUser, status, deductCoins, userDisplayName, strangerUserId]);
+  }, [currentUser, status, userDisplayName, strangerUserId, refreshOwnCoins]);
 
   const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
