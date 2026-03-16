@@ -549,28 +549,39 @@ const VideoChatRoom = () => {
     if (!currentUser) { setShowLoginModal(true); return; }
     if (status !== "connected" || !webrtcRef.current) return;
     setSendingGift(gift.id);
-    const ok = await deductCoins(gift.coin_cost);
-    if (!ok) {
-      setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
-      setSendingGift(null);
-      return;
-    }
-    // Transfer coins to recipient
+
     if (strangerUserId) {
-      const { data: recipientProfile } = await supabase.from("profiles").select("coins").eq("id", strangerUserId).single();
-      if (recipientProfile) {
-        await supabase.from("profiles").update({ coins: recipientProfile.coins + gift.coin_cost, updated_at: new Date().toISOString() }).eq("id", strangerUserId);
+      // Use atomic RPC to transfer coins (deduct from sender, credit to receiver)
+      const { data: success, error } = await supabase.rpc("transfer_gift_coins", {
+        _sender_id: currentUser.id,
+        _receiver_id: strangerUserId,
+        _amount: gift.coin_cost,
+      });
+      if (error || !success) {
+        setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
+        setSendingGift(null);
+        return;
+      }
+      // Update local coin display
+      setUserCoins(prev => prev - gift.coin_cost);
+    } else {
+      // No recipient known, just deduct
+      const ok = await deductCoins(gift.coin_cost);
+      if (!ok) {
+        setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
+        setSendingGift(null);
+        return;
       }
     }
+
     const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
     webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name, senderName, cost: gift.coin_cost })}`);
-    // Add gift message to own chat
     setMessages((prev) => [
       ...prev,
       { id: crypto.randomUUID(), text: `${gift.emoji} Você enviou ${gift.name} no valor de ${gift.coin_cost} moedas`, sender: "me" },
     ]);
     setSendingGift(null);
-  }, [currentUser, status, deductCoins, userDisplayName]);
+  }, [currentUser, status, deductCoins, userDisplayName, strangerUserId]);
 
   const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
