@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserPlus, UserMinus, ArrowLeft, ExternalLink } from "lucide-react";
 
 const Profile = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: rawId } = useParams<{ id: string }>();
+  const [resolvedId, setResolvedId] = useState<string | null>(null);
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -22,36 +23,50 @@ const Profile = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Resolve rawId: if it's a UUID use directly, otherwise treat as display_name lookup
   useEffect(() => {
-    if (!id) return;
+    if (!rawId) return;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(rawId)) {
+      setResolvedId(rawId);
+    } else {
+      // Lookup by display_name (case-insensitive)
+      supabase.from("profiles").select("id").ilike("display_name", rawId).maybeSingle().then(({ data }) => {
+        setResolvedId(data?.id ?? null);
+      });
+    }
+  }, [rawId]);
+
+  useEffect(() => {
+    if (!resolvedId) { if (rawId && resolvedId === null) { setLoading(false); } return; }
     const fetchProfile = async () => {
       setLoading(true);
-      const { data } = await supabase.from("profiles").select("*").eq("id", id).single();
+      const { data } = await supabase.from("profiles").select("*").eq("id", resolvedId).single();
       setProfile(data);
       setLoading(false);
     };
     fetchProfile();
-  }, [id]);
+  }, [resolvedId]);
 
   useEffect(() => {
-    if (!currentUser || !id || currentUser.id === id) return;
-    supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", id).maybeSingle().then(({ data }) => {
+    if (!currentUser || !resolvedId || currentUser.id === resolvedId) return;
+    supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", resolvedId).maybeSingle().then(({ data }) => {
       setIsFollowing(!!data);
     });
-  }, [currentUser, id]);
+  }, [currentUser, resolvedId]);
 
   const handleFollow = useCallback(async () => {
-    if (!currentUser || !id) return;
+    if (!currentUser || !resolvedId) return;
     setFollowLoading(true);
     if (isFollowing) {
-      await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", id);
+      await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", resolvedId);
       setIsFollowing(false);
     } else {
-      await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: id });
+      await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: resolvedId });
       setIsFollowing(true);
     }
     setFollowLoading(false);
-  }, [currentUser, id, isFollowing]);
+  }, [currentUser, resolvedId, isFollowing]);
 
   if (loading) {
     return (
@@ -72,7 +87,7 @@ const Profile = () => {
     );
   }
 
-  const isOwnProfile = currentUser?.id === id;
+  const isOwnProfile = currentUser?.id === resolvedId;
   const instagramUrl = profile.instagram ? (profile.instagram.startsWith("http") ? profile.instagram : `https://instagram.com/${profile.instagram.replace("@", "")}`) : null;
 
   return (

@@ -578,10 +578,14 @@ const VideoChatRoom = () => {
   }, [currentUser, checkIfFollowing]);
 
   const handleShareProfile = useCallback(() => {
-    const profileId = profileTarget?.id || currentUser?.id;
-    const url = profileId ? `${window.location.origin}/profile/${profileId}` : window.location.origin;
+    const target = profileTarget || currentUser;
+    const displayName = (target as any)?.display_name || (target as any)?.user_metadata?.full_name;
+    const profileId = (target as any)?.id || currentUser?.id;
+    // Use @displayName if available, otherwise fall back to UUID
+    const slug = displayName ? encodeURIComponent(displayName) : profileId;
+    const url = slug ? `${window.location.origin}/@${slug}` : window.location.origin;
     if (navigator.share) {
-      navigator.share({ title: profileTarget?.display_name || "Meu Perfil", text: "Confira meu perfil e me siga!", url });
+      navigator.share({ title: displayName || "Meu Perfil", text: "Confira meu perfil e me siga!", url });
     } else {
       navigator.clipboard.writeText(url);
     }
