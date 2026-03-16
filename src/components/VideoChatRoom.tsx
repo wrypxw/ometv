@@ -704,8 +704,47 @@ const VideoChatRoom = () => {
     webrtcRef.current = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
     setMessages([]);
-    await startSearch();
-  }, [startSearch]);
+    setStrangerInstagram(null);
+    setStrangerLocation(null);
+    setStrangerUserId(null);
+    setStrangerFollowed(false);
+
+    // Quick search with 10s timeout — if nobody found, go back to idle
+    if (!localStreamRef.current) {
+      await startLocalCamera();
+    }
+    setStatus("searching");
+
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+
+    matchmakerRef.current?.destroy();
+    const matchmaker = new Matchmaker();
+    matchmakerRef.current = matchmaker;
+
+    // 10s timeout for "next" — short wait, then stop
+    searchTimerRef.current = setTimeout(async () => {
+      if (matchmakerRef.current === matchmaker) {
+        matchmaker.destroy();
+        matchmakerRef.current = null;
+        setStatus("disconnected");
+        setMessages((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), text: "Ninguém disponível no momento. Tente novamente!", sender: "stranger" },
+        ]);
+      }
+    }, 10000);
+
+    try {
+      await matchmaker.findMatch((roomId, isInitiator) => {
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+        connectToPartner(roomId, isInitiator);
+      });
+    } catch (err) {
+      console.error("Matchmaking error:", err);
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      setStatus("disconnected");
+    }
+  }, [connectToPartner, startLocalCamera]);
 
   const stopChat = useCallback(async () => {
     const wasSearching = status === "searching";
