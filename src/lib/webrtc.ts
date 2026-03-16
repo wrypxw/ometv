@@ -13,6 +13,8 @@ export class Matchmaker {
   private subscription: ReturnType<typeof supabase.channel> | null = null;
   private onMatch: MatchCallback | null = null;
   private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private isActive = true;
+  private hasMatched = false;
 
   constructor() {
     this.sessionId = crypto.randomUUID();
@@ -22,26 +24,49 @@ export class Matchmaker {
     return this.sessionId;
   }
 
+  private emitMatch(partnerSessionId: string) {
+    if (!this.isActive || this.hasMatched) return;
+
+    const ids = [this.sessionId, partnerSessionId].sort();
+    const roomId = `${ids[0]}_${ids[1]}`;
+    const isInitiator = this.sessionId === ids[0];
+
+    this.hasMatched = true;
+    this.stopPolling();
+
+    if (this.subscription) {
+      supabase.removeChannel(this.subscription);
+      this.subscription = null;
+    }
+
+    this.onMatch?.(roomId, isInitiator);
+  }
+
   async findMatch(onMatch: MatchCallback) {
     this.onMatch = onMatch;
+    this.isActive = true;
+    this.hasMatched = false;
 
     // Clean up old entries first
     const { error: cleanupError } = await supabase.rpc("cleanup_old_queue_entries");
     if (cleanupError) console.warn("Cleanup error (non-blocking):", cleanupError);
 
+    // Best effort cleanup for stale rows from the same matchmaker instance
+    await supabase.from("match_queue").delete().eq("session_id", this.sessionId);
+
     // Insert ourselves as waiting first
     const { error: insertError } = await supabase.from("match_queue").insert({
       session_id: this.sessionId,
       status: "waiting",
+      matched_with: null,
     });
     if (insertError) {
       console.error("Failed to join match queue:", insertError);
       throw insertError;
     }
 
-    // Now try to find someone else waiting
     const matched = await this.tryMatch();
-    if (matched) return;
+    if (matched || !this.isActive) return;
 
     // Listen for changes via realtime
     this.subscription = supabase
@@ -55,13 +80,11 @@ export class Matchmaker {
           filter: `session_id=eq.${this.sessionId}`,
         },
         (payload) => {
+          if (!this.isActive || this.hasMatched) return;
+
           const updated = payload.new as any;
           if (updated.status === "matched" && updated.matched_with) {
-            const ids = [this.sessionId, updated.matched_with].sort();
-            const roomId = ids[0] + "_" + ids[1];
-            const isInitiator = this.sessionId === ids[0];
-            this.stopPolling();
-            this.onMatch?.(roomId, isInitiator);
+            this.emitMatch(updated.matched_with);
           }
         }
       )
@@ -69,66 +92,101 @@ export class Matchmaker {
 
     // Also poll as fallback in case realtime misses events
     this.pollInterval = setInterval(async () => {
+      if (!this.isActive || this.hasMatched) return;
+
       const { data } = await supabase
         .from("match_queue")
-        .select("*")
+        .select("status, matched_with")
         .eq("session_id", this.sessionId)
-        .single();
+        .maybeSingle();
 
-      if (data && data.status === "matched" && data.matched_with) {
-        const ids = [this.sessionId, data.matched_with].sort();
-        const roomId = ids[0] + "_" + ids[1];
-        const isInitiator = this.sessionId === ids[0];
-        this.stopPolling();
-        this.onMatch?.(roomId, isInitiator);
-      } else if (data && data.status === "waiting") {
-        // Try to match again
+      if (!this.isActive || this.hasMatched) return;
+
+      if (data?.status === "matched" && data.matched_with) {
+        this.emitMatch(data.matched_with);
+      } else if (data?.status === "waiting") {
         await this.tryMatch();
       }
     }, 300);
   }
 
   private async tryMatch(): Promise<boolean> {
-    // Look for someone else waiting
+    if (!this.isActive || this.hasMatched) return false;
+
+    const { data: selfEntry } = await supabase
+      .from("match_queue")
+      .select("id, status")
+      .eq("session_id", this.sessionId)
+      .maybeSingle();
+
+    if (!selfEntry || selfEntry.status !== "waiting") {
+      return false;
+    }
+
     const { data: waiting } = await supabase
       .from("match_queue")
-      .select("*")
+      .select("id, session_id")
       .eq("status", "waiting")
       .neq("session_id", this.sessionId)
       .order("created_at", { ascending: true })
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (waiting) {
-      // Update the other person's entry to matched — only if still waiting (atomic check)
-      const { data: updated, error } = await supabase
-        .from("match_queue")
-        .update({ status: "matched", matched_with: this.sessionId })
-        .eq("id", waiting.id)
-        .eq("status", "waiting")
-        .select()
-        .maybeSingle();
-
-      // If update returned no rows, someone else grabbed them — retry later
-      if (error || !updated) return false;
-
-      // Deterministic room ID: alphabetically smaller session_id first
-      const ids = [this.sessionId, waiting.session_id].sort();
-      const roomId = ids[0] + "_" + ids[1];
-      const isInitiator = this.sessionId === ids[0];
-
-      // Update our entry too
-      await supabase
-        .from("match_queue")
-        .update({ status: "matched", matched_with: waiting.session_id })
-        .eq("session_id", this.sessionId);
-
-      this.stopPolling();
-      this.onMatch?.(roomId, isInitiator);
-      return true;
+    if (!waiting) {
+      return false;
     }
 
-    return false;
+    // Reserve our own queue entry first so nobody else can match us mid-flow.
+    const { data: reservedSelf, error: reserveError } = await supabase
+      .from("match_queue")
+      .update({ status: "matching", matched_with: waiting.session_id })
+      .eq("id", selfEntry.id)
+      .eq("status", "waiting")
+      .select("id")
+      .maybeSingle();
+
+    if (reserveError || !reservedSelf || !this.isActive || this.hasMatched) {
+      return false;
+    }
+
+    // Then try to atomically claim the other waiting user.
+    const { data: updatedOther, error: otherError } = await supabase
+      .from("match_queue")
+      .update({ status: "matched", matched_with: this.sessionId })
+      .eq("id", waiting.id)
+      .eq("status", "waiting")
+      .select("session_id")
+      .maybeSingle();
+
+    if (otherError || !updatedOther) {
+      await supabase
+        .from("match_queue")
+        .update({ status: "waiting", matched_with: null })
+        .eq("id", selfEntry.id)
+        .eq("status", "matching");
+      return false;
+    }
+
+    const { data: updatedSelf, error: selfError } = await supabase
+      .from("match_queue")
+      .update({ status: "matched", matched_with: waiting.session_id })
+      .eq("id", selfEntry.id)
+      .eq("status", "matching")
+      .select("id")
+      .maybeSingle();
+
+    if (selfError || !updatedSelf) {
+      await supabase
+        .from("match_queue")
+        .update({ status: "waiting", matched_with: null })
+        .eq("id", waiting.id)
+        .eq("status", "matched")
+        .eq("matched_with", this.sessionId);
+      return false;
+    }
+
+    this.emitMatch(waiting.session_id);
+    return true;
   }
 
   private stopPolling() {
@@ -139,11 +197,15 @@ export class Matchmaker {
   }
 
   async cancel() {
+    this.isActive = false;
+    this.hasMatched = true;
     this.stopPolling();
+
     if (this.subscription) {
       supabase.removeChannel(this.subscription);
       this.subscription = null;
     }
+
     await supabase
       .from("match_queue")
       .delete()
@@ -151,7 +213,7 @@ export class Matchmaker {
   }
 
   destroy() {
-    this.cancel();
+    void this.cancel();
   }
 }
 

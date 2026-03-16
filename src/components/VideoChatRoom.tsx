@@ -559,9 +559,11 @@ const VideoChatRoom = () => {
       }, 5000);
       
       newMatchmaker.findMatch((newRoomId, newIsInitiator) => {
+        if (matchmakerRef.current !== newMatchmaker) return;
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-        connectToPartnerRef.current?.(newRoomId, newIsInitiator);
+        void connectToPartnerRef.current?.(newRoomId, newIsInitiator);
       }).catch(() => {
+        if (matchmakerRef.current !== newMatchmaker) return;
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
         setStatus("disconnected");
       });
@@ -732,11 +734,13 @@ const VideoChatRoom = () => {
 
     try {
       await matchmaker.findMatch((roomId, isInitiator) => {
+        if (matchmakerRef.current !== matchmaker) return;
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-        connectToPartner(roomId, isInitiator);
+        void connectToPartner(roomId, isInitiator);
       });
     } catch (err) {
       console.error("Matchmaking error:", err);
+      if (matchmakerRef.current !== matchmaker) return;
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       setStatus("disconnected");
     }
@@ -821,11 +825,13 @@ const VideoChatRoom = () => {
 
     try {
       await matchmaker.findMatch((roomId, isInitiator) => {
+        if (matchmakerRef.current !== matchmaker) return;
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-        connectToPartner(roomId, isInitiator);
+        void connectToPartner(roomId, isInitiator);
       });
     } catch (err) {
       console.error("Matchmaking error:", err);
+      if (matchmakerRef.current !== matchmaker) return;
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       setStatus("disconnected");
     }
