@@ -1028,9 +1028,18 @@ const VideoChatRoom = () => {
           </div>
         )}
 
-        {/* Chat messages overlay */}
-        {(status === "connected" || messages.length > 0) && (
-          <div className="absolute bottom-1 left-0 right-0 z-20 flex flex-col">
+        {/* Chat messages overlay + desktop buttons */}
+        {(status === "connected" || status === "searching" || messages.length > 0) && (
+          <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+            {/* Location */}
+            {strangerLocation && status === "connected" && (
+              <div className="hidden md:flex items-center gap-1.5 px-5 pb-1">
+                <MapPin className="w-3.5 h-3.5" style={{ color: "#22c55e" }} />
+                <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>{strangerLocation}</span>
+              </div>
+            )}
+
+            {/* Chat messages */}
             {messages.length > 0 && (
               <div className="max-h-20 md:max-h-32 overflow-y-auto px-3 md:px-5 pb-1.5 space-y-1">
                 {messages.map((msg) => (
@@ -1045,6 +1054,7 @@ const VideoChatRoom = () => {
               </div>
             )}
 
+            {/* Chat input */}
             {status === "connected" && (
               <form
                 onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
@@ -1070,6 +1080,31 @@ const VideoChatRoom = () => {
                 </button>
               </form>
             )}
+
+            {/* Stop/Next buttons - desktop only, BELOW chat */}
+            {(status === "connected" || status === "searching") && (
+              <div className="hidden md:flex items-center gap-3 justify-center px-5 pb-4 pt-1">
+                <button
+                  onClick={stopChat}
+                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm transition-all hover:scale-105 active:scale-95"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                   Parar
+                </button>
+                <button
+                  onClick={nextPerson}
+                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
+                >
+                  <SkipForward className="w-4 h-4" />
+                   Próximo
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -1084,39 +1119,6 @@ const VideoChatRoom = () => {
                 <span className="text-[8px] font-bold leading-none mt-0.5" style={{ color: "#fbbf24" }}>{g.coin_cost}</span>
               </button>
             ))}
-          </div>
-        )}
-
-        {/* Stop/Next buttons - pinned to very bottom (desktop only, mobile moved to bottom panel) */}
-        {(status === "connected" || status === "searching") && (
-          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-4 pt-6" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
-            {strangerLocation && status === "connected" && (
-              <div className="flex items-center gap-1.5 mb-2 ml-1">
-                <MapPin className="w-3.5 h-3.5" style={{ color: "#22c55e" }} />
-                <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>{strangerLocation}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-2 md:gap-3 justify-center">
-              <button
-                onClick={stopChat}
-                className="md:flex-none px-6 md:px-8 py-3 md:py-3.5 rounded-2xl font-semibold text-white text-xs md:text-sm transition-all hover:scale-105 active:scale-95"
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  backdropFilter: "blur(8px)",
-                }}
-              >
-                 Parar
-              </button>
-              <button
-                onClick={nextPerson}
-                className="md:flex-none px-6 md:px-8 py-3 md:py-3.5 rounded-2xl font-semibold text-white text-xs md:text-sm flex items-center justify-center gap-1.5 md:gap-2 transition-all hover:scale-105 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
-              >
-                <SkipForward className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                 Próximo
-              </button>
-            </div>
           </div>
         )}
       </div>
