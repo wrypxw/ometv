@@ -568,29 +568,21 @@ const VideoChatRoom = () => {
     setSendingGift(gift.id);
 
     if (strangerUserId) {
-      // Use atomic RPC to transfer coins (deduct from sender, credit to receiver)
       const { data: success, error } = await supabase.rpc("transfer_gift_coins", {
         _sender_id: currentUser.id,
         _receiver_id: strangerUserId,
         _amount: gift.coin_cost,
       });
-      console.log("transfer_gift_coins result:", { success, error, sender: currentUser.id, receiver: strangerUserId, amount: gift.coin_cost });
       if (error || success === false) {
         setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
         setSendingGift(null);
         return;
       }
-      // Refresh actual coin balance from DB
-      const { data: updatedProfile } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
-      if (updatedProfile) setUserCoins(updatedProfile.coins);
+      await refreshOwnCoins();
     } else {
-      // No recipient known, just deduct
-      const ok = await deductCoins(gift.coin_cost);
-      if (!ok) {
-        setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
-        setSendingGift(null);
-        return;
-      }
+      setShowCoinConfirm({ cost: 0, label: "Aguarde conectar totalmente com a outra pessoa para enviar presentes.", onConfirm: () => setShowCoinConfirm(null) });
+      setSendingGift(null);
+      return;
     }
 
     const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
