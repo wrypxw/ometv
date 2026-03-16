@@ -1343,7 +1343,11 @@ const VideoChatRoom = () => {
 
         {/* Gift buttons - mobile only, right side during call */}
         {status === "connected" && giftsList.length > 0 && (
-          <div className="md:hidden absolute right-2 bottom-16 z-20 flex flex-col gap-1.5">
+          <div className="md:hidden absolute right-2 bottom-16 z-20 flex flex-col gap-1.5 items-center">
+            <div className="px-2 py-0.5 rounded-full mb-0.5 flex items-center gap-1" style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}>
+              <span className="text-[10px]">🪙</span>
+              <span className="text-[9px] font-bold" style={{ color: "#fbbf24" }}>{userCoins}</span>
+            </div>
             {giftsList.map(g => (
               <button
                 key={g.id}
