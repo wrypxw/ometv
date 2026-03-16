@@ -516,12 +516,15 @@ const VideoChatRoom = () => {
     rtc.onConnected = () => {
       setStatus("connected");
       setPendingCoinCost(0);
-      // Send our instagram handle and location to the stranger
-      setTimeout(() => {
+      // Send our info immediately and retry to ensure delivery
+      const sendInfo = () => {
         rtc.sendChatMessage(`__SYS_IG__:${userInstagram || ""}`);
         rtc.sendChatMessage(`__SYS_LOC__:${userLocation || ""}`);
         if (currentUser?.id) rtc.sendChatMessage(`__SYS_UID__:${currentUser.id}`);
-      }, 500);
+      };
+      sendInfo();
+      setTimeout(sendInfo, 800);
+      setTimeout(sendInfo, 2000);
     };
 
     rtc.onRemoteStream = (stream) => {
@@ -677,7 +680,7 @@ const VideoChatRoom = () => {
         _amount: gift.coin_cost,
       });
       if (error || success === false) {
-        setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
+        setShowCoinConfirm({ cost: gift.coin_cost, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
         setSendingGift(null);
         return;
       }
@@ -823,7 +826,7 @@ const VideoChatRoom = () => {
           { id: crypto.randomUUID(), text: "Ninguém disponível no momento. Tente novamente!", sender: "stranger" },
         ]);
       }
-    }, 3000);
+    }, 15000);
 
     try {
       await matchmaker.findMatch((roomId, isInitiator) => {
@@ -2483,9 +2486,11 @@ const VideoChatRoom = () => {
               <h3 className="text-xl font-bold text-white">
                 {profileTarget?.display_name || profileTarget?.email?.split("@")[0] || "Desconhecido"}
               </h3>
-              {profileTarget?.age && (
+              {(profileTarget?.age || profileTarget?.gender) && (
                 <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                  {profileTarget.age} anos
+                  {profileTarget.gender === "male" ? "♂ Homem" : profileTarget.gender === "female" ? "♀ Mulher" : profileTarget.gender === "other" ? "⚧ Outro" : ""}
+                  {profileTarget.age && profileTarget.gender ? " · " : ""}
+                  {profileTarget.age ? `${profileTarget.age} anos` : ""}
                 </p>
               )}
               {profileTarget?.bio && (
