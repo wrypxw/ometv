@@ -158,6 +158,11 @@ const VideoChatRoom = () => {
   const [giftsList, setGiftsList] = useState<{ id: string; emoji: string; name: string; coin_cost: number }[]>([]);
   const [receivedGift, setReceivedGift] = useState<{ emoji: string; name: string } | null>(null);
   const [sentGift, setSentGift] = useState<{ emoji: string; name: string } | null>(null);
+  const refreshOwnCoins = useCallback(async () => {
+    if (!currentUser?.id) return;
+    const { data } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
+    if (data) setUserCoins(data.coins);
+  }, [currentUser]);
   const [sendingGift, setSendingGift] = useState<string | null>(null);
   const [showCoinConfirm, setShowCoinConfirm] = useState<{ cost: number; label: string; onConfirm: () => void } | null>(null);
   const [pendingCoinCost, _setPendingCoinCost] = useState(0);
