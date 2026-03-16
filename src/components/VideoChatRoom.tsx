@@ -1069,11 +1069,8 @@ const VideoChatRoom = () => {
         {status === "connected" && isLoggedIn && strangerUserId && strangerUserId !== currentUser?.id && (
           <div className="absolute top-16 md:top-20 left-3 md:left-5 z-20">
             <button
-              onClick={() => {
-                if (strangerFollowed) return;
-                handleFollow(strangerUserId);
-              }}
-              disabled={followLoading || strangerFollowed}
+              onClick={() => handleFollow(strangerUserId)}
+              disabled={followLoading}
               className="flex items-center gap-2 rounded-full px-3.5 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
               style={{
                 background: strangerFollowed
