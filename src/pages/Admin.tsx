@@ -263,8 +263,8 @@ const AdminPanel = () => {
   }, []);
 
   useEffect(() => {
-    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); });
-  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos]);
+    checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); fetchGifts(); });
+  }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos, fetchGifts]);
 
   // User actions
   const handleAction = async (action: string, params: Record<string, unknown>) => {
