@@ -161,6 +161,7 @@ export class WebRTCConnection {
   private sessionId: string;
   private signalingChannel: ReturnType<typeof supabase.channel> | null = null;
   private dataChannel: RTCDataChannel | null = null;
+  private remoteStream: MediaStream | null = null;
   public onRemoteStream: ((stream: MediaStream) => void) | null = null;
   public onDisconnected: (() => void) | null = null;
   public onMessage: ((text: string) => void) | null = null;
@@ -177,10 +178,17 @@ export class WebRTCConnection {
       }
     };
 
+    this.remoteStream = new MediaStream();
+
     this.pc.ontrack = (event) => {
-      if (event.streams[0] && this.onRemoteStream) {
-        this.onRemoteStream(event.streams[0]);
+      if (event.streams[0]) {
+        // Use the stream directly when available
+        this.remoteStream = event.streams[0];
+      } else {
+        // Mobile browsers may send tracks without streams - add individually
+        this.remoteStream!.addTrack(event.track);
       }
+      this.onRemoteStream?.(this.remoteStream!);
     };
 
     this.pc.oniceconnectionstatechange = () => {
