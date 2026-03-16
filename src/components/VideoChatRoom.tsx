@@ -303,7 +303,26 @@ const VideoChatRoom = () => {
     }
   };
 
-  const handleGoogleAuth = async () => {
+  const handleForgotPassword = async () => {
+    if (!authEmail) {
+      setAuthError("Digite seu e-mail primeiro");
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(authEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setAuthError("Verifique seu e-mail para redefinir sua senha!");
+    } catch (err: any) {
+      setAuthError(err.message || "Erro ao enviar e-mail");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
