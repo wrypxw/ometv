@@ -889,7 +889,10 @@ const VideoChatRoom = () => {
         </div>
 
         {/* Center content (idle state) */}
-        {status !== "connected" && status !== "searching" && (
+        {status !== "connected" && status !== "searching" && !isLoggedIn && (
+          <div className="flex-1" />
+        )}
+        {status !== "connected" && status !== "searching" && isLoggedIn && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
             {siteSettings.logo_url ? (
               <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover mb-4 md:mb-6 animate-pulse-glow" />
