@@ -528,7 +528,7 @@ const VideoChatRoom = () => {
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), text, sender: "me" }]);
     setInputMsg("");
     if (Math.random() > 0.3) {
-      const replies = ["That's cool!", "Haha!", "Really?", "Awesome 😄", "Interesting!", "Same!"];
+      const replies = ["Que legal!", "Haha!", "Sério?", "Massa 😄", "Interessante!", "Também!"];
       setTimeout(() => {
         setMessages((prev) => [
           ...prev,
