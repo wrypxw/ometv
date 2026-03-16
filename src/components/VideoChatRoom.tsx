@@ -194,33 +194,58 @@ const VideoChatRoom = () => {
     }
     setBuyingPkg(pkgId);
     
-    // Pre-open window on user gesture so iOS Safari doesn't block it
-    const paymentWindow = window.open("about:blank", "_blank");
-    
     try {
       const { data, error } = await supabase.functions.invoke("create-payment", {
         body: { package_id: pkgId, coupon_code: appliedCoupon?.code || undefined },
       });
       if (error) throw error;
-      const url = data?.init_point || data?.sandbox_init_point;
-      if (url) {
-        if (paymentWindow && !paymentWindow.closed) {
-          paymentWindow.location.href = url;
-        } else {
-          // Fallback: redirect current page (works on all browsers)
-          window.location.href = url;
-        }
+      if (data?.qr_code) {
+        const pkg = shopPackages.find(p => p.id === pkgId);
+        const finalPrice = appliedCoupon 
+          ? ((pkg?.price_cents || 0) * (100 - appliedCoupon.discount_percent) / 100 / 100)
+          : ((pkg?.price_cents || 0) / 100);
+        setPixModal({
+          qr_code: data.qr_code,
+          qr_code_base64: data.qr_code_base64,
+          transaction_id: data.transaction_id,
+          amount: `R$${finalPrice.toFixed(2).replace('.', ',')}`,
+          coins: `${(pkg?.coins || 0) + (pkg?.bonus || 0)}`,
+        });
+        setShowShop(false);
+        setPixCopied(false);
+        // Poll for payment approval
+        if (pixPollRef.current) clearInterval(pixPollRef.current);
+        pixPollRef.current = setInterval(async () => {
+          const { data: tx } = await supabase
+            .from("payment_transactions")
+            .select("status")
+            .eq("id", data.transaction_id)
+            .single();
+          if (tx?.status === "approved") {
+            clearInterval(pixPollRef.current!);
+            pixPollRef.current = null;
+            setPixModal(null);
+            refreshOwnCoins();
+            alert("✅ Pagamento aprovado! Suas coins foram creditadas.");
+          }
+        }, 4000);
       } else {
-        paymentWindow?.close();
+        alert("Erro ao gerar PIX. Tente novamente.");
       }
     } catch (err: any) {
       console.error("Purchase error:", err);
-      paymentWindow?.close();
       alert("Erro ao iniciar pagamento. Tente novamente.");
     } finally {
       setBuyingPkg(null);
     }
   };
+
+  // Cleanup PIX poll on unmount
+  useEffect(() => {
+    return () => {
+      if (pixPollRef.current) clearInterval(pixPollRef.current);
+    };
+  }, []);
 
 
   useEffect(() => {
