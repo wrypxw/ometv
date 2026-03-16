@@ -81,7 +81,7 @@ interface GenderCoinPrice {
 const NAV_ITEMS = [
   { id: "users" as const, label: "Usuários", icon: Users },
   { id: "settings" as const, label: "Configurações", icon: Settings },
-  { id: "shop" as const, label: "Shop / Planos", icon: ShoppingBag },
+  { id: "shop" as const, label: "Loja / Planos", icon: ShoppingBag },
   { id: "coupons" as const, label: "Cupons & Promos", icon: Tag },
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
