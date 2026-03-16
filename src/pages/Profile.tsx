@@ -53,7 +53,7 @@ const Profile = () => {
     supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", resolvedId).maybeSingle().then(({ data }) => {
       setIsFollowing(!!data);
     });
-  }, [currentUser, id]);
+  }, [currentUser, resolvedId]);
 
   const handleFollow = useCallback(async () => {
     if (!currentUser || !id) return;
