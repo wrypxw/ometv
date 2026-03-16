@@ -119,3 +119,15 @@
   50% { transform: scale(1.5) translate(var(--tx, 20px), var(--ty, -30px)); opacity: 1; }
   100% { transform: scale(0) translate(var(--tx2, 40px), var(--ty2, -60px)); opacity: 0; }
 }
+
+@keyframes gift-rise {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
+}
+
+@keyframes gift-sent-fly {
+  0% { transform: scale(1) translateY(0); opacity: 1; }
+  50% { transform: scale(1.15) translateY(-20px); opacity: 1; }
+  100% { transform: scale(0.3) translateY(-200px); opacity: 0; }
+}
