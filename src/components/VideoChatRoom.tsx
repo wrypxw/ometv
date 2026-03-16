@@ -154,6 +154,9 @@ const VideoChatRoom = () => {
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
+  const [pixModal, setPixModal] = useState<{ qr_code: string; qr_code_base64: string; transaction_id: string; amount: string; coins: string } | null>(null);
+  const [pixCopied, setPixCopied] = useState(false);
+  const pixPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [userCoins, setUserCoins] = useState(0);
   const [giftsList, setGiftsList] = useState<{ id: string; emoji: string; name: string; coin_cost: number }[]>([]);
   const [receivedGift, setReceivedGift] = useState<{ emoji: string; name: string } | null>(null);
