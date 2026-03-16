@@ -513,7 +513,7 @@ const VideoChatRoom = () => {
       
       newMatchmaker.findMatch((newRoomId, newIsInitiator) => {
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-        connectToPartner(newRoomId, newIsInitiator);
+        connectToPartnerRef.current?.(newRoomId, newIsInitiator);
       }).catch(() => {
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
         setStatus("disconnected");
