@@ -2301,6 +2301,17 @@ const VideoChatRoom = () => {
                       </p>
                     </div>
                     <button
+                      onClick={async () => {
+                        await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", friend.following_id);
+                        setFriendsList(prev => prev.filter(f => f.following_id !== friend.following_id));
+                      }}
+                      className="p-2 rounded-xl hover:bg-red-500/20 transition-all"
+                      title="Deixar de seguir"
+                      style={{ color: "#f87171" }}
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => {
                         setShowFriendsModal(false);
                         openProfileModal({ id: friend.following_id, display_name: friend.display_name, email: friend.email });
