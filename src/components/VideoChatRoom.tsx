@@ -182,6 +182,7 @@ const VideoChatRoom = () => {
   const matchmakerRef = useRef<Matchmaker | null>(null);
   const webrtcRef = useRef<WebRTCConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const connectToPartnerRef = useRef<(roomId: string, isInitiator: boolean) => Promise<void>>();
 
   const handleBuyPackage = async (pkgId: string) => {
     if (!currentUser) {
@@ -485,13 +486,38 @@ const VideoChatRoom = () => {
     };
 
     rtc.onDisconnected = () => {
-      setStatus("disconnected");
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setMessages([]);
       setStrangerInstagram(null);
       setStrangerLocation(null);
       setStrangerUserId(null);
       setStrangerFollowed(false);
+      // Auto-search for next person when the other person disconnects
+      setStatus("searching");
+      webrtcRef.current?.destroy();
+      webrtcRef.current = null;
+      
+      // Quick re-search
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      matchmakerRef.current?.destroy();
+      const newMatchmaker = new Matchmaker();
+      matchmakerRef.current = newMatchmaker;
+      
+      searchTimerRef.current = setTimeout(() => {
+        if (matchmakerRef.current === newMatchmaker) {
+          newMatchmaker.destroy();
+          matchmakerRef.current = null;
+          setStatus("disconnected");
+        }
+      }, 5000);
+      
+      newMatchmaker.findMatch((newRoomId, newIsInitiator) => {
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+        connectToPartnerRef.current?.(newRoomId, newIsInitiator);
+      }).catch(() => {
+        if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+        setStatus("disconnected");
+      });
     };
 
     rtc.onMessage = (text) => {
@@ -547,6 +573,9 @@ const VideoChatRoom = () => {
       await rtc.createOffer();
     }
   }, [userInstagram, userLocation, currentUser, refreshOwnCoins]);
+
+  // Keep ref in sync so onDisconnected can call latest version
+  connectToPartnerRef.current = connectToPartner;
 
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
