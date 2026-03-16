@@ -595,7 +595,7 @@ const VideoChatRoom = () => {
       { id: crypto.randomUUID(), text: `${gift.emoji} Você enviou ${gift.name} no valor de ${gift.coin_cost} moedas`, sender: "me" },
     ]);
     setSendingGift(null);
-  }, [currentUser, status, deductCoins, userDisplayName, strangerUserId]);
+  }, [currentUser, status, userDisplayName, strangerUserId, refreshOwnCoins]);
 
   const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
