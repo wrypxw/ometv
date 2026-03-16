@@ -1296,9 +1296,9 @@ const AdminPanel = () => {
               <AdminInput value={String(pkgForm.bonus)} onChange={v => setPkgForm(p => ({ ...p, bonus: parseInt(v) || 0 }))} type="number" placeholder="0" />
             </div>
             <div>
-              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Preço (centavos USD)</label>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Preço (centavos BRL)</label>
               <AdminInput value={String(pkgForm.price_cents)} onChange={v => setPkgForm(p => ({ ...p, price_cents: parseInt(v) || 0 }))} type="number" placeholder="399" />
-              <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Valor: ${(pkgForm.price_cents / 100).toFixed(2)}</p>
+              <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Valor: R${(pkgForm.price_cents / 100).toFixed(2).replace('.', ',')}</p>
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Ordem</label>
