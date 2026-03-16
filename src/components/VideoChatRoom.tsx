@@ -182,6 +182,7 @@ const VideoChatRoom = () => {
   const matchmakerRef = useRef<Matchmaker | null>(null);
   const webrtcRef = useRef<WebRTCConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const connectToPartnerRef = useRef<(roomId: string, isInitiator: boolean) => Promise<void>>();
 
   const handleBuyPackage = async (pkgId: string) => {
     if (!currentUser) {
