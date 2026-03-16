@@ -577,6 +577,9 @@ const VideoChatRoom = () => {
 
     const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
     webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name, senderName, cost: gift.coin_cost })}`);
+    // Show sent animation
+    setSentGift({ emoji: gift.emoji, name: gift.name });
+    setTimeout(() => setSentGift(null), 2500);
     setMessages((prev) => [
       ...prev,
       { id: crypto.randomUUID(), text: `${gift.emoji} Você enviou ${gift.name} no valor de ${gift.coin_cost} moedas`, sender: "me" },
