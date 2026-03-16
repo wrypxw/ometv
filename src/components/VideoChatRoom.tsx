@@ -437,10 +437,15 @@ const VideoChatRoom = () => {
     };
 
     rtc.onMessage = (text) => {
-      // Handle system messages (instagram handle exchange)
+      // Handle system messages
       if (text.startsWith("__SYS_IG__:")) {
         const ig = text.replace("__SYS_IG__:", "").trim();
         setStrangerInstagram(ig || null);
+        return;
+      }
+      if (text.startsWith("__SYS_LOC__:")) {
+        const loc = text.replace("__SYS_LOC__:", "").trim();
+        setStrangerLocation(loc || null);
         return;
       }
       setMessages((prev) => [
