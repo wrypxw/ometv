@@ -238,7 +238,19 @@ const VideoChatRoom = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load site settings
+  // Fetch user location by IP
+  useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then(r => r.json())
+      .then(data => {
+        const parts = [];
+        if (data.country_name) parts.push(data.country_name);
+        if (data.city) parts.push(data.city);
+        setUserLocation(parts.join(" • ") || "");
+      })
+      .catch(() => setUserLocation(""));
+  }, []);
+
   useEffect(() => {
     supabase.from("site_settings").select("key, value").then(({ data }) => {
       if (data) {
