@@ -527,6 +527,8 @@ const VideoChatRoom = () => {
     rtc.onRemoteStream = (stream) => {
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = stream;
+        // Force play for browsers that block autoplay
+        remoteVideoRef.current.play().catch(() => {});
       }
     };
 
