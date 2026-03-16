@@ -619,6 +619,7 @@ const AdminPanel = () => {
     fetchGifts();
   };
 
+  const filteredRegions = regions.filter(r =>
     r.region_name.toLowerCase().includes(regionSearch.toLowerCase()) ||
     r.region_code.toLowerCase().includes(regionSearch.toLowerCase())
   );
