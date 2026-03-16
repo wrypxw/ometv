@@ -149,6 +149,7 @@ const VideoChatRoom = () => {
   const [userInstagram, setUserInstagram] = useState<string | null>(null);
   const [strangerLocation, setStrangerLocation] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<string>("");
+  const [strangerUserId, setStrangerUserId] = useState<string | null>(null);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
@@ -161,6 +162,12 @@ const VideoChatRoom = () => {
   const [pendingCoinCost, _setPendingCoinCost] = useState(0);
   const pendingCoinCostRef = useRef(0);
   const setPendingCoinCost = useCallback((v: number) => { _setPendingCoinCost(v); pendingCoinCostRef.current = v; }, []);
+  const [showPrivateChat, setShowPrivateChat] = useState(false);
+  const [privateChatTarget, setPrivateChatTarget] = useState<any>(null);
+  const [privateMessages, setPrivateMessages] = useState<any[]>([]);
+  const [privateMsgInput, setPrivateMsgInput] = useState("");
+  const [privateMsgLoading, setPrivateMsgLoading] = useState(false);
+  const privateChatEndRef = useRef<HTMLDivElement>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
