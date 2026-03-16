@@ -502,7 +502,7 @@ const VideoChatRoom = () => {
           const gift = JSON.parse(text.replace("__SYS_GIFT__:", ""));
           setReceivedGift({ emoji: gift.emoji, name: gift.name });
           setTimeout(() => setReceivedGift(null), 3000);
-          // Add gift message to chat
+          refreshOwnCoins();
           const senderName = gift.senderName || "Anônimo";
           setMessages((prev) => [
             ...prev,
