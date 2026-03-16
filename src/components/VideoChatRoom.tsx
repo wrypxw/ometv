@@ -35,7 +35,7 @@ interface Message {
 }
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  "Mundial": "🌍", "Afghanistan": "🇦🇫", "Albania": "🇦🇱", "Algeria": "🇩🇿", "Andorra": "🇦🇩",
+  "Afghanistan": "🇦🇫", "Albania": "🇦🇱", "Algeria": "🇩🇿", "Andorra": "🇦🇩",
   "Angola": "🇦🇴", "Antigua and Barbuda": "🇦🇬", "Argentina": "🇦🇷", "Armenia": "🇦🇲",
   "Australia": "🇦🇺", "Austria": "🇦🇹", "Azerbaijan": "🇦🇿", "Bahamas": "🇧🇸", "Bahrain": "🇧🇭",
   "Bangladesh": "🇧🇩", "Barbados": "🇧🇧", "Belarus": "🇧🇾", "Belgium": "🇧🇪", "Belize": "🇧🇿",
@@ -102,13 +102,13 @@ const VideoChatRoom = () => {
   const [isMicOn, setIsMicOn] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMsg, setInputMsg] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("Mundial");
+  const [selectedCountry, setSelectedCountry] = useState("Brazil");
   const [selectedGender, setSelectedGender] = useState("Gênero");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showRegion, setShowRegion] = useState(false);
-  const [tempRegion, setTempRegion] = useState("Mundial");
+  const [tempRegion, setTempRegion] = useState("Brazil");
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [tempGender, setTempGender] = useState("Both");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -469,7 +469,7 @@ const VideoChatRoom = () => {
       }
       setShowCoinConfirm({
         cost,
-        label: `${selectedCountry !== "Mundial" ? selectedCountry : ""}${selectedCountry !== "Mundial" && selectedGender !== "Gênero" ? " + " : ""}${selectedGender !== "Gênero" ? ({ "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender) : ""}`.trim() || "filtros",
+        label: `${selectedCountry ? selectedCountry : ""}${selectedCountry && selectedGender !== "Gênero" ? " + " : ""}${selectedGender !== "Gênero" ? ({ "Male": "Homem", "Female": "Mulher", "Both": "Ambos" }[selectedGender] || selectedGender) : ""}`.trim() || "filtros",
         onConfirm: async () => {
           setShowCoinConfirm(null);
           const ok = await deductCoins(cost);
@@ -892,7 +892,7 @@ const VideoChatRoom = () => {
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex items-start gap-2">
                     <span className="text-[11px] md:text-xs font-bold shrink-0" style={{ color: msg.sender === "me" ? "#c4b5fd" : "#fbbf24" }}>
-                      {msg.sender === "me" ? "Você" : "Estranho"}
+                      {msg.sender === "me" ? (userDisplayName || (isLoggedIn ? "Você" : "Anônimo")) : "Anônimo"}
                     </span>
                     <span className="text-[11px] md:text-xs" style={{ color: "rgba(255,255,255,0.85)" }}>{msg.text}</span>
                   </div>
@@ -927,12 +927,12 @@ const VideoChatRoom = () => {
               </form>
             )}
 
-            {/* Desktop Stop/Next */}
-            <div className="hidden md:block px-5 pb-5 pt-1">
-              <div className="flex items-center gap-3 justify-center">
+            {/* Stop/Next buttons - all devices */}
+            <div className="px-3 md:px-5 pb-3 md:pb-5 pt-1">
+              <div className="flex items-center gap-2 md:gap-3 justify-center">
                 <button
                   onClick={stopChat}
-                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm transition-all hover:scale-105 active:scale-95"
+                  className="flex-1 md:flex-none px-6 md:px-8 py-3 md:py-3.5 rounded-2xl font-semibold text-white text-xs md:text-sm transition-all hover:scale-105 active:scale-95"
                   style={{
                     background: "rgba(255,255,255,0.08)",
                     border: "1px solid rgba(255,255,255,0.12)",
@@ -943,10 +943,10 @@ const VideoChatRoom = () => {
                 </button>
                 <button
                   onClick={nextPerson}
-                  className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                  className="flex-1 md:flex-none px-6 md:px-8 py-3 md:py-3.5 rounded-2xl font-semibold text-white text-xs md:text-sm flex items-center justify-center gap-1.5 md:gap-2 transition-all hover:scale-105 active:scale-95"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #9333ea)" }}
                 >
-                  <SkipForward className="w-4 h-4" />
+                  <SkipForward className="w-3.5 h-3.5 md:w-4 md:h-4" />
                    Próximo
                 </button>
               </div>
@@ -1079,36 +1079,6 @@ const VideoChatRoom = () => {
         </div>
         )}
 
-        {/* Mobile Stop/Next buttons - shown during searching/connected when camera is off (split screen mode) */}
-        {(status === "searching" || status === "connected") && !cameraAllowed && (
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-3 pb-3 pt-8 md:hidden"
-            style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%)" }}>
-            <div className="flex items-center gap-2 w-full max-w-md mx-auto">
-              <button
-                onClick={stopChat}
-                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  backdropFilter: "blur(8px)",
-                }}
-              >
-                Parar
-              </button>
-              <button
-                onClick={nextPerson}
-                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                  boxShadow: "0 4px 16px -4px rgba(124, 58, 237, 0.4)",
-                }}
-              >
-                <SkipForward className="w-3.5 h-3.5" />
-                Próximo
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Shop Modal */}
