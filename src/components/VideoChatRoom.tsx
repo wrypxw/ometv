@@ -529,6 +529,7 @@ const VideoChatRoom = () => {
     setSendingGift(null);
   }, [currentUser, status, deductCoins]);
 
+  const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
     if (!localStreamRef.current) {
       await startLocalCamera();
