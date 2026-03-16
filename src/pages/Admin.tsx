@@ -86,9 +86,19 @@ const NAV_ITEMS = [
   { id: "payments" as const, label: "Pagamentos", icon: CreditCard },
   { id: "regions" as const, label: "Regiões", icon: Globe },
   { id: "genders" as const, label: "Gênero", icon: UserCheck },
+  { id: "gifts" as const, label: "Presentes", icon: Gift },
 ];
 
-type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders";
+type TabId = "users" | "settings" | "shop" | "coupons" | "payments" | "regions" | "genders" | "gifts";
+
+interface GiftItem {
+  id: string;
+  emoji: string;
+  name: string;
+  coin_cost: number;
+  sort_order: number;
+  active: boolean;
+}
 
 interface PromoCode {
   id: string;
