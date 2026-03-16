@@ -892,7 +892,7 @@ const VideoChatRoom = () => {
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex items-start gap-2">
                     <span className="text-[11px] md:text-xs font-bold shrink-0" style={{ color: msg.sender === "me" ? "#c4b5fd" : "#fbbf24" }}>
-                      {msg.sender === "me" ? "Você" : "Estranho"}
+                      {msg.sender === "me" ? (userDisplayName || (isLoggedIn ? "Você" : "Anônimo")) : "Anônimo"}
                     </span>
                     <span className="text-[11px] md:text-xs" style={{ color: "rgba(255,255,255,0.85)" }}>{msg.text}</span>
                   </div>
