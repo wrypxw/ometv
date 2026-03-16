@@ -92,8 +92,8 @@ const BRAZIL_STATES = [
 ];
 
 const STRANGER_MESSAGES = [
-  "Hey! Where are you from?", "Hi there! 😊", "Hello!",
-  "Hey, how's it going?", "Oi, tudo bem?", "Hola!",
+  "Oi! De onde você é?", "Olá! 😊", "E aí!",
+  "Oi, tudo bem?", "Bora conversar?", "Salve!",
 ];
 
 const VideoChatRoom = () => {
