@@ -1127,7 +1127,7 @@ const VideoChatRoom = () => {
 
             {/* Header */}
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h2 className="text-lg md:text-xl font-bold text-white">{siteSettings.shop_title || "Shop"}</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">{siteSettings.shop_title || "Loja"}</h2>
               <div className="flex items-center gap-1.5 text-sm" style={{ color: "#eab308" }}>
                 <span className="text-base">🪙</span>
                 <span className="text-white font-medium">{userCoins}</span>
