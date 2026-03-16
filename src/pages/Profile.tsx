@@ -27,11 +27,12 @@ const Profile = () => {
   useEffect(() => {
     if (!rawId) return;
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (uuidRegex.test(rawId)) {
-      setResolvedId(rawId);
+    const decoded = decodeURIComponent(rawId);
+    if (uuidRegex.test(decoded)) {
+      setResolvedId(decoded);
     } else {
       // Lookup by display_name (case-insensitive)
-      supabase.from("profiles").select("id").ilike("display_name", rawId).maybeSingle().then(({ data }) => {
+      supabase.from("profiles").select("id").ilike("display_name", decoded).maybeSingle().then(({ data }) => {
         setResolvedId(data?.id ?? null);
       });
     }

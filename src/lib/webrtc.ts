@@ -157,6 +157,7 @@ export class WebRTCConnection {
   public onRemoteStream: ((stream: MediaStream) => void) | null = null;
   public onDisconnected: (() => void) | null = null;
   public onMessage: ((text: string) => void) | null = null;
+  public onConnected: (() => void) | null = null;
 
   constructor(roomId: string, sessionId: string, isInitiator: boolean = false) {
     this.roomId = roomId;
@@ -176,6 +177,9 @@ export class WebRTCConnection {
     };
 
     this.pc.oniceconnectionstatechange = () => {
+      if (this.pc.iceConnectionState === "connected") {
+        this.onConnected?.();
+      }
       if (
         this.pc.iceConnectionState === "disconnected" ||
         this.pc.iceConnectionState === "failed" ||
