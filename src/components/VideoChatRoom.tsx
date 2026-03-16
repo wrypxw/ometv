@@ -108,7 +108,7 @@ const VideoChatRoom = () => {
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showRegion, setShowRegion] = useState(false);
-  const [tempRegion, setTempRegion] = useState("Mundial");
+  const [tempRegion, setTempRegion] = useState("Brazil");
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [tempGender, setTempGender] = useState("Both");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
