@@ -177,6 +177,9 @@ export class WebRTCConnection {
     };
 
     this.pc.oniceconnectionstatechange = () => {
+      if (this.pc.iceConnectionState === "connected") {
+        this.onConnected?.();
+      }
       if (
         this.pc.iceConnectionState === "disconnected" ||
         this.pc.iceConnectionState === "failed" ||
