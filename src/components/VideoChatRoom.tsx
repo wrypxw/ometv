@@ -25,6 +25,7 @@ import {
   MoreHorizontal,
   LogOut,
   ExternalLink,
+  MapPin,
 } from "lucide-react";
 
 type ChatStatus = "idle" | "searching" | "connected" | "disconnected";
@@ -146,6 +147,8 @@ const VideoChatRoom = () => {
   const [strangerFollowed, setStrangerFollowed] = useState(false);
   const [strangerInstagram, setStrangerInstagram] = useState<string | null>(null);
   const [userInstagram, setUserInstagram] = useState<string | null>(null);
+  const [strangerLocation, setStrangerLocation] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<string>("");
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
@@ -236,7 +239,19 @@ const VideoChatRoom = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load site settings
+  // Fetch user location by IP
+  useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then(r => r.json())
+      .then(data => {
+        const parts = [];
+        if (data.country_name) parts.push(data.country_name);
+        if (data.city) parts.push(data.city);
+        setUserLocation(parts.join(" • ") || "");
+      })
+      .catch(() => setUserLocation(""));
+  }, []);
+
   useEffect(() => {
     supabase.from("site_settings").select("key, value").then(({ data }) => {
       if (data) {
@@ -401,10 +416,10 @@ const VideoChatRoom = () => {
     rtc.onConnected = () => {
       setStatus("connected");
       setPendingCoinCost(0);
-      // Send our instagram handle to the stranger
-      const igHandle = userInstagram || "";
+      // Send our instagram handle and location to the stranger
       setTimeout(() => {
-        rtc.sendChatMessage(`__SYS_IG__:${igHandle}`);
+        rtc.sendChatMessage(`__SYS_IG__:${userInstagram || ""}`);
+        rtc.sendChatMessage(`__SYS_LOC__:${userLocation || ""}`);
       }, 500);
     };
 
@@ -419,13 +434,19 @@ const VideoChatRoom = () => {
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setMessages([]);
       setStrangerInstagram(null);
+      setStrangerLocation(null);
     };
 
     rtc.onMessage = (text) => {
-      // Handle system messages (instagram handle exchange)
+      // Handle system messages
       if (text.startsWith("__SYS_IG__:")) {
         const ig = text.replace("__SYS_IG__:", "").trim();
         setStrangerInstagram(ig || null);
+        return;
+      }
+      if (text.startsWith("__SYS_LOC__:")) {
+        const loc = text.replace("__SYS_LOC__:", "").trim();
+        setStrangerLocation(loc || null);
         return;
       }
       setMessages((prev) => [
@@ -443,7 +464,7 @@ const VideoChatRoom = () => {
     if (isInitiator) {
       await rtc.createOffer();
     }
-  }, [userInstagram]);
+  }, [userInstagram, userLocation]);
 
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
@@ -1013,7 +1034,13 @@ const VideoChatRoom = () => {
 
         {/* Stop/Next buttons - pinned to very bottom (desktop only, mobile moved to bottom panel) */}
         {(status === "connected" || status === "searching") && (
-          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-4 pt-1" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-20 px-3 md:px-5 pb-3 md:pb-4 pt-6" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+            {strangerLocation && status === "connected" && (
+              <div className="flex items-center gap-1.5 mb-2 ml-1">
+                <MapPin className="w-3.5 h-3.5" style={{ color: "#22c55e" }} />
+                <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>{strangerLocation}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 md:gap-3 justify-center">
               <button
                 onClick={stopChat}
@@ -1165,7 +1192,13 @@ const VideoChatRoom = () => {
 
         {/* Stop/Next buttons - mobile only, pinned to bottom of this panel */}
         {(status === "connected" || status === "searching") && (
-          <div className="md:hidden absolute bottom-0 left-0 right-0 z-20 px-3 pb-3 pt-1" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+          <div className="md:hidden absolute bottom-0 left-0 right-0 z-20 px-3 pb-3 pt-4" style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
+            {strangerLocation && status === "connected" && (
+              <div className="flex items-center gap-1.5 mb-2 ml-1">
+                <MapPin className="w-3 h-3" style={{ color: "#22c55e" }} />
+                <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>{strangerLocation}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 justify-center">
               <button
                 onClick={stopChat}
