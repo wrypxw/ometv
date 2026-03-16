@@ -669,11 +669,48 @@ const VideoChatRoom = () => {
     return !!data;
   }, [currentUser]);
 
+  const fetchFriends = useCallback(async () => {
+    if (!currentUser) return;
+    setFriendsLoading(true);
+    try {
+      const { data } = await supabase
+        .from("follows")
+        .select("following_id, created_at")
+        .eq("follower_id", currentUser.id);
+      if (data && data.length > 0) {
+        const ids = data.map(f => f.following_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, display_name, email")
+          .in("id", ids);
+        const merged = data.map(f => {
+          const profile = profiles?.find(p => p.id === f.following_id);
+          return { ...f, display_name: profile?.display_name, email: profile?.email };
+        });
+        setFriendsList(merged);
+      } else {
+        setFriendsList([]);
+      }
+    } catch (err) {
+      console.error("Fetch friends error:", err);
+    } finally {
+      setFriendsLoading(false);
+    }
+  }, [currentUser]);
+
   const handleFollow = useCallback(async (targetUserId: string) => {
     if (!currentUser) { setShowLoginModal(true); return; }
     setFollowLoading(true);
     try {
-      if (isFollowing) {
+      // Always check current state from DB to avoid stale state issues
+      const { data: existing } = await supabase
+        .from("follows")
+        .select("id")
+        .eq("follower_id", currentUser.id)
+        .eq("following_id", targetUserId)
+        .maybeSingle();
+      
+      if (existing) {
         await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", targetUserId);
         setIsFollowing(false);
         setStrangerFollowed(false);
@@ -682,12 +719,14 @@ const VideoChatRoom = () => {
         setIsFollowing(true);
         setStrangerFollowed(true);
       }
+      // Refresh friends list after follow/unfollow
+      fetchFriends();
     } catch (err) {
       console.error("Follow error:", err);
     } finally {
       setFollowLoading(false);
     }
-  }, [currentUser, isFollowing]);
+  }, [currentUser, fetchFriends]);
 
   const openProfileModal = useCallback(async (targetUser: any) => {
     setProfileTarget(targetUser);
@@ -731,35 +770,6 @@ const VideoChatRoom = () => {
       } catch { /* ignore */ }
     }
   }, [profileTarget, currentUser]);
-
-  const fetchFriends = useCallback(async () => {
-    if (!currentUser) return;
-    setFriendsLoading(true);
-    try {
-      const { data } = await supabase
-        .from("follows")
-        .select("following_id, created_at")
-        .eq("follower_id", currentUser.id);
-      if (data && data.length > 0) {
-        const ids = data.map(f => f.following_id);
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, display_name, email")
-          .in("id", ids);
-        const merged = data.map(f => {
-          const profile = profiles?.find(p => p.id === f.following_id);
-          return { ...f, display_name: profile?.display_name, email: profile?.email };
-        });
-        setFriendsList(merged);
-      } else {
-        setFriendsList([]);
-      }
-    } catch (err) {
-      console.error("Fetch friends error:", err);
-    } finally {
-      setFriendsLoading(false);
-    }
-  }, [currentUser]);
 
   return (
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
