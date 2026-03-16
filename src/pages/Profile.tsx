@@ -49,8 +49,8 @@ const Profile = () => {
   }, [resolvedId]);
 
   useEffect(() => {
-    if (!currentUser || !id || currentUser.id === id) return;
-    supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", id).maybeSingle().then(({ data }) => {
+    if (!currentUser || !resolvedId || currentUser.id === resolvedId) return;
+    supabase.from("follows").select("id").eq("follower_id", currentUser.id).eq("following_id", resolvedId).maybeSingle().then(({ data }) => {
       setIsFollowing(!!data);
     });
   }, [currentUser, id]);
