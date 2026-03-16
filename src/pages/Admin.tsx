@@ -262,7 +262,13 @@ const AdminPanel = () => {
     setPromosLoading(false);
   }, []);
 
-  useEffect(() => {
+  const fetchGifts = useCallback(async () => {
+    setGiftsLoading(true);
+    const { data } = await supabase.from("gifts").select("*").order("sort_order");
+    if (data) setGiftItems(data as GiftItem[]);
+    setGiftsLoading(false);
+  }, []);
+
     checkAdmin().then(() => { fetchUsers(); fetchSettings(); fetchPackages(); fetchCoupons(); fetchTransactions(); fetchRegions(); fetchGenders(); fetchPromos(); fetchGifts(); });
   }, [checkAdmin, fetchUsers, fetchSettings, fetchPackages, fetchCoupons, fetchTransactions, fetchRegions, fetchGenders, fetchPromos, fetchGifts]);
 
