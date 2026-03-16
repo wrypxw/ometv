@@ -155,6 +155,7 @@ const VideoChatRoom = () => {
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [buyingPkg, setBuyingPkg] = useState<string | null>(null);
   const [pixModal, setPixModal] = useState<{ qr_code: string; qr_code_base64: string; transaction_id: string; amount: string; coins: string } | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
   const [pixCopied, setPixCopied] = useState(false);
   const pixPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [userCoins, setUserCoins] = useState(0);
@@ -193,6 +194,22 @@ const VideoChatRoom = () => {
       return;
     }
     setBuyingPkg(pkgId);
+    const pkg = shopPackages.find(p => p.id === pkgId);
+    const finalPrice = appliedCoupon 
+      ? ((pkg?.price_cents || 0) * (100 - appliedCoupon.discount_percent) / 100 / 100)
+      : ((pkg?.price_cents || 0) / 100);
+
+    // Show loading modal immediately
+    setPixLoading(true);
+    setPixModal({
+      qr_code: "",
+      qr_code_base64: "",
+      transaction_id: "",
+      amount: `R$${finalPrice.toFixed(2).replace('.', ',')}`,
+      coins: `${(pkg?.coins || 0) + (pkg?.bonus || 0)}`,
+    });
+    setShowShop(false);
+    setPixCopied(false);
     
     try {
       const { data, error } = await supabase.functions.invoke("create-payment", {
@@ -200,10 +217,6 @@ const VideoChatRoom = () => {
       });
       if (error) throw error;
       if (data?.qr_code) {
-        const pkg = shopPackages.find(p => p.id === pkgId);
-        const finalPrice = appliedCoupon 
-          ? ((pkg?.price_cents || 0) * (100 - appliedCoupon.discount_percent) / 100 / 100)
-          : ((pkg?.price_cents || 0) / 100);
         setPixModal({
           qr_code: data.qr_code,
           qr_code_base64: data.qr_code_base64,
@@ -211,8 +224,7 @@ const VideoChatRoom = () => {
           amount: `R$${finalPrice.toFixed(2).replace('.', ',')}`,
           coins: `${(pkg?.coins || 0) + (pkg?.bonus || 0)}`,
         });
-        setShowShop(false);
-        setPixCopied(false);
+        setPixLoading(false);
         // Poll for payment approval
         if (pixPollRef.current) clearInterval(pixPollRef.current);
         pixPollRef.current = setInterval(async () => {
@@ -225,15 +237,20 @@ const VideoChatRoom = () => {
             clearInterval(pixPollRef.current!);
             pixPollRef.current = null;
             setPixModal(null);
+            setPixLoading(false);
             refreshOwnCoins();
             alert("✅ Pagamento aprovado! Suas coins foram creditadas.");
           }
         }, 4000);
       } else {
+        setPixModal(null);
+        setPixLoading(false);
         alert("Erro ao gerar PIX. Tente novamente.");
       }
     } catch (err: any) {
       console.error("Purchase error:", err);
+      setPixModal(null);
+      setPixLoading(false);
       alert("Erro ao iniciar pagamento. Tente novamente.");
     } finally {
       setBuyingPkg(null);
@@ -1775,44 +1792,54 @@ const VideoChatRoom = () => {
               </p>
             </div>
 
-            {pixModal.qr_code_base64 && (
-              <div className="flex justify-center mb-4">
-                <div className="p-3 rounded-xl" style={{ background: "white" }}>
-                  <img src={`data:image/png;base64,${pixModal.qr_code_base64}`} alt="QR Code PIX" className="w-48 h-48 md:w-56 md:h-56" />
-                </div>
+            {pixLoading ? (
+              <div className="flex flex-col items-center justify-center py-10">
+                <div className="w-12 h-12 border-4 border-white/20 border-t-purple-500 rounded-full animate-spin mb-4" />
+                <p className="text-sm text-white/60">Gerando QR Code PIX...</p>
+                <p className="text-xs mt-1 text-white/30">Isso leva apenas alguns segundos</p>
               </div>
+            ) : (
+              <>
+                {pixModal.qr_code_base64 && (
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 rounded-xl" style={{ background: "white" }}>
+                      <img src={`data:image/png;base64,${pixModal.qr_code_base64}`} alt="QR Code PIX" className="w-48 h-48 md:w-56 md:h-56" />
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-center text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Escaneie o QR Code ou copie o código abaixo
+                </p>
+
+                <div className="rounded-xl p-3 mb-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <p className="text-[10px] font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>Código PIX (Copia e Cola)</p>
+                  <p className="text-xs text-white/70 break-all font-mono leading-relaxed" style={{ maxHeight: "60px", overflow: "hidden" }}>
+                    {pixModal.qr_code.length > 120 ? pixModal.qr_code.slice(0, 120) + "..." : pixModal.qr_code}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => { navigator.clipboard.writeText(pixModal.qr_code); setPixCopied(true); setTimeout(() => setPixCopied(false), 3000); }}
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: pixCopied ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                    boxShadow: pixCopied ? "0 4px 20px rgba(34,197,94,0.3)" : "0 4px 20px rgba(139,92,246,0.3)",
+                  }}
+                >
+                  {pixCopied ? "✓ Código Copiado!" : "📋 Copiar Código PIX"}
+                </button>
+
+                <div className="mt-4 flex items-center gap-2 justify-center">
+                  <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#eab308" }} />
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Aguardando pagamento...</p>
+                </div>
+
+                <p className="text-center text-[10px] mt-3" style={{ color: "rgba(255,255,255,0.2)" }}>
+                  Após o pagamento, suas coins serão creditadas automaticamente.
+                </p>
+              </>
             )}
-
-            <p className="text-center text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Escaneie o QR Code ou copie o código abaixo
-            </p>
-
-            <div className="rounded-xl p-3 mb-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <p className="text-[10px] font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>Código PIX (Copia e Cola)</p>
-              <p className="text-xs text-white/70 break-all font-mono leading-relaxed" style={{ maxHeight: "60px", overflow: "hidden" }}>
-                {pixModal.qr_code.length > 120 ? pixModal.qr_code.slice(0, 120) + "..." : pixModal.qr_code}
-              </p>
-            </div>
-
-            <button
-              onClick={() => { navigator.clipboard.writeText(pixModal.qr_code); setPixCopied(true); setTimeout(() => setPixCopied(false), 3000); }}
-              className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: pixCopied ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
-                boxShadow: pixCopied ? "0 4px 20px rgba(34,197,94,0.3)" : "0 4px 20px rgba(139,92,246,0.3)",
-              }}
-            >
-              {pixCopied ? "✓ Código Copiado!" : "📋 Copiar Código PIX"}
-            </button>
-
-            <div className="mt-4 flex items-center gap-2 justify-center">
-              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#eab308" }} />
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Aguardando pagamento...</p>
-            </div>
-
-            <p className="text-center text-[10px] mt-3" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Após o pagamento, suas coins serão creditadas automaticamente.
-            </p>
           </div>
         </div>
       )}
