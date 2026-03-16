@@ -626,7 +626,7 @@ const VideoChatRoom = () => {
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
       <div
-        className={`${status === "connected" || status === "searching" ? "h-[100dvh] md:h-full w-full" : "h-[50dvh] md:h-full md:flex-1"} relative flex flex-col overflow-hidden`}
+        className="h-[50dvh] md:h-full md:flex-1 relative flex flex-col overflow-hidden"
         style={{
           background: `
             radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.35) 0%, transparent 50%),
@@ -956,7 +956,7 @@ const VideoChatRoom = () => {
       </div>
 
       {/* BOTTOM/RIGHT PANEL - Your video (PiP overlay when connected/searching, full otherwise) */}
-      <div className={`${(status === "connected" || status === "searching") && cameraAllowed ? "absolute bottom-20 right-3 md:bottom-6 md:right-6 w-32 h-44 md:w-48 md:h-64 rounded-2xl shadow-2xl z-30" : "h-[50dvh] md:h-full md:flex-1"} relative overflow-hidden`} style={{ background: "#111118", ...((status === "connected" || status === "searching") && cameraAllowed ? { border: "2px solid rgba(255,255,255,0.15)" } : {}) }}>
+      <div className="h-[50dvh] md:h-full md:flex-1 relative overflow-hidden" style={{ background: "#111118" }}>
         {/* Camera feed - fills entire panel */}
         <video
           ref={localVideoRef}
