@@ -269,6 +269,15 @@ const VideoChatRoom = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const interval = window.setInterval(() => {
+      refreshOwnCoins();
+    }, status === "connected" ? 1500 : 5000);
+
+    return () => window.clearInterval(interval);
+  }, [currentUser, status, refreshOwnCoins]);
+
   // Fetch user location by IP - state/region only
   useEffect(() => {
     fetch("https://ipapi.co/json/")
