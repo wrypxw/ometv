@@ -789,6 +789,65 @@ const VideoChatRoom = () => {
     }
   }, [profileTarget, currentUser]);
 
+  const openPrivateChat = useCallback(async (target: any) => {
+    if (!currentUser || !target?.id) return;
+    setPrivateChatTarget(target);
+    setShowPrivateChat(true);
+    setShowProfileModal(false);
+    setShowFriendsModal(false);
+    setPrivateMsgLoading(true);
+    const { data } = await supabase
+      .from("private_messages")
+      .select("*")
+      .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${target.id}),and(sender_id.eq.${target.id},receiver_id.eq.${currentUser.id})`)
+      .order("created_at", { ascending: true })
+      .limit(100);
+    setPrivateMessages(data || []);
+    setPrivateMsgLoading(false);
+    // Mark unread as read
+    await supabase.from("private_messages").update({ read: true }).eq("receiver_id", currentUser.id).eq("sender_id", target.id).eq("read", false);
+  }, [currentUser]);
+
+  const sendPrivateMessage = useCallback(async () => {
+    if (!currentUser || !privateChatTarget?.id || !privateMsgInput.trim()) return;
+    const msg = privateMsgInput.trim().slice(0, 500);
+    setPrivateMsgInput("");
+    const { data } = await supabase.from("private_messages").insert({
+      sender_id: currentUser.id,
+      receiver_id: privateChatTarget.id,
+      message: msg,
+    }).select().single();
+    if (data) setPrivateMessages(prev => [...prev, data]);
+  }, [currentUser, privateChatTarget, privateMsgInput]);
+
+  // Realtime subscription for private chat
+  useEffect(() => {
+    if (!showPrivateChat || !currentUser || !privateChatTarget?.id) return;
+    const channel = supabase.channel(`pm-${currentUser.id}-${privateChatTarget.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'private_messages',
+        filter: `receiver_id=eq.${currentUser.id}`,
+      }, (payload) => {
+        const msg = payload.new as any;
+        if (msg.sender_id === privateChatTarget.id) {
+          setPrivateMessages(prev => {
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+          // Mark as read
+          supabase.from("private_messages").update({ read: true }).eq("id", msg.id);
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [showPrivateChat, currentUser, privateChatTarget]);
+
+  useEffect(() => {
+    privateChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [privateMessages]);
+
   return (
     <div className="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden" style={{ background: "#08080e" }}>
       {/* TOP/LEFT PANEL - Stranger video */}
