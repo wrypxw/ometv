@@ -177,10 +177,17 @@ export class WebRTCConnection {
       }
     };
 
+    this.remoteStream = new MediaStream();
+
     this.pc.ontrack = (event) => {
-      if (event.streams[0] && this.onRemoteStream) {
-        this.onRemoteStream(event.streams[0]);
+      if (event.streams[0]) {
+        // Use the stream directly when available
+        this.remoteStream = event.streams[0];
+      } else {
+        // Mobile browsers may send tracks without streams - add individually
+        this.remoteStream!.addTrack(event.track);
       }
+      this.onRemoteStream?.(this.remoteStream!);
     };
 
     this.pc.oniceconnectionstatechange = () => {
