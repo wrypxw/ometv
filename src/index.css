@@ -96,3 +96,26 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Gift animations */
+@keyframes gift-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes gift-pop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes gift-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes sparkle-burst {
+  0% { transform: scale(0) translate(0, 0); opacity: 1; }
+  50% { transform: scale(1.5) translate(var(--tx, 20px), var(--ty, -30px)); opacity: 1; }
+  100% { transform: scale(0) translate(var(--tx2, 40px), var(--ty2, -60px)); opacity: 0; }
+}
