@@ -23,16 +23,30 @@ const Profile = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Resolve rawId: if it's a UUID use directly, otherwise treat as display_name lookup
   useEffect(() => {
-    if (!id) return;
+    if (!rawId) return;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(rawId)) {
+      setResolvedId(rawId);
+    } else {
+      // Lookup by display_name (case-insensitive)
+      supabase.from("profiles").select("id").ilike("display_name", rawId).maybeSingle().then(({ data }) => {
+        setResolvedId(data?.id ?? null);
+      });
+    }
+  }, [rawId]);
+
+  useEffect(() => {
+    if (!resolvedId) { if (rawId && resolvedId === null) { setLoading(false); } return; }
     const fetchProfile = async () => {
       setLoading(true);
-      const { data } = await supabase.from("profiles").select("*").eq("id", id).single();
+      const { data } = await supabase.from("profiles").select("*").eq("id", resolvedId).single();
       setProfile(data);
       setLoading(false);
     };
     fetchProfile();
-  }, [id]);
+  }, [resolvedId]);
 
   useEffect(() => {
     if (!currentUser || !id || currentUser.id === id) return;
