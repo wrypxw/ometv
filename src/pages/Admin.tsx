@@ -1573,6 +1573,32 @@ const AdminPanel = () => {
           </div>
         </Modal>
       )}
+
+      {/* =================== GIFT EDIT MODAL =================== */}
+      {editingGift && (
+        <Modal onClose={() => setEditingGift(null)}>
+          <h2 className="text-lg font-bold text-white mb-4">{editingGift.id ? "Editar Presente" : "Novo Presente"}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Emoji / Ícone</label>
+              <AdminInput value={giftForm.emoji} onChange={v => setGiftForm(p => ({ ...p, emoji: v }))} placeholder="🎁" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Nome</label>
+              <AdminInput value={giftForm.name} onChange={v => setGiftForm(p => ({ ...p, name: v }))} placeholder="Rosa" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Custo em Coins</label>
+              <AdminInput value={String(giftForm.coin_cost)} onChange={v => setGiftForm(p => ({ ...p, coin_cost: Math.max(0, parseInt(v) || 0) }))} type="number" placeholder="10" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: "rgba(255,255,255,0.45)" }}>Ordem</label>
+              <AdminInput value={String(giftForm.sort_order)} onChange={v => setGiftForm(p => ({ ...p, sort_order: parseInt(v) || 0 }))} type="number" placeholder="0" />
+            </div>
+            <PrimaryBtn onClick={saveGift} disabled={!giftForm.name.trim() || !giftForm.emoji.trim()} text="💾 Salvar Presente" />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
