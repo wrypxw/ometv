@@ -228,6 +228,7 @@ const VideoChatRoom = () => {
       } else {
         setUserCoins(0);
         setUserDisplayName(null);
+        setShowLoginModal(true);
       }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -237,6 +238,8 @@ const VideoChatRoom = () => {
         supabase.from("profiles").select("coins, display_name, instagram").eq("id", session.user.id).single().then(({ data }) => {
           if (data) { setUserCoins(data.coins); setUserDisplayName(data.display_name); setUserInstagram(data.instagram || null); }
         });
+      } else {
+        setShowLoginModal(true);
       }
     });
     return () => subscription.unsubscribe();
@@ -889,7 +892,10 @@ const VideoChatRoom = () => {
         </div>
 
         {/* Center content (idle state) */}
-        {status !== "connected" && status !== "searching" && (
+        {status !== "connected" && status !== "searching" && !isLoggedIn && (
+          <div className="flex-1" />
+        )}
+        {status !== "connected" && status !== "searching" && isLoggedIn && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
             {siteSettings.logo_url ? (
               <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover mb-4 md:mb-6 animate-pulse-glow" />
@@ -1923,7 +1929,7 @@ const VideoChatRoom = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => { setShowLoginModal(false); setAuthError(""); }}>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => { if (isLoggedIn) { setShowLoginModal(false); setAuthError(""); } }}>
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} />
           <div
             className="relative w-full md:max-w-sm md:mx-4 rounded-t-3xl md:rounded-2xl p-6 md:p-8 text-center"
@@ -2300,6 +2306,17 @@ const VideoChatRoom = () => {
                         Seguindo desde {new Date(friend.created_at).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
+                    <button
+                      onClick={async () => {
+                        await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", friend.following_id);
+                        setFriendsList(prev => prev.filter(f => f.following_id !== friend.following_id));
+                      }}
+                      className="p-2 rounded-xl hover:bg-red-500/20 transition-all"
+                      title="Deixar de seguir"
+                      style={{ color: "#f87171" }}
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </button>
                     <button
                       onClick={() => {
                         setShowFriendsModal(false);
