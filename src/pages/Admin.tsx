@@ -1256,7 +1256,7 @@ const AdminPanel = () => {
                   disabled={actionLoading || !editValue || parseInt(editValue) === 0}
                   className="flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all hover:scale-[1.02]"
                   style={{ background: "#22c55e" }}>
-                  <Plus className="w-4 h-4" /> Add
+                  <Plus className="w-4 h-4" /> Adicionar
                 </button>
                 <button onClick={() => handleAction("update_coins", { userId: selectedUser.id, amount: -(parseInt(editValue) || 0) })}
                   disabled={actionLoading || !editValue || parseInt(editValue) === 0}
