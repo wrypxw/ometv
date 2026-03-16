@@ -463,7 +463,7 @@ const VideoChatRoom = () => {
     if (isInitiator) {
       await rtc.createOffer();
     }
-  }, [userInstagram]);
+  }, [userInstagram, userLocation]);
 
   // Calculate total coin cost for current filters
   const getFilterCost = useCallback(() => {
