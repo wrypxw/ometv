@@ -160,9 +160,11 @@ const Profile = () => {
           <h3 className="text-xl font-bold text-white">
             {profile.display_name || "Anônimo"}
           </h3>
-          {profile.age && (
+          {(profile.age || profile.gender) && (
             <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {profile.age} anos
+              {profile.gender === "male" ? "♂ Homem" : profile.gender === "female" ? "♀ Mulher" : profile.gender === "other" ? "⚧ Outro" : ""}
+              {profile.age && profile.gender ? " · " : ""}
+              {profile.age ? `${profile.age} anos` : ""}
             </p>
           )}
           {profile.bio && (
@@ -197,6 +199,19 @@ const Profile = () => {
               onBlur={(e) => { const v = Math.min(99, Math.max(18, parseInt(e.target.value) || 0)); if (v >= 18) handleSaveField("age", v); }}
               className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }} />
+            <div className="flex gap-2">
+              {[{ key: "male", label: "♂ Homem" }, { key: "female", label: "♀ Mulher" }, { key: "other", label: "⚧ Outro" }].map(g => (
+                <button key={g.key} onClick={() => handleSaveField("gender", g.key)}
+                  className="flex-1 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all"
+                  style={{
+                    background: profile.gender === g.key ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.06)",
+                    border: profile.gender === g.key ? "1px solid rgba(168,85,247,0.5)" : "1px solid rgba(255,255,255,0.08)",
+                    color: profile.gender === g.key ? "#c084fc" : "rgba(255,255,255,0.5)",
+                  }}>
+                  {g.label}
+                </button>
+              ))}
+            </div>
             <div className="flex items-center rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
               <span className="pl-3 text-sm select-none whitespace-nowrap" style={{ color: "rgba(255,255,255,0.4)" }}>instagram.com/</span>
               <input type="text" placeholder="seu.usuario"

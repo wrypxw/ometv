@@ -558,13 +558,15 @@ const VideoChatRoom = () => {
         _receiver_id: strangerUserId,
         _amount: gift.coin_cost,
       });
-      if (error || !success) {
+      console.log("transfer_gift_coins result:", { success, error, sender: currentUser.id, receiver: strangerUserId, amount: gift.coin_cost });
+      if (error || success === false) {
         setShowCoinConfirm({ cost: 0, label: "Saldo insuficiente!", onConfirm: () => { setShowCoinConfirm(null); setShowShop(true); } });
         setSendingGift(null);
         return;
       }
-      // Update local coin display
-      setUserCoins(prev => prev - gift.coin_cost);
+      // Refresh actual coin balance from DB
+      const { data: updatedProfile } = await supabase.from("profiles").select("coins").eq("id", currentUser.id).single();
+      if (updatedProfile) setUserCoins(updatedProfile.coins);
     } else {
       // No recipient known, just deduct
       const ok = await deductCoins(gift.coin_cost);
