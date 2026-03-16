@@ -651,7 +651,7 @@ const VideoChatRoom = () => {
             }}
           >
             <Heart className="w-3.5 h-3.5 md:w-4 md:h-4 fill-current" />
-            Shop
+            Loja
           </button>
 
           {/* User icon */}
