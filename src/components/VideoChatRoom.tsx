@@ -184,18 +184,29 @@ const VideoChatRoom = () => {
       return;
     }
     setBuyingPkg(pkgId);
+    
+    // Pre-open window on user gesture so iOS Safari doesn't block it
+    const paymentWindow = window.open("about:blank", "_blank");
+    
     try {
       const { data, error } = await supabase.functions.invoke("create-payment", {
         body: { package_id: pkgId, coupon_code: appliedCoupon?.code || undefined },
       });
       if (error) throw error;
-      if (data?.init_point) {
-        window.open(data.init_point, "_blank");
-      } else if (data?.sandbox_init_point) {
-        window.open(data.sandbox_init_point, "_blank");
+      const url = data?.init_point || data?.sandbox_init_point;
+      if (url) {
+        if (paymentWindow && !paymentWindow.closed) {
+          paymentWindow.location.href = url;
+        } else {
+          // Fallback: redirect current page (works on all browsers)
+          window.location.href = url;
+        }
+      } else {
+        paymentWindow?.close();
       }
     } catch (err: any) {
       console.error("Purchase error:", err);
+      paymentWindow?.close();
       alert("Erro ao iniciar pagamento. Tente novamente.");
     } finally {
       setBuyingPkg(null);
