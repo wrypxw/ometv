@@ -734,11 +734,13 @@ const VideoChatRoom = () => {
 
     try {
       await matchmaker.findMatch((roomId, isInitiator) => {
+        if (matchmakerRef.current !== matchmaker) return;
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-        connectToPartner(roomId, isInitiator);
+        void connectToPartner(roomId, isInitiator);
       });
     } catch (err) {
       console.error("Matchmaking error:", err);
+      if (matchmakerRef.current !== matchmaker) return;
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       setStatus("disconnected");
     }
