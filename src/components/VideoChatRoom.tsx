@@ -453,6 +453,8 @@ const VideoChatRoom = () => {
       setMessages([]);
       setStrangerInstagram(null);
       setStrangerLocation(null);
+      setStrangerUserId(null);
+      setStrangerFollowed(false);
     };
 
     rtc.onMessage = (text) => {
