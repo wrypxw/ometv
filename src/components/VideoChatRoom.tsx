@@ -1079,36 +1079,6 @@ const VideoChatRoom = () => {
         </div>
         )}
 
-        {/* Mobile Stop/Next buttons - shown during searching/connected when camera is off (split screen mode) */}
-        {(status === "searching" || status === "connected") && !cameraAllowed && (
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-3 pb-3 pt-8 md:hidden"
-            style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%)" }}>
-            <div className="flex items-center gap-2 w-full max-w-md mx-auto">
-              <button
-                onClick={stopChat}
-                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  backdropFilter: "blur(8px)",
-                }}
-              >
-                Parar
-              </button>
-              <button
-                onClick={nextPerson}
-                className="flex-1 py-3 rounded-2xl font-semibold text-white text-xs flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                  boxShadow: "0 4px 16px -4px rgba(124, 58, 237, 0.4)",
-                }}
-              >
-                <SkipForward className="w-3.5 h-3.5" />
-                Próximo
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Shop Modal */}
