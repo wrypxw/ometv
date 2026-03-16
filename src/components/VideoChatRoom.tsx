@@ -219,9 +219,6 @@ const VideoChatRoom = () => {
     }
   };
 
-  // Keep ref in sync so onDisconnected can call latest version
-  connectToPartnerRef.current = connectToPartner;
-
 
   useEffect(() => {
     const channel = supabase.channel('online-users', {
