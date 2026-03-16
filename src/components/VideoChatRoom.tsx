@@ -98,6 +98,7 @@ const STRANGER_MESSAGES = [
 ];
 
 const VideoChatRoom = () => {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [isCamOn, setIsCamOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
