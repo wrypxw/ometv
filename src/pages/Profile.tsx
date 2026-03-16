@@ -197,10 +197,17 @@ const Profile = () => {
               onBlur={(e) => { const v = Math.min(99, Math.max(18, parseInt(e.target.value) || 0)); if (v >= 18) handleSaveField("age", v); }}
               className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }} />
-            <input type="text" placeholder="@ do Instagram" defaultValue={profile.instagram || ""}
-              onBlur={(e) => handleSaveField("instagram", e.target.value.trim().slice(0, 100))}
-              className="w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-purple-500/50"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }} />
+            <div className="flex items-center rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <span className="pl-3 text-sm select-none whitespace-nowrap" style={{ color: "rgba(255,255,255,0.4)" }}>instagram.com/</span>
+              <input type="text" placeholder="seu.usuario"
+                defaultValue={(profile.instagram || "").replace("@", "").replace("https://instagram.com/", "").replace("https://www.instagram.com/", "")}
+                onBlur={(e) => {
+                  const v = e.target.value.trim().replace("@", "").replace("https://instagram.com/", "").replace("https://www.instagram.com/", "").slice(0, 30);
+                  handleSaveField("instagram", v);
+                }}
+                className="flex-1 py-2.5 px-1 pr-3 text-sm text-white placeholder:text-white/25 outline-none bg-transparent"
+              />
+            </div>
             <textarea placeholder="Bio (máx. 200 caracteres)" maxLength={200} defaultValue={profile.bio || ""}
               onBlur={(e) => handleSaveField("bio", e.target.value.trim().slice(0, 200))}
               rows={2}
