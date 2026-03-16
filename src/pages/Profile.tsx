@@ -56,17 +56,17 @@ const Profile = () => {
   }, [currentUser, resolvedId]);
 
   const handleFollow = useCallback(async () => {
-    if (!currentUser || !id) return;
+    if (!currentUser || !resolvedId) return;
     setFollowLoading(true);
     if (isFollowing) {
-      await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", id);
+      await supabase.from("follows").delete().eq("follower_id", currentUser.id).eq("following_id", resolvedId);
       setIsFollowing(false);
     } else {
-      await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: id });
+      await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: resolvedId });
       setIsFollowing(true);
     }
     setFollowLoading(false);
-  }, [currentUser, id, isFollowing]);
+  }, [currentUser, resolvedId, isFollowing]);
 
   if (loading) {
     return (
