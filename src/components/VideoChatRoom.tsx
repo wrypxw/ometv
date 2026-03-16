@@ -531,9 +531,15 @@ const VideoChatRoom = () => {
       setSendingGift(null);
       return;
     }
-    webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name })}`);
+    const senderName = userDisplayName || (currentUser?.email?.split("@")[0]) || "Anônimo";
+    webrtcRef.current.sendChatMessage(`__SYS_GIFT__:${JSON.stringify({ emoji: gift.emoji, name: gift.name, senderName, cost: gift.coin_cost })}`);
+    // Add gift message to own chat
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), text: `${gift.emoji} Você enviou ${gift.name} no valor de ${gift.coin_cost} moedas`, sender: "me" },
+    ]);
     setSendingGift(null);
-  }, [currentUser, status, deductCoins]);
+  }, [currentUser, status, deductCoins, userDisplayName]);
 
   const doStartSearch = useCallback(async () => {
     // Try to get camera if we don't have it yet, but don't block if denied
