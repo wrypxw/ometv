@@ -1302,15 +1302,64 @@ const VideoChatRoom = () => {
 
       </div>
 
-      {/* Received gift animation overlay */}
+      {/* Received gift animation overlay - rain effect */}
       {receivedGift && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
-          <div className="animate-bounce text-center">
-            <span className="text-[120px] md:text-[160px] drop-shadow-2xl">{receivedGift.emoji}</span>
-            <p className="text-white text-lg md:text-2xl font-extrabold mt-2 drop-shadow-lg" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>
-              Você recebeu: {receivedGift.name}!
-            </p>
+        <div className="fixed inset-0 z-[60] pointer-events-none overflow-hidden">
+          {/* Falling emojis rain */}
+          {Array.from({ length: 30 }).map((_, i) => (
+            <span
+              key={i}
+              className="absolute text-3xl md:text-5xl"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `-60px`,
+                animation: `gift-fall ${1.5 + Math.random() * 2}s linear ${Math.random() * 1.2}s forwards`,
+                opacity: 0.7 + Math.random() * 0.3,
+                fontSize: `${24 + Math.random() * 40}px`,
+              }}
+            >
+              {receivedGift.emoji}
+            </span>
+          ))}
+          {/* Center big emoji with glow */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center" style={{ animation: "gift-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}>
+              <div className="relative inline-block">
+                <span
+                  className="text-[120px] md:text-[180px] drop-shadow-2xl inline-block"
+                  style={{ animation: "gift-pulse 1s ease-in-out infinite", filter: "drop-shadow(0 0 40px rgba(255,200,0,0.6))" }}
+                >
+                  {receivedGift.emoji}
+                </span>
+              </div>
+              <p
+                className="text-white text-xl md:text-3xl font-extrabold mt-3 drop-shadow-lg px-6 py-2 rounded-2xl mx-auto inline-block"
+                style={{
+                  textShadow: "0 2px 20px rgba(0,0,0,0.9)",
+                  background: "linear-gradient(135deg, rgba(124,58,237,0.5), rgba(168,85,247,0.4))",
+                  backdropFilter: "blur(12px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  animation: "gift-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both",
+                }}
+              >
+                🎁 Você recebeu: {receivedGift.name}!
+              </p>
+            </div>
           </div>
+          {/* Sparkles */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={`sparkle-${i}`}
+              className="absolute w-2 h-2 rounded-full"
+              style={{
+                left: `${30 + Math.random() * 40}%`,
+                top: `${30 + Math.random() * 40}%`,
+                background: ["#fbbf24", "#a855f7", "#ec4899", "#22c55e", "#3b82f6"][i % 5],
+                animation: `sparkle-burst 1.5s ease-out ${Math.random() * 0.5}s infinite`,
+                boxShadow: `0 0 8px ${["#fbbf24", "#a855f7", "#ec4899", "#22c55e", "#3b82f6"][i % 5]}`,
+              }}
+            />
+          ))}
         </div>
       )}
 
