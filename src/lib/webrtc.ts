@@ -107,7 +107,7 @@ export class Matchmaker {
       } else if (data?.status === "waiting") {
         await this.tryMatch();
       }
-    }, 300);
+    }, 500);
   }
 
   private async tryMatch(): Promise<boolean> {
