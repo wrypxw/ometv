@@ -47,12 +47,12 @@ export class Matchmaker {
     this.isActive = true;
     this.hasMatched = false;
 
-    // Clean up old entries first
-    const { error: cleanupError } = await supabase.rpc("cleanup_old_queue_entries");
-    if (cleanupError) console.warn("Cleanup error (non-blocking):", cleanupError);
-
-    // Best effort cleanup for stale rows from the same matchmaker instance
-    await supabase.from("match_queue").delete().eq("session_id", this.sessionId);
+    // Run cleanup in background so entering the queue is immediate
+    void supabase
+      .rpc("cleanup_old_queue_entries")
+      .then(({ error }) => {
+        if (error) console.warn("Cleanup error (non-blocking):", error);
+      });
 
     // Insert ourselves as waiting first
     const { error: insertError } = await supabase.from("match_queue").insert({
@@ -107,7 +107,7 @@ export class Matchmaker {
       } else if (data?.status === "waiting") {
         await this.tryMatch();
       }
-    }, 500);
+    }, 200);
   }
 
   private async tryMatch(): Promise<boolean> {
