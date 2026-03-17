@@ -559,7 +559,7 @@ const VideoChatRoom = () => {
           matchmakerRef.current = null;
           setStatus("disconnected");
         }
-      }, 5000);
+      }, 15000);
       
       newMatchmaker.findMatch((newRoomId, newIsInitiator) => {
         if (matchmakerRef.current !== newMatchmaker) return;

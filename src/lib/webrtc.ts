@@ -107,7 +107,7 @@ export class Matchmaker {
       } else if (data?.status === "waiting") {
         await this.tryMatch();
       }
-    }, 300);
+    }, 500);
   }
 
   private async tryMatch(): Promise<boolean> {
@@ -129,51 +129,82 @@ export class Matchmaker {
       .eq("status", "waiting")
       .neq("session_id", this.sessionId)
       .order("created_at", { ascending: true })
-      .limit(10);
+      .limit(20);
 
-    const waiting = waitingCandidates?.find((candidate) => {
-      if (candidate.created_at < selfEntry.created_at) return true;
-      if (candidate.created_at > selfEntry.created_at) return false;
-      return candidate.session_id < this.sessionId;
+    if (!waitingCandidates || waitingCandidates.length === 0) {
+      return false;
+    }
+
+    // Sort candidates: older entries first (we claim older entries)
+    // But also allow claiming newer entries if we are the older one
+    // This way BOTH sides can initiate, preventing deadlocks
+    const sortedCandidates = [...waitingCandidates].sort((a, b) => {
+      if (a.created_at < b.created_at) return -1;
+      if (a.created_at > b.created_at) return 1;
+      return a.session_id < b.session_id ? -1 : 1;
     });
 
-    if (!waiting) {
-      return false;
-    }
+    // Determine if we should be the claimer for each candidate
+    // Rule: the entry with the LATER timestamp (or larger session_id as tiebreak) claims
+    for (const candidate of sortedCandidates) {
+      if (!this.isActive || this.hasMatched) return false;
 
-    // Only the newer queue entry claims the older one.
-    const { data: updatedOther, error: otherError } = await supabase
-      .from("match_queue")
-      .update({ status: "matched", matched_with: this.sessionId })
-      .eq("id", waiting.id)
-      .eq("status", "waiting")
-      .select("session_id")
-      .maybeSingle();
+      const weAreNewer =
+        selfEntry.created_at > candidate.created_at ||
+        (selfEntry.created_at === candidate.created_at && this.sessionId > candidate.session_id);
 
-    if (otherError || !updatedOther || !this.isActive || this.hasMatched) {
-      return false;
-    }
+      if (!weAreNewer) continue; // Only the newer entry should claim
 
-    const { data: updatedSelf, error: selfError } = await supabase
-      .from("match_queue")
-      .update({ status: "matched", matched_with: waiting.session_id })
-      .eq("id", selfEntry.id)
-      .eq("status", "waiting")
-      .select("id")
-      .maybeSingle();
-
-    if (selfError || !updatedSelf) {
-      await supabase
+      // Try to claim this candidate atomically
+      const { data: updatedOther, error: otherError } = await supabase
         .from("match_queue")
-        .update({ status: "waiting", matched_with: null })
-        .eq("id", waiting.id)
-        .eq("status", "matched")
-        .eq("matched_with", this.sessionId);
-      return false;
+        .update({ status: "matched", matched_with: this.sessionId })
+        .eq("id", candidate.id)
+        .eq("status", "waiting")
+        .select("session_id")
+        .maybeSingle();
+
+      if (otherError || !updatedOther) {
+        // This candidate was already claimed by someone else, try next
+        continue;
+      }
+
+      if (!this.isActive || this.hasMatched) {
+        // We got cancelled while claiming, rollback
+        await supabase
+          .from("match_queue")
+          .update({ status: "waiting", matched_with: null })
+          .eq("id", candidate.id)
+          .eq("status", "matched")
+          .eq("matched_with", this.sessionId);
+        return false;
+      }
+
+      // Now claim ourselves
+      const { data: updatedSelf, error: selfError } = await supabase
+        .from("match_queue")
+        .update({ status: "matched", matched_with: candidate.session_id })
+        .eq("id", selfEntry.id)
+        .eq("status", "waiting")
+        .select("id")
+        .maybeSingle();
+
+      if (selfError || !updatedSelf) {
+        // Rollback the other entry and try next candidate
+        await supabase
+          .from("match_queue")
+          .update({ status: "waiting", matched_with: null })
+          .eq("id", candidate.id)
+          .eq("status", "matched")
+          .eq("matched_with", this.sessionId);
+        continue;
+      }
+
+      this.emitMatch(candidate.session_id);
+      return true;
     }
 
-    this.emitMatch(waiting.session_id);
-    return true;
+    return false;
   }
 
   private stopPolling() {
