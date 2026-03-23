@@ -442,37 +442,6 @@ const VideoChatRoom = () => {
     }
   };
 
-  const isLovableDomain = window.location.hostname.includes("lovable.app") || window.location.hostname.includes("lovableproject.com");
-
-  const handleGoogleAuth = async () => {
-    if (isLovableDomain) {
-      const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (error) setAuthError(error.message || "Google sign in failed");
-    } else {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin },
-      });
-      if (error) setAuthError(error.message || "Google sign in failed");
-    }
-  };
-
-  const handleAppleAuth = async () => {
-    if (isLovableDomain) {
-      const { error } = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
-      });
-      if (error) setAuthError(error.message || "Apple sign in failed");
-    } else {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "apple",
-        options: { redirectTo: window.location.origin },
-      });
-      if (error) setAuthError(error.message || "Apple sign in failed");
-    }
-  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
