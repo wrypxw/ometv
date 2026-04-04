@@ -1161,7 +1161,7 @@ const VideoChatRoom = () => {
         {status !== "connected" && status !== "searching" && isLoggedIn && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
             {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover mb-4 md:mb-6 animate-pulse-glow" />
+              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-contain bg-black/30 p-1 mb-4 md:mb-6 animate-pulse-glow" />
             ) : (
               <div
                 className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse-glow"
