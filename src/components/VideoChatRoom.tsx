@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { applyBrandingToDocument, cacheSiteSettings, getCachedSiteSettings, getResolvedSiteBranding } from "@/lib/siteBranding";
 
 import { Matchmaker, WebRTCConnection } from "@/lib/webrtc";
 import {
@@ -100,6 +101,7 @@ const STRANGER_MESSAGES = [
 
 const VideoChatRoom = () => {
   const navigate = useNavigate();
+  const initialSiteSettingsRef = useRef<Record<string, string>>(getCachedSiteSettings());
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [isCamOn, setIsCamOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
@@ -127,8 +129,8 @@ const VideoChatRoom = () => {
   const [authError, setAuthError] = useState("");
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [showBrazilStates, setShowBrazilStates] = useState(false);
-  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>(initialSiteSettingsRef.current);
+  const [settingsLoaded, setSettingsLoaded] = useState(() => Object.keys(initialSiteSettingsRef.current).length > 0);
   const [shopPackages, setShopPackages] = useState<any[]>([]);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
@@ -179,6 +181,7 @@ const VideoChatRoom = () => {
   const [privateMsgInput, setPrivateMsgInput] = useState("");
   const [privateMsgLoading, setPrivateMsgLoading] = useState(false);
   const privateChatEndRef = useRef<HTMLDivElement>(null);
+  const branding = getResolvedSiteBranding(siteSettings);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -268,20 +271,7 @@ const VideoChatRoom = () => {
   // Update document title and favicon dynamically from site settings
   useEffect(() => {
     if (!settingsLoaded) return;
-    const name = siteSettings.site_name || "ChatRandom";
-    const suffix = siteSettings.site_suffix || ".gg";
-    document.title = `${name}${suffix} - Video Chat with Strangers`;
-
-    if (siteSettings.favicon_url) {
-      let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement("link");
-        link.rel = "icon";
-        document.head.appendChild(link);
-      }
-      link.href = siteSettings.favicon_url;
-      link.type = "image/png";
-    }
+    applyBrandingToDocument(siteSettings);
   }, [siteSettings, settingsLoaded]);
 
 
@@ -373,11 +363,12 @@ const VideoChatRoom = () => {
 
 
   useEffect(() => {
-    supabase.from("site_settings").select("key, value").then(({ data }) => {
-      if (data) {
+    supabase.from("site_settings").select("key, value").then(({ data, error }) => {
+      if (!error) {
         const map: Record<string, string> = {};
-        data.forEach((s: any) => { map[s.key] = s.value; });
+        (data || []).forEach((s: any) => { map[s.key] = s.value; });
         setSiteSettings(map);
+        cacheSiteSettings(map);
       }
       setSettingsLoaded(true);
     });
@@ -1160,8 +1151,8 @@ const VideoChatRoom = () => {
         )}
         {status !== "connected" && status !== "searching" && isLoggedIn && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
-            {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-contain bg-black/30 p-1 mb-4 md:mb-6 animate-pulse-glow" />
+            {settingsLoaded ? (branding.logoUrl ? (
+              <img src={branding.logoUrl} alt={branding.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-contain bg-black/30 p-1 mb-4 md:mb-6 animate-pulse-glow" />
             ) : (
               <div
                 className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse-glow"
@@ -1173,11 +1164,19 @@ const VideoChatRoom = () => {
                   <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
                 </svg>
               </div>
+            )) : (
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full mb-4 md:mb-6 animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
             )}
 
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-              <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight min-h-[2rem] md:min-h-[2.5rem]">
+              {settingsLoaded ? (
+                <>
+                  <span className="text-gradient">{branding.name}</span>
+                  <span style={{ color: "rgba(255,255,255,0.2)" }}>{branding.suffix}</span>
+                </>
+              ) : (
+                <span className="inline-block h-8 md:h-10 w-44 md:w-56 rounded-full animate-pulse align-middle" style={{ background: "rgba(255,255,255,0.06)" }} />
+              )}
             </h1>
             <div className="flex items-center gap-2 mt-2 md:mt-3">
               <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse" style={{ background: "#22c55e" }} />
@@ -2332,8 +2331,8 @@ const VideoChatRoom = () => {
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
 
-            {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-contain bg-black/30 p-1 mx-auto mb-5 animate-pulse-glow" />
+            {settingsLoaded ? (branding.logoUrl ? (
+              <img src={branding.logoUrl} alt={branding.name} className="w-16 h-16 rounded-full object-contain bg-black/30 p-1 mx-auto mb-5 animate-pulse-glow" />
             ) : (
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
@@ -2343,11 +2342,19 @@ const VideoChatRoom = () => {
                   <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
                 </svg>
               </div>
+            )) : (
+              <div className="w-16 h-16 rounded-full mx-auto mb-5 animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
             )}
 
-            <h2 className="text-xl font-extrabold">
-              <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
+            <h2 className="text-xl font-extrabold min-h-[1.75rem]">
+              {settingsLoaded ? (
+                <>
+                  <span className="text-gradient">{branding.name}</span>
+                  <span style={{ color: "rgba(255,255,255,0.2)" }}>{branding.suffix}</span>
+                </>
+              ) : (
+                <span className="inline-block h-7 w-36 rounded-full animate-pulse align-middle" style={{ background: "rgba(255,255,255,0.06)" }} />
+              )}
             </h2>
             <p className="text-xs md:text-sm mt-1.5 mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
               {authMode === "login" ? "Entre para começar a conversar!" : "Crie sua conta"}

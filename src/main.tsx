@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { applyBrandingToDocument, getCachedSiteSettings } from "./lib/siteBranding";
 
 // Disable right-click context menu
 document.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -24,5 +25,7 @@ document.addEventListener("keydown", (e) => {
 // Disable text selection and drag
 document.addEventListener("selectstart", (e) => e.preventDefault());
 document.addEventListener("dragstart", (e) => e.preventDefault());
+
+applyBrandingToDocument(getCachedSiteSettings());
 
 createRoot(document.getElementById("root")!).render(<App />);
