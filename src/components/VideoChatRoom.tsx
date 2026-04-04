@@ -371,7 +371,6 @@ const VideoChatRoom = () => {
       .catch(() => setUserLocation(""));
   }, []);
 
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
     supabase.from("site_settings").select("key, value").then(({ data }) => {
