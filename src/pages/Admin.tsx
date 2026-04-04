@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { applyBrandingToDocument, cacheSiteSettings } from "@/lib/siteBranding";
 import {
   Users, Search, ArrowLeft, Coins, Mail, Lock, Trash2, Plus, Minus, X,
   Shield, Settings, Upload, ShoppingBag, Edit2, GripVertical, ToggleLeft, ToggleRight,
@@ -299,6 +300,15 @@ const AdminPanel = () => {
         if (existing) await supabase.from("site_settings").update({ value, updated_at: new Date().toISOString() }).eq("key", key);
         else await supabase.from("site_settings").insert({ key, value });
       }
+      const nextSettings = settings.reduce<Record<string, string>>((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+      Object.entries(settingsDirty).forEach(([key, value]) => {
+        nextSettings[key] = value;
+      });
+      cacheSiteSettings(nextSettings);
+      applyBrandingToDocument(nextSettings);
       toast({ title: "Configurações salvas!" });
       setSettingsDirty({});
       fetchSettings();
