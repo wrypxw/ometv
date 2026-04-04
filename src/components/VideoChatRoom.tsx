@@ -348,6 +348,8 @@ const VideoChatRoom = () => {
       .catch(() => setUserLocation(""));
   }, []);
 
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
   useEffect(() => {
     supabase.from("site_settings").select("key, value").then(({ data }) => {
       if (data) {
@@ -355,6 +357,7 @@ const VideoChatRoom = () => {
         data.forEach((s: any) => { map[s.key] = s.value; });
         setSiteSettings(map);
       }
+      setSettingsLoaded(true);
     });
     supabase.from("shop_packages").select("*").eq("active", true).order("sort_order").then(({ data }) => {
       if (data) setShopPackages(data);
