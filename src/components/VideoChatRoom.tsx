@@ -264,24 +264,8 @@ const VideoChatRoom = () => {
     };
   }, []);
 
-  // Update document title and favicon dynamically from site settings
-  useEffect(() => {
-    if (!settingsLoaded) return;
-    const name = siteSettings.site_name || "ChatRandom";
-    const suffix = siteSettings.site_suffix || ".gg";
-    document.title = `${name}${suffix} - Video Chat with Strangers`;
 
-    if (siteSettings.favicon_url) {
-      let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement("link");
-        link.rel = "icon";
-        document.head.appendChild(link);
-      }
-      link.href = siteSettings.favicon_url;
-      link.type = "image/png";
-    }
-  }, [siteSettings, settingsLoaded]);
+
 
 
   useEffect(() => {
