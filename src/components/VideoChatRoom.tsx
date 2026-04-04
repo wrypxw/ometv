@@ -2333,7 +2333,7 @@ const VideoChatRoom = () => {
             </div>
 
             {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-cover mx-auto mb-5 animate-pulse-glow" />
+              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-contain bg-black/30 p-1 mx-auto mb-5 animate-pulse-glow" />
             ) : (
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
