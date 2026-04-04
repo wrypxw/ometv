@@ -2331,8 +2331,8 @@ const VideoChatRoom = () => {
               <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
 
-            {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-contain bg-black/30 p-1 mx-auto mb-5 animate-pulse-glow" />
+            {settingsLoaded ? (branding.logoUrl ? (
+              <img src={branding.logoUrl} alt={branding.name} className="w-16 h-16 rounded-full object-contain bg-black/30 p-1 mx-auto mb-5 animate-pulse-glow" />
             ) : (
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
@@ -2342,11 +2342,19 @@ const VideoChatRoom = () => {
                   <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
                 </svg>
               </div>
+            )) : (
+              <div className="w-16 h-16 rounded-full mx-auto mb-5 animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
             )}
 
-            <h2 className="text-xl font-extrabold">
-              <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
+            <h2 className="text-xl font-extrabold min-h-[1.75rem]">
+              {settingsLoaded ? (
+                <>
+                  <span className="text-gradient">{branding.name}</span>
+                  <span style={{ color: "rgba(255,255,255,0.2)" }}>{branding.suffix}</span>
+                </>
+              ) : (
+                <span className="inline-block h-7 w-36 rounded-full animate-pulse align-middle" style={{ background: "rgba(255,255,255,0.06)" }} />
+              )}
             </h2>
             <p className="text-xs md:text-sm mt-1.5 mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
               {authMode === "login" ? "Entre para começar a conversar!" : "Crie sua conta"}
