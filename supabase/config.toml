@@ -3,6 +3,9 @@ project_id = "wzrpjqcbxckxobpnccvk"
 [functions.create-payment]
 verify_jwt = false
 
+[functions.x1pag-webhook]
+verify_jwt = false
+
 [functions.mercadopago-webhook]
 verify_jwt = false
 
