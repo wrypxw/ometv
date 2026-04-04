@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { applyBrandingToDocument, cacheSiteSettings, getCachedSiteSettings, getResolvedSiteBranding } from "@/lib/siteBranding";
 
 import { Matchmaker, WebRTCConnection } from "@/lib/webrtc";
 import {
@@ -100,6 +101,7 @@ const STRANGER_MESSAGES = [
 
 const VideoChatRoom = () => {
   const navigate = useNavigate();
+  const initialSiteSettingsRef = useRef<Record<string, string>>(getCachedSiteSettings());
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [isCamOn, setIsCamOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
@@ -127,8 +129,8 @@ const VideoChatRoom = () => {
   const [authError, setAuthError] = useState("");
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [showBrazilStates, setShowBrazilStates] = useState(false);
-  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>(initialSiteSettingsRef.current);
+  const [settingsLoaded, setSettingsLoaded] = useState(() => Object.keys(initialSiteSettingsRef.current).length > 0);
   const [shopPackages, setShopPackages] = useState<any[]>([]);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
@@ -179,6 +181,7 @@ const VideoChatRoom = () => {
   const [privateMsgInput, setPrivateMsgInput] = useState("");
   const [privateMsgLoading, setPrivateMsgLoading] = useState(false);
   const privateChatEndRef = useRef<HTMLDivElement>(null);
+  const branding = getResolvedSiteBranding(siteSettings);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -268,20 +271,7 @@ const VideoChatRoom = () => {
   // Update document title and favicon dynamically from site settings
   useEffect(() => {
     if (!settingsLoaded) return;
-    const name = siteSettings.site_name || "ChatRandom";
-    const suffix = siteSettings.site_suffix || ".gg";
-    document.title = `${name}${suffix} - Video Chat with Strangers`;
-
-    if (siteSettings.favicon_url) {
-      let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement("link");
-        link.rel = "icon";
-        document.head.appendChild(link);
-      }
-      link.href = siteSettings.favicon_url;
-      link.type = "image/png";
-    }
+    applyBrandingToDocument(siteSettings);
   }, [siteSettings, settingsLoaded]);
 
 
@@ -373,11 +363,12 @@ const VideoChatRoom = () => {
 
 
   useEffect(() => {
-    supabase.from("site_settings").select("key, value").then(({ data }) => {
-      if (data) {
+    supabase.from("site_settings").select("key, value").then(({ data, error }) => {
+      if (!error) {
         const map: Record<string, string> = {};
-        data.forEach((s: any) => { map[s.key] = s.value; });
+        (data || []).forEach((s: any) => { map[s.key] = s.value; });
         setSiteSettings(map);
+        cacheSiteSettings(map);
       }
       setSettingsLoaded(true);
     });
