@@ -1151,8 +1151,8 @@ const VideoChatRoom = () => {
         )}
         {status !== "connected" && status !== "searching" && isLoggedIn && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
-            {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-contain bg-black/30 p-1 mb-4 md:mb-6 animate-pulse-glow" />
+            {settingsLoaded ? (branding.logoUrl ? (
+              <img src={branding.logoUrl} alt={branding.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-contain bg-black/30 p-1 mb-4 md:mb-6 animate-pulse-glow" />
             ) : (
               <div
                 className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse-glow"
@@ -1164,11 +1164,19 @@ const VideoChatRoom = () => {
                   <path d="M16 9 C17 7, 19 7, 20 9" stroke="#f97316" strokeWidth="1.5" fill="none" strokeLinecap="round" />
                 </svg>
               </div>
+            )) : (
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full mb-4 md:mb-6 animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
             )}
 
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-              <span className="text-gradient">{siteSettings.site_name || "ChatRandom"}</span>
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>{siteSettings.site_suffix || ".gg"}</span>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight min-h-[2rem] md:min-h-[2.5rem]">
+              {settingsLoaded ? (
+                <>
+                  <span className="text-gradient">{branding.name}</span>
+                  <span style={{ color: "rgba(255,255,255,0.2)" }}>{branding.suffix}</span>
+                </>
+              ) : (
+                <span className="inline-block h-8 md:h-10 w-44 md:w-56 rounded-full animate-pulse align-middle" style={{ background: "rgba(255,255,255,0.06)" }} />
+              )}
             </h1>
             <div className="flex items-center gap-2 mt-2 md:mt-3">
               <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse" style={{ background: "#22c55e" }} />
