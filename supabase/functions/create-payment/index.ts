@@ -5,22 +5,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const X1PAG_BASE = "https://backoffice.x1pag.com.br";
+const PIXUP_API = "https://api.pixupbr.com/v2";
 
-async function getX1PagToken(clientId: string, clientSecret: string): Promise<string> {
-  const res = await fetch(`${X1PAG_BASE}/token`, {
+async function getPixUpToken(clientId: string, clientSecret: string): Promise<string> {
+  const credentials = btoa(`${clientId}:${clientSecret}`);
+  const res = await fetch(`${PIXUP_API}/oauth/token`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      clientid: clientId,
-      clientsecret: clientSecret,
-      grant_type: "password",
-    }),
+    headers: {
+      "Authorization": `Basic ${credentials}`,
+      "Accept": "application/json",
+    },
   });
   if (!res.ok) {
     const txt = await res.text();
-    console.error("X1PAG token error:", res.status, txt);
-    throw new Error("Failed to authenticate with payment gateway");
+    console.error("PixUp token error:", res.status, txt);
+    throw new Error("Failed to authenticate with PixUp");
   }
   const data = await res.json();
   return data.access_token;
@@ -118,18 +117,18 @@ Deno.serve(async (req) => {
     const discountAmount = Math.round((originalPrice * discountPercent) / 100);
     const finalPrice = Math.max(0, originalPrice - discountAmount);
 
-    // Get X1PAG credentials from site_settings
-    const { data: x1Settings } = await supabaseAdmin
+    // Get PixUp credentials from site_settings
+    const { data: pixSettings } = await supabaseAdmin
       .from("site_settings")
       .select("key, value")
-      .in("key", ["x1pag_client_id", "x1pag_client_secret", "x1pag_application_token"]);
+      .in("key", ["pixup_client_id", "pixup_client_secret"]);
 
-    const x1Config: Record<string, string> = {};
-    for (const s of x1Settings || []) {
-      x1Config[s.key] = s.value?.trim() || "";
+    const pixConfig: Record<string, string> = {};
+    for (const s of pixSettings || []) {
+      pixConfig[s.key] = s.value?.trim() || "";
     }
 
-    if (!x1Config.x1pag_client_id || !x1Config.x1pag_client_secret || !x1Config.x1pag_application_token) {
+    if (!pixConfig.pixup_client_id || !pixConfig.pixup_client_secret) {
       return new Response(JSON.stringify({ error: "Payment gateway not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -173,12 +172,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get X1PAG access token
+    // Get PixUp access token
     let accessToken: string;
     try {
-      accessToken = await getX1PagToken(x1Config.x1pag_client_id, x1Config.x1pag_client_secret);
+      accessToken = await getPixUpToken(pixConfig.pixup_client_id, pixConfig.pixup_client_secret);
     } catch (e) {
-      console.error("X1PAG auth failed:", e);
+      console.error("PixUp auth failed:", e);
       await supabaseAdmin
         .from("payment_transactions")
         .update({ status: "gateway_error", updated_at: new Date().toISOString() })
@@ -188,72 +187,61 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create PIX payment via X1PAG
-    const webhookUrl = `${supabaseUrl}/functions/v1/x1pag-webhook`;
-    const now = new Date();
-    const dueDate = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    // Create PIX payment via PixUp
+    // PixUp API: POST /v2/pix/payment
+    // amount is in float (reais), not cents
+    const amountReais = finalPrice / 100;
 
     const pixBody = {
-      customId: transaction.id.replace(/-/g, "").slice(0, 20),
-      amount: finalPrice,
-      dueDate,
-      txId: transaction.id.replace(/-/g, "").slice(0, 25),
-      expiration: 600,
-      customer: {
+      amount: amountReais,
+      description: `Compra de ${pkg.coins} moedas`,
+      external_id: transaction.id,
+      creditParty: {
         name: profile?.display_name || "Cliente",
-        email: payerEmail,
-        cpfcnpj: "00000000000",
-        address: "Endereco",
-        neighborhood: "Bairro",
-        city: "Cidade",
-        state: "SP",
-        country: "Brasil",
-        zipcode: "00000000",
+        taxId: "00000000000",
       },
-      recipient: {
-        name: profile?.display_name || "Cliente",
-        cpfcnpj: "00000000000",
-        email: payerEmail,
-      },
-      confirmationUrl: webhookUrl,
     };
 
-    const pixRes = await fetch(`${X1PAG_BASE}/payment/pix`, {
+    console.log("PixUp payment request:", JSON.stringify(pixBody));
+
+    const pixRes = await fetch(`${PIXUP_API}/pix/payment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "ApplicationToken": x1Config.x1pag_application_token,
+        "Accept": "application/json",
         "Authorization": `Bearer ${accessToken}`,
       },
       body: JSON.stringify(pixBody),
     });
 
     const pixData = await pixRes.json();
+    console.log("PixUp payment response:", pixRes.status, JSON.stringify(pixData));
 
     if (!pixRes.ok || pixData.error) {
-      console.error("X1PAG payment error:", pixRes.status, JSON.stringify(pixData));
+      console.error("PixUp payment error:", pixRes.status, JSON.stringify(pixData));
       await supabaseAdmin
         .from("payment_transactions")
         .update({ status: "gateway_error", updated_at: new Date().toISOString() })
         .eq("id", transaction.id);
-      return new Response(JSON.stringify({ error: pixData.returnMessage || "Failed to create PIX payment" }), {
+      return new Response(JSON.stringify({ error: pixData.message || "Failed to create PIX payment" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Update transaction with X1PAG payment ID
+    // Update transaction with PixUp payment ID
     await supabaseAdmin
       .from("payment_transactions")
       .update({
-        mp_payment_id: pixData.id || pixData.customId || null,
+        mp_payment_id: pixData.id || pixData.external_id || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", transaction.id);
 
+    // PixUp returns qrCode (the copia e cola string) and possibly qrCodeBase64
     return new Response(JSON.stringify({
       transaction_id: transaction.id,
-      qr_code: pixData.qrCodeString || "",
-      qr_code_base64: pixData.qrCodeBase64 || "",
+      qr_code: pixData.qrCode || pixData.qr_code || pixData.brcode || "",
+      qr_code_base64: pixData.qrCodeBase64 || pixData.qr_code_base64 || "",
       ticket_url: "",
       mp_payment_id: pixData.id || "",
     }), {
