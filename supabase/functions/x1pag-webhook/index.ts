@@ -16,66 +16,46 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     const body = await req.json();
-    console.log("X1PAG webhook received:", JSON.stringify(body));
+    console.log("PixUp webhook received:", JSON.stringify(body));
 
-    // X1PAG sends customId which maps to our transaction ID (without dashes, first 20 chars)
-    const customId = body.customId || body.custom_id;
+    // PixUp sends external_id which is our transaction.id
+    const externalId = body.external_id || body.externalId;
     const status = body.status;
-    const totalPaid = body.totalPaid || body.total;
 
-    if (!customId) {
-      console.error("No customId in webhook");
+    if (!externalId) {
+      console.error("No external_id in webhook");
       return new Response(JSON.stringify({ received: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Find the transaction by matching the customId (which is transaction.id without dashes, first 20 chars)
-    const { data: transactions } = await supabaseAdmin
+    // Find the transaction by external_id (which is the transaction UUID)
+    const { data: transaction } = await supabaseAdmin
       .from("payment_transactions")
       .select("*")
+      .eq("id", externalId)
       .eq("status", "pending")
-      .order("created_at", { ascending: false })
-      .limit(100);
-
-    const transaction = transactions?.find(tx => {
-      const txCustomId = tx.id.replace(/-/g, "").slice(0, 20);
-      return txCustomId === customId;
-    });
+      .single();
 
     if (!transaction) {
-      console.error("Transaction not found for customId:", customId);
+      console.error("Transaction not found for external_id:", externalId);
       return new Response(JSON.stringify({ error: "Transaction not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check if it's a successful payment
-    // X1PAG uses status "Paid" for successful payments
-    const isPaid = status === "Paid" || status === "paid" || status === "PAID";
-    
-    // Check for rejection/failure
-    const isFailed = body.updateCode && body.updateCode !== "00" && body.updateMessage;
+    // Check if payment is successful
+    // PixUp uses status like "paid", "approved", "completed"
+    const isPaid = ["paid", "approved", "completed", "Paid", "PAID", "Approved", "APPROVED"].includes(status);
+    const isFailed = ["failed", "rejected", "cancelled", "expired", "Failed", "FAILED"].includes(status);
 
     if (isPaid) {
-      // Verify amount if available (X1PAG sends amount in cents)
-      if (totalPaid && totalPaid !== transaction.amount_cents) {
-        console.error("Amount mismatch:", totalPaid, "vs", transaction.amount_cents);
-        await supabaseAdmin
-          .from("payment_transactions")
-          .update({ status: "amount_mismatch", updated_at: new Date().toISOString() })
-          .eq("id", transaction.id);
-        return new Response(JSON.stringify({ error: "Amount mismatch" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
       // Update to approved
       await supabaseAdmin
         .from("payment_transactions")
         .update({
           status: "approved",
-          mp_payment_id: body.id || body.invoiceCode || null,
+          mp_payment_id: body.id || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", transaction.id);
@@ -113,6 +93,8 @@ Deno.serve(async (req) => {
             .eq("code", transaction.coupon_code);
         }
       }
+
+      console.log("Payment approved, credited", totalCoins, "coins to user", transaction.user_id);
     } else if (isFailed) {
       await supabaseAdmin
         .from("payment_transactions")
@@ -122,6 +104,7 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq("id", transaction.id);
+      console.log("Payment rejected for transaction", transaction.id);
     }
 
     return new Response(JSON.stringify({ received: true }), {
