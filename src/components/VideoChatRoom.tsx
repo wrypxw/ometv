@@ -128,6 +128,7 @@ const VideoChatRoom = () => {
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [showBrazilStates, setShowBrazilStates] = useState(false);
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [shopPackages, setShopPackages] = useState<any[]>([]);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
@@ -264,6 +265,28 @@ const VideoChatRoom = () => {
     };
   }, []);
 
+  // Update document title and favicon dynamically from site settings
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    const name = siteSettings.site_name || "ChatRandom";
+    const suffix = siteSettings.site_suffix || ".gg";
+    document.title = `${name}${suffix} - Video Chat with Strangers`;
+
+    if (siteSettings.favicon_url) {
+      let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = siteSettings.favicon_url;
+      link.type = "image/png";
+    }
+  }, [siteSettings, settingsLoaded]);
+
+
+
+
 
   useEffect(() => {
     const channel = supabase.channel('online-users', {
@@ -348,6 +371,7 @@ const VideoChatRoom = () => {
       .catch(() => setUserLocation(""));
   }, []);
 
+
   useEffect(() => {
     supabase.from("site_settings").select("key, value").then(({ data }) => {
       if (data) {
@@ -355,6 +379,7 @@ const VideoChatRoom = () => {
         data.forEach((s: any) => { map[s.key] = s.value; });
         setSiteSettings(map);
       }
+      setSettingsLoaded(true);
     });
     supabase.from("shop_packages").select("*").eq("active", true).order("sort_order").then(({ data }) => {
       if (data) setShopPackages(data);
@@ -1136,7 +1161,7 @@ const VideoChatRoom = () => {
         {status !== "connected" && status !== "searching" && isLoggedIn && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-8">
             {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover mb-4 md:mb-6 animate-pulse-glow" />
+              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-full object-contain bg-black/30 p-1 mb-4 md:mb-6 animate-pulse-glow" />
             ) : (
               <div
                 className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 md:mb-6 animate-pulse-glow"
@@ -2308,7 +2333,7 @@ const VideoChatRoom = () => {
             </div>
 
             {siteSettings.logo_url ? (
-              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-cover mx-auto mb-5 animate-pulse-glow" />
+              <img src={siteSettings.logo_url} alt="Logo" className="w-16 h-16 rounded-full object-contain bg-black/30 p-1 mx-auto mb-5 animate-pulse-glow" />
             ) : (
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse-glow"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}>
