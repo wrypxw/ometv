@@ -118,8 +118,8 @@ Deno.serve(async (req) => {
     const finalPrice = Math.max(0, originalPrice - discountAmount);
 
     // Get PixUp credentials from secure secrets
-    const pixupClientId = Deno.env.get("PIXUP_CLIENT_ID") || "";
-    const pixupClientSecret = Deno.env.get("PIXUP_CLIENT_SECRET") || "";
+    const pixupClientId = (Deno.env.get("PIXUP_CLIENT_ID") || "").trim();
+    const pixupClientSecret = (Deno.env.get("PIXUP_CLIENT_SECRET") || "").trim();
 
     if (!pixupClientId || !pixupClientSecret) {
       return new Response(JSON.stringify({ error: "Payment gateway not configured" }), {
