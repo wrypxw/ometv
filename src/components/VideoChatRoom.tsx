@@ -255,7 +255,12 @@ const VideoChatRoom = () => {
       console.error("Purchase error:", err);
       setPixModal(null);
       setPixLoading(false);
-      alert("Erro ao iniciar pagamento. Tente novamente.");
+      const message =
+        err?.context?.error ||
+        err?.message ||
+        err?.error_description ||
+        "Erro ao iniciar pagamento. Tente novamente.";
+      alert(message);
     } finally {
       setBuyingPkg(null);
     }

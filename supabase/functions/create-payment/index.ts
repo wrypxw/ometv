@@ -20,7 +20,14 @@ async function getPixUpToken(clientId: string, clientSecret: string): Promise<st
   const txt = await res.text();
   console.log("PixUp token response:", res.status, txt);
   if (!res.ok) {
-    throw new Error(`PixUp auth failed: ${res.status} ${txt}`);
+    let providerMessage = txt;
+    try {
+      const parsed = JSON.parse(txt);
+      providerMessage = parsed?.message || parsed?.error || txt;
+    } catch {
+      // keep raw response text
+    }
+    throw new Error(`PixUp auth failed: ${res.status} ${providerMessage}`);
   }
   const data = JSON.parse(txt);
   return data.access_token;
@@ -172,11 +179,12 @@ Deno.serve(async (req) => {
       accessToken = await getPixUpToken(pixupClientId, pixupClientSecret);
     } catch (e) {
       console.error("PixUp auth failed:", e);
+      const message = e instanceof Error ? e.message : "Payment gateway authentication failed";
       await supabaseAdmin
         .from("payment_transactions")
         .update({ status: "gateway_error", updated_at: new Date().toISOString() })
         .eq("id", transaction.id);
-      return new Response(JSON.stringify({ error: "Payment gateway authentication failed" }), {
+      return new Response(JSON.stringify({ error: message }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
