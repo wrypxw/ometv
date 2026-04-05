@@ -9,6 +9,7 @@ const PIXUP_API = "https://api.pixupbr.com/v2";
 
 async function getPixUpToken(clientId: string, clientSecret: string): Promise<string> {
   const credentials = btoa(`${clientId}:${clientSecret}`);
+  console.log("PixUp token request - clientId length:", clientId.length, "secretLength:", clientSecret.length);
   const res = await fetch(`${PIXUP_API}/oauth/token`, {
     method: "POST",
     headers: {
@@ -16,12 +17,12 @@ async function getPixUpToken(clientId: string, clientSecret: string): Promise<st
       "Accept": "application/json",
     },
   });
+  const txt = await res.text();
+  console.log("PixUp token response:", res.status, txt);
   if (!res.ok) {
-    const txt = await res.text();
-    console.error("PixUp token error:", res.status, txt);
-    throw new Error("Failed to authenticate with PixUp");
+    throw new Error(`PixUp auth failed: ${res.status} ${txt}`);
   }
-  const data = await res.json();
+  const data = JSON.parse(txt);
   return data.access_token;
 }
 
