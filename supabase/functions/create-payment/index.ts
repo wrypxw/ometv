@@ -117,18 +117,11 @@ Deno.serve(async (req) => {
     const discountAmount = Math.round((originalPrice * discountPercent) / 100);
     const finalPrice = Math.max(0, originalPrice - discountAmount);
 
-    // Get PixUp credentials from site_settings
-    const { data: pixSettings } = await supabaseAdmin
-      .from("site_settings")
-      .select("key, value")
-      .in("key", ["pixup_client_id", "pixup_client_secret"]);
+    // Get PixUp credentials from secure secrets
+    const pixupClientId = Deno.env.get("PIXUP_CLIENT_ID") || "";
+    const pixupClientSecret = Deno.env.get("PIXUP_CLIENT_SECRET") || "";
 
-    const pixConfig: Record<string, string> = {};
-    for (const s of pixSettings || []) {
-      pixConfig[s.key] = s.value?.trim() || "";
-    }
-
-    if (!pixConfig.pixup_client_id || !pixConfig.pixup_client_secret) {
+    if (!pixupClientId || !pixupClientSecret) {
       return new Response(JSON.stringify({ error: "Payment gateway not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -175,7 +168,7 @@ Deno.serve(async (req) => {
     // Get PixUp access token
     let accessToken: string;
     try {
-      accessToken = await getPixUpToken(pixConfig.pixup_client_id, pixConfig.pixup_client_secret);
+      accessToken = await getPixUpToken(pixupClientId, pixupClientSecret);
     } catch (e) {
       console.error("PixUp auth failed:", e);
       await supabaseAdmin
