@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
     // Get PixUp access token
     let accessToken: string;
     try {
-      accessToken = await getPixUpToken(pixConfig.pixup_client_id, pixConfig.pixup_client_secret);
+      accessToken = await getPixUpToken(pixupClientId, pixupClientSecret);
     } catch (e) {
       console.error("PixUp auth failed:", e);
       await supabaseAdmin
